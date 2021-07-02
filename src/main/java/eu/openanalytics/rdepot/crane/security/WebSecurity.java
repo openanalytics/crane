@@ -1,6 +1,7 @@
 package eu.openanalytics.rdepot.crane.security;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -16,14 +17,20 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        //@formatter:off
         http
-            .antMatcher("/repo/**")
             .csrf().disable()
             .authorizeRequests()
-            .anyRequest().authenticated()
+                .anyRequest().authenticated()
             .and()
             .oauth2ResourceServer()
-            .jwt().jwkSetUri(config.getJwksUri());
-    }
+                .jwt()
+                    .jwkSetUri(config.getJwksUri())
+                .and()
+            .and()
+            .oauth2Login(Customizer.withDefaults())
+            .oauth2Client();
+        // @formatter:on
+   }
 
 }

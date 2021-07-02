@@ -1,3 +1,0 @@
-app:
-  storage-location: /opt/rdepot/repo/
-  jwks-uri: http://localhost:8080/oauth2/jwks
