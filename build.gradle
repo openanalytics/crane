@@ -27,7 +27,7 @@ test {
 }
 
 bootJar {
-    archiveClassifier = 'application'
+    archiveClassifier = ''
     archiveVersion = version
     //manifest {
         //attributes( 'Implementation-Title': 'RDepot',
