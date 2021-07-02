@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.5.2'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+        id 'maven-publish'
 }
 
 group = 'eu.openanalytics.rdepot'
@@ -24,3 +25,42 @@ dependencies {
 test {
 	useJUnitPlatform()
 }
+
+bootJar {
+    archiveClassifier = 'application'
+    archiveVersion = version
+    //manifest {
+        //attributes( 'Implementation-Title': 'RDepot',
+                    //'Implementation-Version': rootProject.version)
+    //}
+}
+
+
+publishing {
+    publications {
+        jarFile(MavenPublication) {
+            artifact bootJar
+            groupId group
+            artifactId 'crane'
+            version version
+        }
+        //jarFile(MavenPublication) {
+            //artifact jar
+            //groupId rootProject.group + '.crane'
+            //artifactId 'crane'
+            //version baseVersion
+        //}
+    }
+    repositories {
+                maven {
+                        def releasesRepoUrl = "https://nexus.openanalytics.eu/repository/releases"
+                        def snapshotsRepoUrl = "https://nexus.openanalytics.eu/repository/snapshots"
+                        url = version.contains('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                        credentials {
+                                username = System.getenv("OA_NEXUS_USER")
+                                password = System.getenv("OA_NEXUS_PWD")
+                        }
+                }
+        }
+}
+

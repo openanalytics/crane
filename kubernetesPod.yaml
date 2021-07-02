@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crane
+  labels:
+    ci: crane-build
+spec:
+  containers:
+   - name: builder
+     image: maven:3.8.1-openjdk-11-slim
+     command:
+     - cat
+     tty: true
