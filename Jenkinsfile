@@ -1,5 +1,5 @@
+/* groovylint-disable LineLength, NestedBlockDepth, CompileStatic */
 pipeline {
-
     agent {
         kubernetes {
             yamlFile 'kubernetesPod.yaml'
@@ -11,17 +11,12 @@ pipeline {
     }
 
     stages {
-
         stage('build and deploy to nexus') {
-
             steps {
-
                 container('builder') {
-
                     withCredentials([usernamePassword(credentialsId: 'oa-jenkins', usernameVariable: 'OA_NEXUS_USER', passwordVariable: 'OA_NEXUS_PWD')]) {
-                        sh "./gradlew publish"
+                        sh './gradlew publish'
                     }
-                    
                 }
             }
         }

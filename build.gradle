@@ -29,10 +29,10 @@ test {
 bootJar {
     archiveClassifier = ''
     archiveVersion = version
-    //manifest {
-        //attributes( 'Implementation-Title': 'RDepot',
-                    //'Implementation-Version': rootProject.version)
-    //}
+    manifest {
+        attributes( 'Implementation-Title': 'crane',
+                    'Implementation-Version': version)
+    }
 }
 
 
