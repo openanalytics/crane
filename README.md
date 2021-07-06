@@ -9,7 +9,7 @@ Repositories. It is designed to be used in combination with RDepot.
 
 There are two different scenarios:
 
-### 1) RDepot acting as OAuth2 Authorization Sever
+### 1) RDepot acting as OAuth2 Authorization Server
 
 This deployment makes sense if you are using the complete RDepot ecosystem and
 if you don't have a proper OAuth2/OIDC provider to use.
@@ -53,7 +53,7 @@ The deployment can contain any amount of these type of users:
     server
   - the Jenkins Agents can seamlessly access the RDepot Manager or Crane servers through the Forward Signing Proxy
 
-### 2) External server acting as OAuth2 Authorization Sever
+### 2) External server acting as OAuth2 Authorization Server
 
 This deployment makes sense if you are only using parts of the complete RDepot
 ecosystem and/or if you already have a proper OAuth2/OIDC provider to use.
@@ -104,7 +104,7 @@ the integrated Authorization Server of RDepot is used.
 
     ```bash
     git clone https://github.com/LEDfan/spring-authorization-server -b device_code
-    cd pring-authorization-server
+    cd spring-authorization-server
     ./gradlew install
     ```
 
@@ -147,7 +147,7 @@ the integrated Authorization Server of RDepot is used.
             name: John Doe
         default:
           admins:
-            - einstei
+            - einstein
     ```
 
 4. start RDepot
@@ -189,14 +189,14 @@ the integrated Authorization Server of RDepot is used.
     the RDepot Manager (for OAuth2) in a proper deployment you want to do this using
     a Docker network or Kubernetes networking.
 
-7. login into RDepot at <localhost:808>
-8. upload some packages to the myrepo and try to download them form the repo server, e.g. <127.0.0.1:7070/repo/myrepo/VERSION>
+7. login into RDepot at <localhost:8080>
+8. upload some packages to the myrepo and try to download them from the repo server, e.g. <127.0.0.1:7070/repo/myrepo/VERSION>
 
     **Note**: it is important to use `127.0.0.1` rather than `localhost` as the Spring Authorization server blocks requests with a redirect uri from `localhost`.
 
 9. try the Device Code flow (see <https://projects.openanalytics.eu/issues/25675>)
 
-### 2) External server acting as OAuth2 Authorization Sever
+### 2) External server acting as OAuth2 Authorization Server
 
 1. installing the modified Spring library should not be necessary
 2. setup Keycloak (or another OIDC server)
