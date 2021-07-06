@@ -158,7 +158,7 @@ the integrated Authorization Server of RDepot is used.
       port: 7070
     app:
       storage-location: /opt/rdepot/repo/
-      jwks-uri: http://localhost:8080/oauth2/jwks
+      openid-issuer-uri: http://localhost:8080
 
     spring:
       security:
@@ -241,7 +241,7 @@ the integrated Authorization Server of RDepot is used.
       port: 7070
     app:
       storage-location: /opt/rdepot/repo/
-      jwks-uri: https://keycloak.ledfan.be/auth/realms/master/protocol/openid-connect/certs
+      openid-issuer-uri: https://keycloak.ledfan.be/auth/realms/master
 
     spring:
       security:
@@ -301,7 +301,7 @@ docker run -it --net=host quay.io/gogatekeeper/gatekeeper:1.3.3 \
    --client-secret= \
    --discovery-url=http://localhost:8080/.well-known/openid-configuration\
    --forwarding-grant-type=client_credentials \
-   --listen 127.0.0.1:3000 
+   --listen 127.0.0.1:3000
 ```
 
 **External:**
@@ -316,7 +316,7 @@ docker run -it --net=host quay.io/gogatekeeper/gatekeeper:1.3.3 \
    --client-secret= \
    --discovery-url=https://keycloak.ledfan.be/auth/realms/master/.well-known/openid-configuration\
    --forwarding-grant-type=client_credentials \
-   --listen 127.0.0.1:3000 
+   --listen 127.0.0.1:3000
 ```
 
 **Test it**:

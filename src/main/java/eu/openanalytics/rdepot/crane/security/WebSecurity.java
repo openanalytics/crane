@@ -21,6 +21,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .authorizeRequests()
+                .antMatchers("/.well-known/configured-openid-configuration").permitAll()
                 .anyRequest().authenticated()
             .and()
             .oauth2ResourceServer()
