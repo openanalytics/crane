@@ -1,5 +1,6 @@
 package eu.openanalytics.rdepot.crane.config;
 
+import eu.openanalytics.rdepot.crane.model.Repository;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
@@ -9,7 +10,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @ConfigurationProperties(prefix = "app")
@@ -18,6 +23,8 @@ public class CraneConfig {
     private String storageLocation;
 
     private String openidIssuerUri;
+
+    private Map<String, Repository> repositories;
 
     private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
 
@@ -72,6 +79,21 @@ public class CraneConfig {
         return UriComponentsBuilder.fromUri(issuer)
             .replacePath(issuer.getPath() + OIDC_METADATA_PATH)
             .build(Collections.emptyMap()).toString();
+    }
+
+    public Collection<Repository> getRepositories() {
+        return repositories.values();
+    }
+
+    public Repository getRepository(String name) {
+        return repositories.get(name);
+    }
+
+    public void setRepositories(List<Repository> repositories) {
+        this.repositories = repositories.stream()
+            .collect(Collectors.toMap(
+                Repository::getName,
+                it -> it));
     }
 }
 

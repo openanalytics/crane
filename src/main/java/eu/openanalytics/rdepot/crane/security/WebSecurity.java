@@ -45,6 +45,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
             .csrf().disable()
             .authorizeRequests()
                 .antMatchers("/.well-known/configured-openid-configuration").permitAll()
+                .antMatchers("/repo/{repoName}/**").access("@accessControlService.canAccess(authentication, #repoName)")
                 .anyRequest().authenticated()
             .and()
             .oauth2ResourceServer()
