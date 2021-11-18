@@ -14,6 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +50,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
             .oauth2ResourceServer()
                 .jwt()
                     .jwkSetUri(config.getJwksUri())
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 .and()
             .and()
             .oauth2Login()
@@ -58,8 +60,32 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
             .and()
                 .oauth2Client();
         // @formatter:on
+
    }
 
+    /**
+     * Authorities mapper when an Oauth2 JWT is used.
+     * I.e. when the user is authenticated by passing an OAuth2 Access token as Bearer token in the Authorization header.
+     */
+    private JwtAuthenticationConverter jwtAuthenticationConverter() {
+        String rolesClaimName = environment.getProperty(PROP_OPENID_ROLES_CLAIM);
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            if (rolesClaimName == null || rolesClaimName.isEmpty()) {
+                return new ArrayList<>();
+            }
+            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+            Object claimValue = jwt.getClaims().get(rolesClaimName);
+            mapAuthorities(mappedAuthorities, rolesClaimName, claimValue);
+            return mappedAuthorities;
+        });
+        return converter;
+    }
+
+    /**
+     * Authorities mapper when OpenID is used.
+     * I.e. when the user is authenticated in the browser, using a Java session.
+     */
     private GrantedAuthoritiesMapper createAuthoritiesMapper() {
         String rolesClaimName = environment.getProperty(PROP_OPENID_ROLES_CLAIM);
         if (rolesClaimName == null || rolesClaimName.isEmpty()) {
@@ -72,11 +98,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                         OidcIdToken idToken = ((OidcUserAuthority) auth).getIdToken();
 
                         Object claimValue = idToken.getClaims().get(rolesClaimName);
-
-                        for (String role: parseRolesClaim(rolesClaimName, claimValue)) {
-                            String mappedRole = role.toUpperCase().startsWith("ROLE_") ? role : "ROLE_" + role;
-                            mappedAuthorities.add(new SimpleGrantedAuthority(mappedRole.toUpperCase()));
-                        }
+                        mapAuthorities(mappedAuthorities, rolesClaimName, claimValue);
                     }
                 }
                 return mappedAuthorities;
@@ -85,10 +107,20 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     }
 
     /**
+     * Maps the roles provided in the claimValue to {@link GrantedAuthority}.
+     */
+    private void mapAuthorities(Set<GrantedAuthority> mappedAuthorities, String rolesClaimName, Object claimValue) {
+        for (String role: parseRolesClaim(rolesClaimName, claimValue)) {
+            String mappedRole = role.toUpperCase().startsWith("ROLE_") ? role : "ROLE_" + role;
+            mappedAuthorities.add(new SimpleGrantedAuthority(mappedRole.toUpperCase()));
+        }
+    }
+
+    /**
      * Parses the claim containing the roles to a List of Strings.
      * See #25549 and TestOpenIdParseClaimRoles
      */
-    public List<String> parseRolesClaim(String rolesClaimName, Object claimValue) {
+    private List<String> parseRolesClaim(String rolesClaimName, Object claimValue) {
         if (claimValue == null) {
             logger.debug(String.format("No roles claim with name %s found", rolesClaimName));
             return new ArrayList<>();
