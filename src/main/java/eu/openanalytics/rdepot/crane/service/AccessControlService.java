@@ -2,18 +2,25 @@ package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
+import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class AccessControlService {
 
     private final CraneConfig craneConfig;
+    private final SpecExpressionResolver specExpressionResolver;
 
-    public AccessControlService(CraneConfig craneConfig) {
+    public AccessControlService(CraneConfig craneConfig, SpecExpressionResolver specExpressionResolver) {
         this.craneConfig = craneConfig;
+        this.specExpressionResolver = specExpressionResolver;
     }
 
     public boolean canAccess(Authentication auth, String repositoryName) {
@@ -55,6 +62,10 @@ public class AccessControlService {
             return true;
         }
 
+        if (allowedByExpression(auth, repository)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -90,6 +101,15 @@ public class AccessControlService {
         return false;
     }
 
+    public boolean allowedByExpression(Authentication auth, Repository repository) {
+        if (!repository.hasExpressionAccess()) {
+            // no expression defined -> this user has no access based on the expression
+            return false;
+        }
+        SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), repository);
+        return specExpressionResolver.evaluateToBoolean(repository.getAccessExpression(), context);
+    }
+
     public boolean isMember(Authentication auth, String group) {
         for (GrantedAuthority grantedAuth: auth.getAuthorities()) {
             String groupName = grantedAuth.getAuthority().toUpperCase();
@@ -103,6 +123,16 @@ public class AccessControlService {
         return false;
     }
 
-
+    public static List<String> getGroups(Authentication auth) {
+        List<String> groups = new ArrayList<>();
+        if (auth != null) {
+            for (GrantedAuthority grantedAuth: auth.getAuthorities()) {
+                String authName = grantedAuth.getAuthority().toUpperCase();
+                if (authName.startsWith("ROLE_")) authName = authName.substring(5);
+                groups.add(authName);
+            }
+        }
+        return groups;
+    }
 
 }
