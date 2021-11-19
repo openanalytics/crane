@@ -24,9 +24,14 @@ public class CraneConfig {
 
     private String openidIssuerUri;
 
+    private String openidRolesClaim;
+
+    private String openidUsernameClaim;
+
     private Map<String, Repository> repositories;
 
     private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
+
 
     @PostConstruct
     public void init() {
@@ -95,6 +100,30 @@ public class CraneConfig {
             .collect(Collectors.toMap(
                 Repository::getName,
                 it -> it));
+    }
+
+    public boolean hasOpenidRolesClaim() {
+        return openidRolesClaim != null && !openidRolesClaim.isEmpty();
+    }
+
+    public void setOpenidRolesClaim(String openidRolesClaim) {
+        this.openidRolesClaim = openidRolesClaim;
+    }
+
+    public String getOpenidRolesClaim() {
+        return openidRolesClaim;
+    }
+
+    public boolean hasOpenidUsernameClaim() {
+        return openidUsernameClaim != null && !openidUsernameClaim.isEmpty();
+    }
+
+    public String getOpenidUsernameClaim() {
+        return openidUsernameClaim;
+    }
+
+    public void setOpenidUsernameClaim(String openidUsernameClaim) {
+        this.openidUsernameClaim = openidUsernameClaim;
     }
 }
 

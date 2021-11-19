@@ -5,15 +5,18 @@ import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
 import java.util.ArrayList;
@@ -27,15 +30,10 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     private final CraneConfig config;
 
-    private final Environment environment;
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final static String PROP_OPENID_ROLES_CLAIM = "app.openid-roles-claim";
-
-    public WebSecurity(CraneConfig config, Environment environment) {
+    public WebSecurity(CraneConfig config) {
         this.config = config;
-        this.environment = environment;
     }
 
     @Override
@@ -56,65 +54,58 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
             .and()
             .oauth2Login()
                 .userInfoEndpoint()
-                .userAuthoritiesMapper(createAuthoritiesMapper())
+                    .userAuthoritiesMapper(new NullAuthoritiesMapper())
+                    .oidcUserService(oidcUserService())
                 .and()
             .and()
                 .oauth2Client();
         // @formatter:on
-
    }
+
+    private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+        // Use a custom UserService that respects our username attribute config and extract the authorities from the ID token
+        return new OidcUserService() {
+            @Override
+            public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+                Object claimValue = userRequest.getIdToken().getClaims().get(config.getOpenidRolesClaim());
+                Set<GrantedAuthority> mappedAuthorities = mapAuthorities( config.getOpenidRolesClaim(), claimValue);
+
+                return new DefaultOidcUser(mappedAuthorities,
+                    userRequest.getIdToken(),
+                    config.getOpenidUsernameClaim()
+                );
+            }
+        };
+    }
 
     /**
      * Authorities mapper when an Oauth2 JWT is used.
      * I.e. when the user is authenticated by passing an OAuth2 Access token as Bearer token in the Authorization header.
      */
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        String rolesClaimName = environment.getProperty(PROP_OPENID_ROLES_CLAIM);
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            if (rolesClaimName == null || rolesClaimName.isEmpty()) {
+            if (!config.hasOpenidRolesClaim()) {
                 return new ArrayList<>();
             }
-            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-            Object claimValue = jwt.getClaims().get(rolesClaimName);
-            mapAuthorities(mappedAuthorities, rolesClaimName, claimValue);
-            return mappedAuthorities;
+            Object claimValue = jwt.getClaims().get(config.getOpenidRolesClaim());
+            return mapAuthorities( config.getOpenidRolesClaim(), claimValue);
         });
+        converter.setPrincipalClaimName(config.getOpenidUsernameClaim());
         return converter;
     }
 
     /**
-     * Authorities mapper when OpenID is used.
-     * I.e. when the user is authenticated in the browser, using a Java session.
-     */
-    private GrantedAuthoritiesMapper createAuthoritiesMapper() {
-        String rolesClaimName = environment.getProperty(PROP_OPENID_ROLES_CLAIM);
-        if (rolesClaimName == null || rolesClaimName.isEmpty()) {
-            return authorities -> authorities;
-        } else {
-            return authorities -> {
-                Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-                for (GrantedAuthority auth: authorities) {
-                    if (auth instanceof OidcUserAuthority) {
-                        OidcIdToken idToken = ((OidcUserAuthority) auth).getIdToken();
-
-                        Object claimValue = idToken.getClaims().get(rolesClaimName);
-                        mapAuthorities(mappedAuthorities, rolesClaimName, claimValue);
-                    }
-                }
-                return mappedAuthorities;
-            };
-        }
-    }
-
-    /**
      * Maps the roles provided in the claimValue to {@link GrantedAuthority}.
+     * @return
      */
-    private void mapAuthorities(Set<GrantedAuthority> mappedAuthorities, String rolesClaimName, Object claimValue) {
+    private Set<GrantedAuthority> mapAuthorities(String rolesClaimName, Object claimValue) {
+        Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
         for (String role: parseRolesClaim(rolesClaimName, claimValue)) {
             String mappedRole = role.toUpperCase().startsWith("ROLE_") ? role : "ROLE_" + role;
             mappedAuthorities.add(new SimpleGrantedAuthority(mappedRole.toUpperCase()));
         }
+        return mappedAuthorities;
     }
 
     /**
