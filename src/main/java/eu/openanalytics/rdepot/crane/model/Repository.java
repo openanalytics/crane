@@ -1,6 +1,7 @@
 package eu.openanalytics.rdepot.crane.model;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Repository {
 
@@ -9,6 +10,8 @@ public class Repository {
     private List<String> accessUsers;
     private String accessExpression;
     private Boolean isPublic = false;
+
+    private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
 
     public String getName() {
         return name;
@@ -60,5 +63,21 @@ public class Repository {
 
     public void setPublic(Boolean isPublic) {
         this.isPublic = isPublic;
+    }
+
+    public void validate() {
+        if (name == null) {
+            throw new RuntimeException("Repository has no name");
+        }
+
+        // restrict Repository name in order to limit chances of path traversal
+        if (!namePattern.matcher(name).matches()) {
+            throw new RuntimeException(String.format("Repository name %s contains invalid characters", name));
+        }
+
+        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
+        }
+
     }
 }

@@ -37,6 +37,7 @@ public class CraneConfig {
         if (openidIssuerUri == null) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.openid-issuer-uri not set");
         }
+        repositories.values().forEach(Repository::validate);
     }
 
     public String getStorageLocation() {
