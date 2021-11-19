@@ -2,6 +2,7 @@ package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.Repository;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,16 @@ public class AccessControlService {
             return false;
         }
 
-        if (repositoryIsPublic(repository)) {
+        if (repository.getPublic()) {
+            return true;
+        }
+
+        if (auth instanceof AnonymousAuthenticationToken) {
+            // no anonymous users allowed beyond this stage
+            return false;
+        }
+
+        if (repositoryAllowsAnyLoggedInUser(repository)) {
             return true;
         }
 
@@ -44,7 +54,7 @@ public class AccessControlService {
         return false;
     }
 
-    public boolean repositoryIsPublic(Repository repository) {
+    public boolean repositoryAllowsAnyLoggedInUser(Repository repository) {
         return !repository.hasGroupAccess()
             && !repository.hasUserAccess()
             && !repository.hasExpressionAccess();

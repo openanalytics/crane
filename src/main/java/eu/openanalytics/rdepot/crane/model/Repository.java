@@ -8,6 +8,7 @@ public class Repository {
     private List<String> accessGroups;
     private List<String> accessUsers;
     private String accessExpression;
+    private Boolean isPublic = false;
 
     public String getName() {
         return name;
@@ -53,4 +54,11 @@ public class Repository {
         return accessExpression != null && accessExpression.length() > 0;
     }
 
+    public Boolean getPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
 }
