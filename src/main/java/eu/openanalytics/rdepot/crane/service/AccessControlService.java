@@ -51,6 +51,10 @@ public class AccessControlService {
             return true;
         }
 
+        if (allowedByUsers(auth, repository)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -67,6 +71,19 @@ public class AccessControlService {
         }
         for (String group : spec.getAccessGroups()) {
             if (isMember(auth, group)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean allowedByUsers(Authentication auth, Repository repository) {
+        if (!repository.hasUserAccess()) {
+            // no users defined -> this user has no access based on the users
+            return false;
+        }
+        for (String user : repository.getAccessUsers()) {
+            if (auth.getName().equals(user)) {
                 return true;
             }
         }
