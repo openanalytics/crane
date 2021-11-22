@@ -159,6 +159,8 @@ the integrated Authorization Server of RDepot is used.
     app:
       storage-location: /opt/rdepot/repo/
       openid-issuer-uri: http://localhost:8080
+      repositories:
+       - name: myrepo
 
     spring:
       security:
@@ -242,6 +244,8 @@ the integrated Authorization Server of RDepot is used.
     app:
       storage-location: /opt/rdepot/repo/
       openid-issuer-uri: https://keycloak.ledfan.be/auth/realms/master
+      repositories:
+       - name: myrepo
 
     spring:
       security:
@@ -274,6 +278,67 @@ the integrated Authorization Server of RDepot is used.
     **Note**: it is important to use `127.0.0.1` rather than `localhost` as the Spring Authorization server blocks requests with a redirect uri from `localhost`.
 
 10. try the Device Code flow using Keycloak
+
+### Authorization
+
+By default, Crane only requires the user to be authenticated when accessing a
+repository. However, it is possible to configure additional requirements.
+
+See this example:
+
+```yaml
+repositories:
+- name: bio
+  access-groups:
+    - test
+    - operators
+  access-users:
+    - "jack"
+  access-expression: "#{claims.getOrDefault('country', '').equals('Belgium')}"
+- name: chem
+  public: true
+- name: internal
+```
+
+, which corresponds to these rules:
+
+- the `bio` repo accessed by any user that satisfies one of the following
+  requirements:
+  - is part of the `test` group
+  - OR is part of the `operators` group
+  - OR has the username `jack`
+  - OR has the claim country with value `Belgium`
+- the `chem` repo is a public repo and can be accessed by any anonymous or
+  authenticated user.
+- the `internal` repo can be accessed by any authenticated user.
+
+It is not required to specify all three `access-` properties at the same time.
+More documentation on the `access-expression` property can be found on the
+[ShinyProxy website](https://shinyproxy.io/documentation/spel/#access-expression).
+The context in which the expression is evaluated contains the following objects:
+
+- `groups` a `List` with the groups of the user
+- `claims` a `Map` with th claims of the user.
+
+  **Note:** when the user is
+  authenticated using OpenID these are the claims present in the OpenID token.
+  When the user is authenticated using an OAuth2 Access Token provided in the
+  `Authorization` header, these are the claims present in that Access Token.
+- `repository` the `Repository` object the user is currently trying to access.
+
+By default, the username of the user is extracted from the `preferred_username`
+claim, this can be changed using the `app.openid-username-claim` property.
+Similarly, by default no groups are extracted from the token. Specify the
+`app.openid-groups-claim` with the name of the claim that contains the groups
+(or roles). For example:
+
+```yaml
+app:
+  storage-location: /opt/rdepot/repo/
+  openid-issuer-uri: https://keycloak.ledfan.be/auth/realms/master
+  openid-groups-claim: realm_roles
+  openid-username-claim: email
+```
 
 ## Notes
 
