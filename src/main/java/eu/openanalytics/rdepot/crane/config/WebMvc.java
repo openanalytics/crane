@@ -18,7 +18,6 @@ public class WebMvc implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // TODO name may not contain / or .
         for (Repository repository : config.getRepositories()) {
             registry
                 .addResourceHandler(String.format("/repo/%s/**", repository.getName()))

@@ -24,9 +24,9 @@ public class CraneConfig {
 
     private String openidIssuerUri;
 
-    private String openidRolesClaim;
+    private String openidGroupsClaim;
 
-    private String openidUsernameClaim;
+    private String openidUsernameClaim = "preferred_username";
 
     private Map<String, Repository> repositories;
 
@@ -102,20 +102,16 @@ public class CraneConfig {
                 it -> it));
     }
 
-    public boolean hasOpenidRolesClaim() {
-        return openidRolesClaim != null && !openidRolesClaim.isEmpty();
+    public boolean hasOpenidGroupsClaim() {
+        return openidGroupsClaim != null && !openidGroupsClaim.isEmpty();
     }
 
-    public void setOpenidRolesClaim(String openidRolesClaim) {
-        this.openidRolesClaim = openidRolesClaim;
+    public void setOpenidGroupsClaim(String openidGroupsClaim) {
+        this.openidGroupsClaim = openidGroupsClaim;
     }
 
-    public String getOpenidRolesClaim() {
-        return openidRolesClaim;
-    }
-
-    public boolean hasOpenidUsernameClaim() {
-        return openidUsernameClaim != null && !openidUsernameClaim.isEmpty();
+    public String getOpenidGroupsClaim() {
+        return openidGroupsClaim;
     }
 
     public String getOpenidUsernameClaim() {

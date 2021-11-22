@@ -67,8 +67,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         return new OidcUserService() {
             @Override
             public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
-                Object claimValue = userRequest.getIdToken().getClaims().get(config.getOpenidRolesClaim());
-                Set<GrantedAuthority> mappedAuthorities = mapAuthorities( config.getOpenidRolesClaim(), claimValue);
+                Object claimValue = userRequest.getIdToken().getClaims().get(config.getOpenidGroupsClaim());
+                Set<GrantedAuthority> mappedAuthorities = mapAuthorities( claimValue);
 
                 return new DefaultOidcUser(mappedAuthorities,
                     userRequest.getIdToken(),
@@ -85,23 +85,23 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            if (!config.hasOpenidRolesClaim()) {
+            if (!config.hasOpenidGroupsClaim()) {
                 return new ArrayList<>();
             }
-            Object claimValue = jwt.getClaims().get(config.getOpenidRolesClaim());
-            return mapAuthorities( config.getOpenidRolesClaim(), claimValue);
+            Object claimValue = jwt.getClaims().get(config.getOpenidGroupsClaim());
+            return mapAuthorities( claimValue);
         });
         converter.setPrincipalClaimName(config.getOpenidUsernameClaim());
         return converter;
     }
 
     /**
-     * Maps the roles provided in the claimValue to {@link GrantedAuthority}.
+     * Maps the groups provided in the claimValue to {@link GrantedAuthority}.
      * @return
      */
-    private Set<GrantedAuthority> mapAuthorities(String rolesClaimName, Object claimValue) {
+    private Set<GrantedAuthority> mapAuthorities(Object claimValue) {
         Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-        for (String role: parseRolesClaim(rolesClaimName, claimValue)) {
+        for (String role: parseGroupsClaim( claimValue)) {
             String mappedRole = role.toUpperCase().startsWith("ROLE_") ? role : "ROLE_" + role;
             mappedAuthorities.add(new SimpleGrantedAuthority(mappedRole.toUpperCase()));
         }
@@ -109,15 +109,15 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     }
 
     /**
-     * Parses the claim containing the roles to a List of Strings.
-     * See #25549 and TestOpenIdParseClaimRoles
+     * Parses the claim containing the groups to a List of Strings.
      */
-    private List<String> parseRolesClaim(String rolesClaimName, Object claimValue) {
+    private List<String> parseGroupsClaim(Object claimValue) {
+        String groupsClaimName = config.getOpenidGroupsClaim();
         if (claimValue == null) {
-            logger.debug(String.format("No roles claim with name %s found", rolesClaimName));
+            logger.debug(String.format("No groups claim with name %s found", groupsClaimName));
             return new ArrayList<>();
         } else {
-            logger.debug(String.format("Matching claim found: %s -> %s (%s)", rolesClaimName, claimValue, claimValue.getClass()));
+            logger.debug(String.format("Matching claim found: %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
         }
 
         if (claimValue instanceof Collection) {
@@ -127,7 +127,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                     result.add(object.toString());
                 }
             }
-            logger.debug(String.format("Parsed roles claim as Java Collection: %s -> %s (%s)", rolesClaimName, result, result.getClass()));
+            logger.debug(String.format("Parsed groups claim as Java Collection: %s -> %s (%s)", groupsClaimName, result, result.getClass()));
             return result;
         }
 
@@ -141,13 +141,13 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 }
             } catch (ParseException e) {
                 // Unable to parse JSON
-                logger.debug(String.format("Unable to parse claim as JSON: %s -> %s (%s)", rolesClaimName, claimValue, claimValue.getClass()));
+                logger.debug(String.format("Unable to parse claim as JSON: %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
             }
-            logger.debug(String.format("Parsed roles claim as JSON: %s -> %s (%s)", rolesClaimName, result, result.getClass()));
+            logger.debug(String.format("Parsed groups claim as JSON: %s -> %s (%s)", groupsClaimName, result, result.getClass()));
             return result;
         }
 
-        logger.debug(String.format("No parser found for roles claim (unsupported type): %s -> %s (%s)", rolesClaimName, claimValue, claimValue.getClass()));
+        logger.debug(String.format("No parser found for groups claim (unsupported type): %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
         return new ArrayList<>();
     }
 
