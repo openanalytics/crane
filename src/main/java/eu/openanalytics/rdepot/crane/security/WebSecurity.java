@@ -43,8 +43,11 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
             .csrf().disable()
             .authorizeRequests()
                 .antMatchers("/.well-known/configured-openid-configuration").permitAll()
+                .antMatchers("/actuator/health").anonymous()
+                .antMatchers("/actuator/health/readiness").anonymous()
+                .antMatchers("/actuator/health/liveness").anonymous()
                 .antMatchers("/{repoName}/**").access("@accessControlService.canAccess(authentication, #repoName)")
-                .anyRequest().authenticated()
+            .anyRequest().authenticated()
             .and()
             .oauth2ResourceServer()
                 .jwt()
@@ -60,7 +63,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
             .and()
                 .oauth2Client();
         // @formatter:on
-   }
+    }
 
     private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
         // Use a custom UserService that respects our username attribute config and extract the authorities from the ID token
@@ -68,7 +71,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
             @Override
             public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
                 Object claimValue = userRequest.getIdToken().getClaims().get(config.getOpenidGroupsClaim());
-                Set<GrantedAuthority> mappedAuthorities = mapAuthorities( claimValue);
+                Set<GrantedAuthority> mappedAuthorities = mapAuthorities(claimValue);
 
                 return new DefaultOidcUser(mappedAuthorities,
                     userRequest.getIdToken(),
@@ -89,7 +92,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 return new ArrayList<>();
             }
             Object claimValue = jwt.getClaims().get(config.getOpenidGroupsClaim());
-            return mapAuthorities( claimValue);
+            return mapAuthorities(claimValue);
         });
         converter.setPrincipalClaimName(config.getOpenidUsernameClaim());
         return converter;
@@ -97,11 +100,12 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     /**
      * Maps the groups provided in the claimValue to {@link GrantedAuthority}.
+     *
      * @return
      */
     private Set<GrantedAuthority> mapAuthorities(Object claimValue) {
         Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-        for (String role: parseGroupsClaim( claimValue)) {
+        for (String role : parseGroupsClaim(claimValue)) {
             String mappedRole = role.toUpperCase().startsWith("ROLE_") ? role : "ROLE_" + role;
             mappedAuthorities.add(new SimpleGrantedAuthority(mappedRole.toUpperCase()));
         }

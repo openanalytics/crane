@@ -10,12 +10,15 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.util.Map;
+import java.util.Properties;
 
 @SpringBootApplication
 public class CraneApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CraneApplication.class, args);
+        SpringApplication app = new SpringApplication(CraneApplication.class);
+        app.setDefaultProperties(getDefaultProperties());
+        app.run(args);
     }
 
     @EventListener
@@ -27,5 +30,27 @@ public class CraneApplication {
             .getHandlerMethods();
         map.forEach((key, value) -> System.out.printf("%s, %s \n", key, value));
     }
+
+
+    private static Properties getDefaultProperties() {
+        Properties properties = new Properties();
+
+        // Health configuration
+        // ====================
+        
+        properties.put("management.server.port", "9090");
+
+        // disable ldap health endpoint
+        properties.put("management.health.ldap.enabled", false);
+        // disable default redis health endpoint since it's managed by redisSession
+        properties.put("management.health.redis.enabled", false);
+        // enable Kubernetes probes
+        properties.put("management.endpoint.health.probes.enabled", true);
+
+        // ====================
+
+        return properties;
+    }
+
 
 }
