@@ -12,6 +12,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class CraneConfig {
 
     private String openidUsernameClaim = "preferred_username";
 
-    private Map<String, Repository> repositories;
+    private Map<String, Repository> repositories = new HashMap<>();
 
     private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
 
@@ -42,6 +43,11 @@ public class CraneConfig {
         if (openidIssuerUri == null) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.openid-issuer-uri not set");
         }
+
+        if (repositories.size() == 0) {
+            throw new IllegalArgumentException("Incorrect configuration detected: no repositories configured");
+        }
+
         repositories.values().forEach(Repository::validate);
     }
 
