@@ -20,7 +20,7 @@ public class WebMvc implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         for (Repository repository : config.getRepositories()) {
             registry
-                .addResourceHandler(String.format("/repo/%s/**", repository.getName()))
+                .addResourceHandler(String.format("/%s/**", repository.getName()))
                 .addResourceLocations(String.format("file://%s/%s/", config.getStorageLocation(), repository.getName()));
         }
     }
