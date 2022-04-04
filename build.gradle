@@ -1,8 +1,8 @@
 plugins {
-	id 'org.springframework.boot' version '2.5.2'
+	id 'org.springframework.boot' version '2.5.12'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-        id 'maven-publish'
+	id 'maven-publish'
 }
 
 group = 'eu.openanalytics.rdepot'
@@ -19,6 +19,15 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// ---------
+	// additional mitigations for CVE-2022-22965, can probably removed when upgrading Spring to a new version
+	implementation 'org.apache.tomcat.embed:tomcat-embed-core:9.0.62'
+	implementation 'org.apache.tomcat.embed:tomcat-embed-el:9.0.62'
+	implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.62'
+	implementation 'org.apache.tomcat:tomcat-annotations-api:9.0.62'
+	// ---------
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
@@ -33,40 +42,40 @@ test {
 }
 
 bootJar {
-    archiveClassifier = ''
-    archiveVersion = version
-    manifest {
-        attributes( 'Implementation-Title': 'crane',
-                    'Implementation-Version': version)
-    }
+	archiveClassifier = ''
+	archiveVersion = version
+	manifest {
+		attributes('Implementation-Title': 'crane',
+				'Implementation-Version': version)
+	}
 }
 
 
 publishing {
-    publications {
-        jarFile(MavenPublication) {
-            artifact bootJar
-            groupId group
-            artifactId 'crane'
-            version version
-        }
-        //jarFile(MavenPublication) {
-            //artifact jar
-            //groupId rootProject.group + '.crane'
-            //artifactId 'crane'
-            //version baseVersion
-        //}
-    }
-    repositories {
-                maven {
-                        def releasesRepoUrl = "https://nexus.openanalytics.eu/repository/releases"
-                        def snapshotsRepoUrl = "https://nexus.openanalytics.eu/repository/snapshots"
-                        url = version.contains('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-                        credentials {
-                                username = System.getenv("OA_NEXUS_USER")
-                                password = System.getenv("OA_NEXUS_PWD")
-                        }
-                }
-        }
+	publications {
+		jarFile(MavenPublication) {
+			artifact bootJar
+			groupId group
+			artifactId 'crane'
+			version version
+		}
+		//jarFile(MavenPublication) {
+		//artifact jar
+		//groupId rootProject.group + '.crane'
+		//artifactId 'crane'
+		//version baseVersion
+		//}
+	}
+	repositories {
+		maven {
+			def releasesRepoUrl = "https://nexus.openanalytics.eu/repository/releases"
+			def snapshotsRepoUrl = "https://nexus.openanalytics.eu/repository/snapshots"
+			url = version.contains('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+			credentials {
+				username = System.getenv("OA_NEXUS_USER")
+				password = System.getenv("OA_NEXUS_PWD")
+			}
+		}
+	}
 }
 
