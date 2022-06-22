@@ -14,9 +14,13 @@ pipeline {
         stage('build and deploy to nexus') {
             steps {
                 container('builder') {
-                    withCredentials([usernamePassword(credentialsId: 'oa-jenkins', usernameVariable: 'OA_NEXUS_USER', passwordVariable: 'OA_NEXUS_PWD')]) {
-                        sh './gradlew publish'
+
+                    configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
+
+                        sh 'mvn -B -s $MAVEN_SETTINGS_RSB -U clean install deploy -DskipTests=true'
+
                     }
+
                 }
             }
         }

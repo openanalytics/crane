@@ -1,15 +1,28 @@
+/**
+ * Crane
+ *
+ * Copyright (C) 2021-2022 Open Analytics
+ *
+ * ===========================================================================
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Apache License as published by
+ * The Apache Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * Apache License for more details.
+ *
+ * You should have received a copy of the Apache License
+ * along with this program.  If not, see <http://www.apache.org/licenses/>
+ */
 package eu.openanalytics.rdepot.crane;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import java.util.Map;
 import java.util.Properties;
 
 @SpringBootApplication
@@ -21,23 +34,12 @@ public class CraneApplication {
         app.run(args);
     }
 
-    @EventListener
-    public void handleContextRefresh(ContextRefreshedEvent event) {
-        ApplicationContext applicationContext = event.getApplicationContext();
-        RequestMappingHandlerMapping requestMappingHandlerMapping = applicationContext
-            .getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
-        Map<RequestMappingInfo, HandlerMethod> map = requestMappingHandlerMapping
-            .getHandlerMethods();
-        map.forEach((key, value) -> System.out.printf("%s, %s \n", key, value));
-    }
-
-
     private static Properties getDefaultProperties() {
         Properties properties = new Properties();
 
         // Health configuration
         // ====================
-        
+
         properties.put("management.server.port", "9090");
 
         // disable ldap health endpoint
