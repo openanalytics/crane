@@ -27,6 +27,8 @@ import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -65,12 +67,16 @@ public class AccessControlService {
             return true;
         }
 
+        if (allowedByNetwork(auth, repository)) {
+            return true;
+        }
+
         if (auth instanceof AnonymousAuthenticationToken) {
             // no anonymous users allowed beyond this stage
             return false;
         }
 
-        if (repositoryAllowsAnyLoggedInUser(repository)) {
+        if (repository.isAccessAnyAuthenticatedUser()) {
             return true;
         }
 
@@ -87,12 +93,6 @@ public class AccessControlService {
         }
 
         return false;
-    }
-
-    public boolean repositoryAllowsAnyLoggedInUser(Repository repository) {
-        return !repository.hasGroupAccess()
-            && !repository.hasUserAccess()
-            && !repository.hasExpressionAccess();
     }
 
     public boolean allowedByGroups(Authentication auth, Repository spec) {
@@ -120,6 +120,24 @@ public class AccessControlService {
         }
         return false;
     }
+
+    public boolean allowedByNetwork(Authentication auth, Repository repository) {
+        if (!repository.hasNetworkAccess()) {
+            // no ip address ranges defined -> this user has no access based on ip address
+            return false;
+        }
+        WebAuthenticationDetails details = (WebAuthenticationDetails) auth.getDetails();
+        if (details == null) {
+            return false;
+        }
+        for (IpAddressMatcher matcher : repository.getAccessNetworkMatchers()) {
+            if (matcher.matches(details.getRemoteAddress())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public boolean allowedByExpression(Authentication auth, Repository repository) {
         if (!repository.hasExpressionAccess()) {

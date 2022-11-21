@@ -20,14 +20,20 @@
  */
 package eu.openanalytics.rdepot.crane.model;
 
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
+
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Repository {
 
     private String name;
     private List<String> accessGroups;
     private List<String> accessUsers;
+    private boolean accessAnyAuthenticatedUser;
+    private List<String> accessNetwork;
+    private List<IpAddressMatcher> accessNetworkMatchers;
     private String accessExpression;
     private Boolean isPublic = false;
 
@@ -57,6 +63,20 @@ public class Repository {
         this.accessUsers = accessUsers;
     }
 
+    public List<String> getAccessNetwork() {
+        return accessNetwork;
+    }
+
+    public void setAccessNetwork(List<String> accessIpRanges) {
+        this.accessNetwork = accessIpRanges;
+        this.accessNetworkMatchers = accessIpRanges.stream()
+            .map(IpAddressMatcher::new).collect(Collectors.toList());;
+    }
+
+    public List<IpAddressMatcher> getAccessNetworkMatchers() {
+        return accessNetworkMatchers;
+    }
+
     public String getAccessExpression() {
         return accessExpression;
     }
@@ -73,6 +93,10 @@ public class Repository {
         return accessUsers != null && accessUsers.size() > 0;
     }
 
+    public boolean hasNetworkAccess() {
+        return accessNetwork != null && accessNetwork.size() > 0;
+    }
+
     public boolean hasExpressionAccess() {
         return accessExpression != null && accessExpression.length() > 0;
     }
@@ -85,6 +109,14 @@ public class Repository {
         this.isPublic = isPublic;
     }
 
+    public void setAccessAnyAuthenticatedUser(boolean accessAnyAuthenticatedUser) {
+        this.accessAnyAuthenticatedUser = accessAnyAuthenticatedUser;
+    }
+
+    public boolean isAccessAnyAuthenticatedUser() {
+        return accessAnyAuthenticatedUser;
+    }
+
     public void validate() {
         if (name == null) {
             throw new RuntimeException("Repository has no name");
@@ -95,9 +127,17 @@ public class Repository {
             throw new RuntimeException(String.format("Repository name %s contains invalid characters", name));
         }
 
-        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
+        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
             throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
         }
 
+        if (isAccessAnyAuthenticatedUser() && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add user-based access control properties to a repo that allows any authenticated user", name));
+        }
+
+        if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
+            accessAnyAuthenticatedUser = true;
+        }
     }
+
 }
