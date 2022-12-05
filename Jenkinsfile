@@ -14,12 +14,14 @@ pipeline {
         stage('Build spring-aws dependency') {
             steps {
                 container('builder') {
-                    git branch: 'backport_353_to_2_4_2', url: 'https://github.com/LEDfan/spring-cloud-aws'
-                    
-                    configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
+                    dir("../spring-aws") {
+                        git branch: 'backport_353_to_2_4_2', url: 'https://github.com/LEDfan/spring-cloud-aws'
 
-                        sh 'mvn -B -s $MAVEN_SETTINGS_RSB -U clean install -DskipTests=true'
+                        configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
 
+                            sh 'mvn -B -s $MAVEN_SETTINGS_RSB -U clean install -DskipTests=true'
+
+                        }
                     }
                 }
             }
