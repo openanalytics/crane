@@ -65,7 +65,7 @@ public class ResourceServerConfig {
             resourceHttpRequestHandler.setResourceResolvers(List.of(new PathResourceResolver()));
             resourceHttpRequestHandler.afterPropertiesSet();
 
-            urlMap.put("/bio/**", (request, response) -> {
+            urlMap.put(String.format("/%s/**", repository.getName()), (request, response) -> {
                 // if (request.getServletPath().endsWith("/")) {
                 // TODO generate + server index file
                 // }

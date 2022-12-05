@@ -20,17 +20,10 @@
  */
 package eu.openanalytics.rdepot.crane;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import io.awspring.cloud.core.io.s3.SimpleStorageProtocolResolver;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import javax.annotation.PostConstruct;
 import java.util.Properties;
 
 @EnableWebMvc
@@ -41,17 +34,6 @@ public class CraneApplication {
         SpringApplication app = new SpringApplication(CraneApplication.class);
         app.setDefaultProperties(getDefaultProperties());
         app.run(args);
-    }
-
-    @Autowired
-    private ResourceLoader resourceLoader;
-
-    @PostConstruct
-    public void configureS3() {
-        final AmazonS3 s3 = AmazonS3ClientBuilder.standard().build();
-        if (DefaultResourceLoader.class.isAssignableFrom(resourceLoader.getClass())) {
-            ((DefaultResourceLoader) resourceLoader).addProtocolResolver(new SimpleStorageProtocolResolver(s3));
-        }
     }
 
     private static Properties getDefaultProperties() {
@@ -73,6 +55,5 @@ public class CraneApplication {
 
         return properties;
     }
-
 
 }
