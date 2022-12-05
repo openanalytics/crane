@@ -76,8 +76,12 @@ public class CraneConfig {
     }
 
     public void setStorageLocation(String storageLocation) {
+        if (storageLocation.startsWith("s3://")) {
+            this.storageLocation = storageLocation;
+            return;
+        }
         if (!storageLocation.startsWith("/") || !storageLocation.endsWith("/")) {
-            throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location must start and end with /");
+            throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location must either start and end with / or start with s3://");
         }
         File path = new File(storageLocation);
         if (!path.exists() || !path.isDirectory()) {
@@ -148,5 +152,3 @@ public class CraneConfig {
         this.openidUsernameClaim = openidUsernameClaim;
     }
 }
-
-
