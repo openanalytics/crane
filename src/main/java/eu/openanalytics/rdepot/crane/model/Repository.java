@@ -36,6 +36,7 @@ public class Repository {
     private List<IpAddressMatcher> accessNetworkMatchers;
     private String accessExpression;
     private Boolean isPublic = false;
+    private String indexFileName = "index.html";
 
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
 
@@ -115,6 +116,14 @@ public class Repository {
 
     public boolean isAccessAnyAuthenticatedUser() {
         return accessAnyAuthenticatedUser;
+    }
+
+    public String getIndexFileName() {
+        return indexFileName;
+    }
+
+    public void setIndexFileName(String indexFileName) {
+        this.indexFileName = indexFileName;
     }
 
     public void validate() {

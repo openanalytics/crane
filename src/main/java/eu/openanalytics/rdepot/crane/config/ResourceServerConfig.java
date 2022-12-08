@@ -66,10 +66,12 @@ public class ResourceServerConfig {
             resourceHttpRequestHandler.afterPropertiesSet();
 
             urlMap.put(String.format("/%s/**", repository.getName()), (request, response) -> {
-                // if (request.getServletPath().endsWith("/")) {
-                // TODO generate + server index file
-                // }
-                resourceHttpRequestHandler.handleRequest(request, response);
+                if (request.getServletPath().endsWith("/")) {
+                    // TODO allow generate to index file
+                    request.getRequestDispatcher(request.getServletPath() + repository.getIndexFileName()).forward(request, response);
+                } else {
+                    resourceHttpRequestHandler.handleRequest(request, response);
+                }
             });
         }
 
