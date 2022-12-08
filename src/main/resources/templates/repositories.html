@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crane</title>
+</head>
+<body>
+<div class="container">
+    <h1>Repositories</h1>
+    <a th:href="@{${loginUrl}}" th:if="${!authenticated}">
+        Login to see all repositories.
+    </a>
+    <p th:if="${repositories.isEmpty()}">You do not have access to any repository.</p>
+    <ul>
+        <li th:each="repository: ${repositories}">
+            <a th:href="@{${repository} + '/'}" th:text="${repository}"></a>
+        </li>
+    </ul>
+</div>
+</body>
+
+<style>
+    h1 {
+        margin-bottom: 20px;
+        margin-top: 20px;
+        font-size: 30px;
+        font-family: inherit;
+        font-weight: 500;
+        line-height: 1.1;
+        color: inherit;
+    }
+
+    .container {
+        width: 1170px;
+        padding-right: 15px;
+        padding-left: 15px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #333;
+        background-color: #fff;
+    }
+
+    a {
+        color: #337ab7;
+        text-decoration: none;
+    }
+
+</style>
+</html>

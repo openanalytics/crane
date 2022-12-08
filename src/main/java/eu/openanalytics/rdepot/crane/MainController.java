@@ -21,22 +21,60 @@
 package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.service.AccessControlService;
+import eu.openanalytics.rdepot.crane.service.UserService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class MainController {
 
-    @Autowired
-    private CraneConfig config;
+    private final CraneConfig config;
+
+    private final AccessControlService accessControlService;
+
+    private final UserService userService;
+
+    public MainController(CraneConfig config, AccessControlService accessControlService, UserService userService) {
+        this.config = config;
+        this.accessControlService = accessControlService;
+        this.userService = userService;
+    }
 
     @GetMapping("/.well-known/configured-openid-configuration")
     public void getOpenIdConfigurationUrl(HttpServletResponse response) {
         response.setHeader("Location", config.getConfiguredOpenIdMetadataUrl());
         response.setStatus(302);
+    }
+
+    @GetMapping(value = "/", produces = "text/html")
+    public String getRepositoriesAsHtml(ModelMap map) {
+        Authentication user = SecurityContextHolder.getContext().getAuthentication();
+        boolean authenticated = userService.isAuthenticated();
+
+        List<String> repositories = config.getRepositories().stream()
+            .filter(r -> accessControlService.canAccess(user, r))
+            .map(Repository::getName)
+            .collect(Collectors.toList());
+
+        if (repositories.size() == 0 && !authenticated) {
+            // no repositories found and not authenticated -> ask the user to login
+            return "redirect:" + userService.getLoginUrl();
+        }
+
+        map.put("repositories", repositories);
+        map.put("authenticated", authenticated);
+        map.put("loginUrl", userService.getLoginUrl());
+
+        return "repositories";
     }
 
 }
