@@ -49,6 +49,8 @@ public class CraneConfig {
 
     private String openidUsernameClaim = "preferred_username";
 
+    private String templatePath;
+
     private Map<String, Repository> repositories = new HashMap<>();
 
     private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
@@ -150,5 +152,16 @@ public class CraneConfig {
 
     public void setOpenidUsernameClaim(String openidUsernameClaim) {
         this.openidUsernameClaim = openidUsernameClaim;
+    }
+
+    public String getTemplatePath() {
+        return templatePath;
+    }
+
+    public void setTemplatePath(String templatePath) {
+        if (!templatePath.endsWith("/")) {
+            throw new IllegalArgumentException("Incorrect configuration detected: app.template-path must end with /");
+        }
+        this.templatePath = templatePath;
     }
 }
