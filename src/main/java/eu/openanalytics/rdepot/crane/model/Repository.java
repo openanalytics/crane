@@ -37,6 +37,7 @@ public class Repository {
     private String accessExpression;
     private Boolean isPublic = false;
     private String indexFileName = "index.html";
+    private List<CacheRule> cache;
 
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
 
@@ -147,6 +148,14 @@ public class Repository {
         if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
             accessAnyAuthenticatedUser = true;
         }
+    }
+
+    public List<CacheRule> getCache() {
+        return cache;
+    }
+
+    public void setCache(List<CacheRule> cache) {
+        this.cache = cache;
     }
 
 }

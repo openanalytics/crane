@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.rdepot.crane.config;
 
+import eu.openanalytics.rdepot.crane.ResourceRequestHandler;
 import eu.openanalytics.rdepot.crane.model.Repository;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -64,15 +65,7 @@ public class ResourceServerConfig {
             }
             resourceHttpRequestHandler.setResourceResolvers(List.of(new PathResourceResolver()));
             resourceHttpRequestHandler.afterPropertiesSet();
-
-            urlMap.put(String.format("/%s/**", repository.getName()), (request, response) -> {
-                if (request.getServletPath().endsWith("/")) {
-                    // TODO allow generate to index file
-                    request.getRequestDispatcher(request.getServletPath() + repository.getIndexFileName()).forward(request, response);
-                } else {
-                    resourceHttpRequestHandler.handleRequest(request, response);
-                }
-            });
+            urlMap.put(String.format("/%s/**", repository.getName()), new ResourceRequestHandler(repository, resourceHttpRequestHandler));
         }
 
         return new SimpleUrlHandlerMapping(urlMap);
