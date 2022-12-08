@@ -69,6 +69,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers("/{repoName}/**").access("@accessControlService.canAccess(authentication, #repoName)")
             .anyRequest().authenticated()
             .and()
+                .exceptionHandling().accessDeniedPage("/access-denied")
+            .and()
             .oauth2ResourceServer()
                 .jwt()
                     .jwkSetUri(config.getJwksUri())
