@@ -39,10 +39,12 @@ public class ResourceRequestHandler implements HttpRequestHandler {
     private final Repository repository;
     private final ResourceHttpRequestHandler resourceHttpRequestHandler;
     private final Map<AntPathRequestMatcher, String> cacheRules;
+    private final RedirectIfDirectoryHandler redirectIfDirectoryHandler;
 
-    public ResourceRequestHandler(Repository repository, ResourceHttpRequestHandler resourceHttpRequestHandler) {
+    public ResourceRequestHandler(Repository repository, ResourceHttpRequestHandler resourceHttpRequestHandler, RedirectIfDirectoryHandler redirectIfDirectoryHandler) {
         this.repository = repository;
         this.resourceHttpRequestHandler = resourceHttpRequestHandler;
+        this.redirectIfDirectoryHandler = redirectIfDirectoryHandler;
         this.cacheRules = new HashMap<>();
 
         if (repository.getCache() != null) {
@@ -60,10 +62,13 @@ public class ResourceRequestHandler implements HttpRequestHandler {
         if (request.getServletPath().endsWith("/")) {
             // TODO allow to generate index file
             request.getRequestDispatcher(request.getServletPath() + repository.getIndexFileName()).forward(request, response);
-        } else {
-            addCachingHeaders(request, response);
-            resourceHttpRequestHandler.handleRequest(request, response);
+            return;
         }
+        if (redirectIfDirectoryHandler.handleRequest(request, response)) {
+            return;
+        }
+        addCachingHeaders(request, response);
+        resourceHttpRequestHandler.handleRequest(request, response);
     }
 
     private void addCachingHeaders(HttpServletRequest request, HttpServletResponse response) {

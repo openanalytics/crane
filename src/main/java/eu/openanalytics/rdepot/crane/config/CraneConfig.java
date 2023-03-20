@@ -43,6 +43,8 @@ public class CraneConfig {
 
     private String storageLocation;
 
+    private String storageHandler;
+
     private String openidIssuerUri;
 
     private String openidGroupsClaim;
@@ -73,23 +75,34 @@ public class CraneConfig {
         repositories.values().forEach(Repository::validate);
     }
 
+    /**
+     * The location where the repos are stored.
+     *
+     * @return absolute path to where the repos are stored. Guaranteed to start and end with /.
+     */
     public String getStorageLocation() {
         return storageLocation;
     }
 
     public void setStorageLocation(String storageLocation) {
-        if (storageLocation.startsWith("s3://")) {
-            this.storageLocation = storageLocation;
+        if (storageLocation.startsWith("s3:/")) {
+            String path = storageLocation.replaceFirst("s3:/", "");
+            if (!path.startsWith("/") || !path.endsWith("/")) {
+                throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location must either start and end with / OR start with s3:// and end with /");
+            }
+            this.storageLocation = path;
+            storageHandler = "s3:/";
             return;
         }
         if (!storageLocation.startsWith("/") || !storageLocation.endsWith("/")) {
-            throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location must either start and end with / or start with s3://");
+            throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location must either start and end with / OR start with s3:// and end with /");
         }
         File path = new File(storageLocation);
         if (!path.exists() || !path.isDirectory()) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location does not exists or is not a directory");
         }
         this.storageLocation = storageLocation;
+        storageHandler = "file://";
     }
 
     public String getOpenidIssuerUri() {
@@ -163,5 +176,9 @@ public class CraneConfig {
             throw new IllegalArgumentException("Incorrect configuration detected: app.template-path must end with /");
         }
         this.templatePath = templatePath;
+    }
+
+    public String getStorageHandler() {
+        return storageHandler;
     }
 }
