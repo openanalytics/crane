@@ -22,20 +22,39 @@ package eu.openanalytics.rdepot.crane.config;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import io.awspring.cloud.core.io.s3.PathMatchingSimpleStorageResourcePatternResolver;
 import io.awspring.cloud.core.io.s3.SimpleStorageProtocolResolver;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 @Configuration
 public class S3Config {
 
+    private AmazonS3 s3 = null;
+
     public S3Config(ResourceLoader resourceLoader, CraneConfig craneConfig) {
-        if (craneConfig.getStorageLocation().startsWith("s3://")) {
-            final AmazonS3 s3 = AmazonS3ClientBuilder.standard().build();
+        if (craneConfig.getStorageHandler().equals("s3:/")) {
+            s3 = AmazonS3ClientBuilder.standard().build();
             if (DefaultResourceLoader.class.isAssignableFrom(resourceLoader.getClass())) {
                 ((DefaultResourceLoader) resourceLoader).addProtocolResolver(new SimpleStorageProtocolResolver(s3));
             }
         }
+
     }
+
+    @Bean
+    @Primary
+    public ResourcePatternResolver resourcePatternResolver(CraneConfig craneConfig) {
+        ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+        if (craneConfig.getStorageHandler().equals("s3:/")) {
+            return new PathMatchingSimpleStorageResourcePatternResolver(s3, resourcePatternResolver);
+        }
+        return resourcePatternResolver;
+    }
+
 }

@@ -20,10 +20,17 @@
  */
 package eu.openanalytics.rdepot.crane.config;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import eu.openanalytics.rdepot.crane.RedirectIfDirectoryHandler;
+import eu.openanalytics.rdepot.crane.ResourceRequestHandler;
 import eu.openanalytics.rdepot.crane.model.Repository;
+import io.awspring.cloud.core.io.s3.PathMatchingSimpleStorageResourcePatternResolver;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.resource.PathResourceResolver;
@@ -50,29 +57,23 @@ public class ResourceServerConfig {
     }
 
     @Bean
-    public SimpleUrlHandlerMapping handler() throws Exception {
+    public SimpleUrlHandlerMapping handler(ResourcePatternResolver resourcePatternResolver) throws Exception {
         Map<String, HttpRequestHandler> urlMap = new LinkedHashMap<>();
 
         for (Repository repository : config.getRepositories()) {
+            RedirectIfDirectoryHandler redirectIfDirectoryHandler = new RedirectIfDirectoryHandler(
+                resourcePatternResolver,
+                config.getStorageHandler(),
+                String.format("%s%s/", config.getStorageLocation(), repository.getName()));
+
             ResourceHttpRequestHandler resourceHttpRequestHandler = new ResourceHttpRequestHandler();
             resourceHttpRequestHandler.setApplicationContext(applicationContext);
             resourceHttpRequestHandler.setServletContext(servletContext);
-            if (config.getStorageLocation().startsWith("s3://")) {
-                resourceHttpRequestHandler.setLocationValues(List.of(String.format("%s/%s/", config.getStorageLocation(), repository.getName())));
-            } else {
-                resourceHttpRequestHandler.setLocationValues(List.of(String.format("file://%s/%s/", config.getStorageLocation(), repository.getName())));
-            }
+            resourceHttpRequestHandler.setLocationValues(List.of(String.format("%s%s%s/", config.getStorageHandler(), config.getStorageLocation(), repository.getName())));
             resourceHttpRequestHandler.setResourceResolvers(List.of(new PathResourceResolver()));
             resourceHttpRequestHandler.afterPropertiesSet();
 
-            urlMap.put(String.format("/%s/**", repository.getName()), (request, response) -> {
-                if (request.getServletPath().endsWith("/")) {
-                    // TODO allow generate to index file
-                    request.getRequestDispatcher(request.getServletPath() + repository.getIndexFileName()).forward(request, response);
-                } else {
-                    resourceHttpRequestHandler.handleRequest(request, response);
-                }
-            });
+            urlMap.put(String.format("/%s/**", repository.getName()), new ResourceRequestHandler(repository, resourceHttpRequestHandler, redirectIfDirectoryHandler));
         }
 
         return new SimpleUrlHandlerMapping(urlMap);
