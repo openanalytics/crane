@@ -21,6 +21,7 @@
 package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.model.Repository;
+import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -55,6 +57,8 @@ public class CraneConfig {
     private String openidUsernameClaim = "preferred_username";
 
     private String templatePath;
+
+    private URI s3Endpoint;
 
     private Map<String, Repository> repositories = new HashMap<>();
 
@@ -82,9 +86,17 @@ public class CraneConfig {
         repositories.values().forEach(Repository::validate);
 
         if (storageLocation.startsWith("s3://")) {
+            if (s3Endpoint == null) {
+                s3Endpoint = new URI("https:///");
+            }
+
+            final Map<String, String> env = new HashMap<>();
+            env.put(S3Factory.PROTOCOL, s3Endpoint.getScheme());
+
             String bucket = new URI(storageLocation).getAuthority();
-            try (FileSystem fs = FileSystems.newFileSystem(URI.create("s3://" + bucket), new HashMap<>(), Thread.currentThread().getContextClassLoader())) {
-                root = fs.getPath(new URI(storageLocation).getPath());
+
+            try (FileSystem fs = FileSystems.newFileSystem(URI.create("s3:" + s3Endpoint.getSchemeSpecificPart()), env, Thread.currentThread().getContextClassLoader())) {
+                root = fs.getPath(new URI("/" + bucket).getPath());
             }
         } else {
             FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
@@ -181,6 +193,17 @@ public class CraneConfig {
             throw new IllegalArgumentException("Incorrect configuration detected: app.template-path must end with /");
         }
         this.templatePath = templatePath;
+    }
+
+    public URI getS3Endpoint() {
+        return s3Endpoint;
+    }
+
+    public void setS3Endpoint(URI s3Endpoint) {
+        if (!Objects.equals(s3Endpoint.getScheme(), "http") && !Objects.equals(s3Endpoint.getScheme(), "https")) {
+            throw new IllegalArgumentException("Incorrect configuration detected: app.s3-endpoint must start with http:// or https://");
+        }
+        this.s3Endpoint = s3Endpoint;
     }
 
 }

@@ -23,6 +23,7 @@ package eu.openanalytics.rdepot.crane;
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.CacheRule;
 import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.service.IndexPageService;
 import org.apache.tika.Tika;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
@@ -59,7 +60,7 @@ public class FileController {
     private final ResourceHttpMessageConverter resourceHttpMessageConverter = new ResourceHttpMessageConverter();
     private final Path root;
 
-    public FileController(CraneConfig config) {
+    public FileController(CraneConfig config, IndexPageService indexPageService) {
         this.config = config;
         root = config.getRoot();
         cacheRules = new HashMap<>();
@@ -94,9 +95,14 @@ public class FileController {
             return;
         }
 
-        if (request.getRequestURI().endsWith("/")) {
-            // TODO allow to generate index file
-            request.getRequestDispatcher(request.getServletPath() + repo.getIndexFileName()).forward(request, response);
+        if (request.getRequestURI().endsWith("/") || request.getRequestURI().endsWith("/" + repo.getIndexFileName())) {
+            if (request.getRequestURI().endsWith("/" + repo.getIndexFileName())) {
+                request.setAttribute("path", path.get().getParent());
+            } else {
+                request.setAttribute("path", path.get());
+            }
+            request.setAttribute("repo", repo);
+            request.getRequestDispatcher("/__index").forward(request, response);
             return;
         }
 
