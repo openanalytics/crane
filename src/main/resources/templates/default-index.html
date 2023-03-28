@@ -1,0 +1,14 @@
+<table>
+    <tr>
+        <th>Filename</th>
+        <th>Last Modified time</th>
+        <th>Size</th>
+    </tr>
+
+    <tr th:each="file : ${files}">
+        <td th:text="${file.fileName}"></td>
+        <td th:text="${file.lastModifiedTime}"></td>
+        <td th:text="${file.size}"></td>
+    </tr>
+
+</table>
