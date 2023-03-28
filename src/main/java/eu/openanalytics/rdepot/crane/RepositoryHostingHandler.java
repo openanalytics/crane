@@ -20,10 +20,8 @@
  */
 package eu.openanalytics.rdepot.crane;
 
-import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.CacheRule;
 import eu.openanalytics.rdepot.crane.model.Repository;
-import eu.openanalytics.rdepot.crane.service.IndexPageService;
 import org.apache.tika.Tika;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
@@ -32,9 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.HandlerMapping;
 
@@ -52,42 +48,30 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@Controller
-public class FileController {
+public class RepositoryHostingHandler implements HttpRequestHandler {
 
-    private final CraneConfig config;
-    private final Map<String, Map<AntPathRequestMatcher, String>> cacheRules;
     private final ResourceHttpMessageConverter resourceHttpMessageConverter = new ResourceHttpMessageConverter();
-    private final Path root;
+    private final Path repositoryRoot;
+    private final Repository repository;
+    private final Map<AntPathRequestMatcher, String> cacheRules;
 
-    public FileController(CraneConfig config, IndexPageService indexPageService) {
-        this.config = config;
-        root = config.getRoot();
-        cacheRules = new HashMap<>();
+    public RepositoryHostingHandler(Repository repository, Path repositoryRoot) {
+        this.repository = repository;
+        this.repositoryRoot = repositoryRoot;
+        this.cacheRules = new HashMap<>();
 
-        for (Repository repository : config.getRepositories()) {
-            Map<AntPathRequestMatcher, String> repoCacheRules = new HashMap<>();
-            if (repository.getCache() != null) {
-                for (CacheRule cache : repository.getCache()) {
-                    repoCacheRules.put(
-                        new AntPathRequestMatcher(cache.getPattern()),
-                        CacheControl.maxAge(cache.getMaxAge()).getHeaderValue()
-                    );
-                }
+        if (repository.getCache() != null) {
+            for (CacheRule cache : repository.getCache()) {
+                cacheRules.put(
+                    new AntPathRequestMatcher(cache.getPattern()),
+                    CacheControl.maxAge(cache.getMaxAge()).getHeaderValue()
+                );
             }
-            cacheRules.put(repository.getName(), repoCacheRules);
         }
     }
 
-    @GetMapping("/{repoName}/**")
-    public void downloadFile(@PathVariable("repoName") String repoName, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        Repository repo = config.getRepository(repoName);
-        if (repo == null) {
-            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.FORBIDDEN.value());
-            request.getRequestDispatcher("/error").forward(request, response);
-            return;
-        }
-
+    @Override
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Optional<Path> path = getPath(request);
         if (path.isEmpty()) {
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
@@ -95,13 +79,13 @@ public class FileController {
             return;
         }
 
-        if (request.getRequestURI().endsWith("/") || request.getRequestURI().endsWith("/" + repo.getIndexFileName())) {
-            if (request.getRequestURI().endsWith("/" + repo.getIndexFileName())) {
+        if (request.getRequestURI().endsWith("/") || request.getRequestURI().endsWith("/" + repository.getIndexFileName())) {
+            if (request.getRequestURI().endsWith("/" + repository.getIndexFileName())) {
                 request.setAttribute("path", path.get().getParent());
             } else {
                 request.setAttribute("path", path.get());
             }
-            request.setAttribute("repo", repo);
+            request.setAttribute("repo", repository);
             request.getRequestDispatcher("/__index").forward(request, response);
             return;
         }
@@ -131,7 +115,7 @@ public class FileController {
         }
 
         InputStreamResource resource = new InputStreamResource(Files.newInputStream(path.get()));
-        addCachingHeaders(request, response, repo);
+        addCachingHeaders(request, response);
 
         ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
         MediaType mediaType = getMediaType(path.get());
@@ -145,31 +129,32 @@ public class FileController {
             return Optional.empty();
         }
 
-        File file = new File(path);
-        if (!file.isAbsolute()) {
-            // path should be an absolute path
+        Path file = Path.of(path);
+        if (file.isAbsolute()) {
+            // path should be a relative path
             return Optional.empty();
         }
 
+        // TODO test this
+        File absolutePath = new File( "/" + path);
+
         try {
-            String canonicalPath = file.getCanonicalPath();
+            String canonicalPath = absolutePath.getCanonicalPath();
             if (!new File(canonicalPath).isAbsolute()) {
-                // canonicalPath should be an absolute path
                 return Optional.empty();
             }
-            if (!file.getAbsolutePath().equals(canonicalPath)) {
-                // possible path traversal attack
+            if (!absolutePath.getAbsolutePath().equals(canonicalPath)) {
                 return Optional.empty();
             }
         } catch (IOException e) {
             return Optional.empty();
         }
 
-        return Optional.of(root.resolve(path.replaceFirst("/", "")));
+        return Optional.of(repositoryRoot.resolve(path));
     }
 
-    private void addCachingHeaders(HttpServletRequest request, HttpServletResponse response, Repository repo) {
-        for (Map.Entry<AntPathRequestMatcher, String> cacheRule : cacheRules.get(repo.getName()).entrySet()) {
+    private void addCachingHeaders(HttpServletRequest request, HttpServletResponse response) {
+        for (Map.Entry<AntPathRequestMatcher, String> cacheRule : cacheRules.entrySet()) {
             if (cacheRule.getKey().matches(request)) {
                 response.setHeader("Cache-Control", cacheRule.getValue());
                 break;

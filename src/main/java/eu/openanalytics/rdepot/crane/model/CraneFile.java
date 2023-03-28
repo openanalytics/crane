@@ -1,36 +1,44 @@
+/**
+ * Crane
+ *
+ * Copyright (C) 2021-2022 Open Analytics
+ *
+ * ===========================================================================
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Apache License as published by
+ * The Apache Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * Apache License for more details.
+ *
+ * You should have received a copy of the Apache License
+ * along with this program.  If not, see <http://www.apache.org/licenses/>
+ */
 package eu.openanalytics.rdepot.crane.model;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 
-public class CraneFile {
+public class CraneFile implements CraneResource {
 
-    private final String fileName;
+    private final String name;
 
     private final Instant lastModifiedTime;
 
     private final Long size;
 
-    public CraneFile(String fileName, Instant lastModifiedTime, Long size) {
-        this.fileName = fileName;
+    public CraneFile(String name, Instant lastModifiedTime, Long size) {
+        this.name = name;
         this.lastModifiedTime = lastModifiedTime;
         this.size = size;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public static CraneFile createFromPath(Path path) {
-        try {
-            BasicFileAttributes basicFileAttributes = Files.readAttributes(path, BasicFileAttributes.class);
-            return new CraneFile(path.getFileName().toString(), basicFileAttributes.lastModifiedTime().toInstant(), basicFileAttributes.size());
-        } catch (IOException e) {
-            return null;
-        }
+    @Override
+    public String getName() {
+        return name;
     }
 
     public Instant getLastModifiedTime() {
