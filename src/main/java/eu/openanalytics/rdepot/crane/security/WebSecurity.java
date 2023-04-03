@@ -67,6 +67,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers("/actuator/health/readiness").anonymous()
                 .antMatchers("/actuator/health/liveness").anonymous()
                 .antMatchers("/").permitAll()
+                .antMatchers("/__index/webjars/**").permitAll()
                 .antMatchers("/{repoName}/**").access("@accessControlService.canAccess(authentication, #repoName)")
                 .anyRequest().authenticated()
             .and()

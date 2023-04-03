@@ -79,28 +79,15 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
             return;
         }
 
-        if (request.getRequestURI().endsWith("/") || request.getRequestURI().endsWith("/" + repository.getIndexFileName())) {
-            if (request.getRequestURI().endsWith("/" + repository.getIndexFileName())) {
-                request.setAttribute("path", path.get().getParent());
-            } else {
-                request.setAttribute("path", path.get());
-            }
-            request.setAttribute("repo", repository);
-            request.getRequestDispatcher("/__index").forward(request, response);
-            return;
-        }
-
         if (!Files.exists(path.get())) {
-            // maybe a directory?
-            try {
-                try (Stream<Path> dirListing = Files.list(path.get())) {
-                    if (dirListing.findFirst().isPresent()) {
-                        response.sendRedirect(request.getRequestURI() + "/");
-                        return;
-                    }
+            if (path.get().endsWith(repository.getIndexFileName())) {
+                Path directory = path.get().getParent();
+                if (Files.isDirectory(directory)) {
+                    request.setAttribute("path", directory);
+                    request.setAttribute("repo", repository);
+                    request.getRequestDispatcher("/__index").forward(request, response);
+                    return;
                 }
-            } catch (NoSuchFileException ex) {
-                // no-op
             }
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
             request.getRequestDispatcher("/error").forward(request, response);
@@ -150,7 +137,13 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
             return Optional.empty();
         }
 
-        return Optional.of(repositoryRoot.resolve(path));
+        // TODO is it save to use path?
+        if (request.getRequestURI().endsWith("/")) {
+            return Optional.of(repositoryRoot.resolve(path).resolve(repository.getIndexFileName()));
+        } else {
+            return Optional.of(repositoryRoot.resolve(path));
+        }
+
     }
 
     private void addCachingHeaders(HttpServletRequest request, HttpServletResponse response) {

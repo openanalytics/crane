@@ -20,25 +20,14 @@
  */
 package eu.openanalytics.rdepot.crane.model;
 
-import eu.openanalytics.rdepot.crane.util.FileSize;
-
-import java.time.Instant;
-
-public class CraneFile implements CraneResource {
+public class CraneDirectory implements CraneResource {
 
     private final String name;
+    private final String path;
 
-    private final Instant lastModifiedTime;
-
-    private final Long size;
-
-    private final String formattedSize;
-
-    public CraneFile(String name, Instant lastModifiedTime, Long size) {
+    public CraneDirectory(String name, String path) {
         this.name = name;
-        this.lastModifiedTime = lastModifiedTime;
-        this.size = size;
-        this.formattedSize = FileSize.bytesToHumanReadableBinary(size);
+        this.path = path;
     }
 
     @Override
@@ -46,16 +35,8 @@ public class CraneFile implements CraneResource {
         return name;
     }
 
-    public Instant getLastModifiedTime() {
-        return lastModifiedTime;
+    public String getPath() {
+        // path relative to crane root
+        return path;
     }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public String getFormattedSize() {
-        return formattedSize;
-    }
-
 }
