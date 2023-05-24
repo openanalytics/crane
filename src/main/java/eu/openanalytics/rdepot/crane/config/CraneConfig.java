@@ -21,6 +21,7 @@
 package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.model.Repository;
+import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
@@ -29,12 +30,18 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -42,8 +49,6 @@ import java.util.stream.Collectors;
 public class CraneConfig {
 
     private String storageLocation;
-
-    private String storageHandler;
 
     private String openidIssuerUri;
 
@@ -53,13 +58,19 @@ public class CraneConfig {
 
     private String templatePath;
 
+    private URI s3Endpoint;
+
     private Map<String, Repository> repositories = new HashMap<>();
 
     private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
+    private Path root;
 
+    public Path getRoot() {
+        return root;
+    }
 
     @PostConstruct
-    public void init() {
+    public void init() throws IOException, URISyntaxException {
         if (storageLocation == null) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location not set");
         }
@@ -73,25 +84,32 @@ public class CraneConfig {
         }
 
         repositories.values().forEach(Repository::validate);
-    }
 
-    /**
-     * The location where the repos are stored.
-     *
-     * @return absolute path to where the repos are stored. Guaranteed to start and end with /.
-     */
-    public String getStorageLocation() {
-        return storageLocation;
+        if (storageLocation.startsWith("s3://")) {
+            if (s3Endpoint == null) {
+                s3Endpoint = new URI("https:///");
+            }
+
+            final Map<String, String> env = new HashMap<>();
+            env.put(S3Factory.PROTOCOL, s3Endpoint.getScheme());
+
+            String bucket = new URI(storageLocation).getAuthority();
+
+            try (FileSystem fs = FileSystems.newFileSystem(URI.create("s3:" + s3Endpoint.getSchemeSpecificPart()), env, Thread.currentThread().getContextClassLoader())) {
+                root = fs.getPath(new URI("/" + bucket).getPath());
+            }
+        } else {
+            FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
+            root = fs.getPath(new URI(storageLocation).getPath());
+        }
     }
 
     public void setStorageLocation(String storageLocation) {
-        if (storageLocation.startsWith("s3:/")) {
-            String path = storageLocation.replaceFirst("s3:/", "");
-            if (!path.startsWith("/") || !path.endsWith("/")) {
+        if (storageLocation.startsWith("s3://")) {
+            if (!storageLocation.startsWith("s3://") || !storageLocation.endsWith("/")) {
                 throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location must either start and end with / OR start with s3:// and end with /");
             }
-            this.storageLocation = path;
-            storageHandler = "s3:/";
+            this.storageLocation = storageLocation; // TODO
             return;
         }
         if (!storageLocation.startsWith("/") || !storageLocation.endsWith("/")) {
@@ -101,8 +119,7 @@ public class CraneConfig {
         if (!path.exists() || !path.isDirectory()) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location does not exists or is not a directory");
         }
-        this.storageLocation = storageLocation;
-        storageHandler = "file://";
+        this.storageLocation = storageLocation; // TODO
     }
 
     public String getOpenidIssuerUri() {
@@ -178,7 +195,15 @@ public class CraneConfig {
         this.templatePath = templatePath;
     }
 
-    public String getStorageHandler() {
-        return storageHandler;
+    public URI getS3Endpoint() {
+        return s3Endpoint;
     }
+
+    public void setS3Endpoint(URI s3Endpoint) {
+        if (!Objects.equals(s3Endpoint.getScheme(), "http") && !Objects.equals(s3Endpoint.getScheme(), "https")) {
+            throw new IllegalArgumentException("Incorrect configuration detected: app.s3-endpoint must start with http:// or https://");
+        }
+        this.s3Endpoint = s3Endpoint;
+    }
+
 }
