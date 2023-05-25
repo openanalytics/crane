@@ -22,6 +22,8 @@ package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.model.Repository;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
@@ -43,10 +45,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.model.StsException;
 
 @Component
 @ConfigurationProperties(prefix = "app")
 public class CraneConfig {
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     private String storageLocation;
 
@@ -86,6 +92,15 @@ public class CraneConfig {
         repositories.values().forEach(Repository::validate);
 
         if (storageLocation.startsWith("s3://")) {
+            try (StsClient client = StsClient.create()) {
+                try {
+                    logger.info("Using AWS identity: " + client.getCallerIdentity().arn());
+                } catch (StsException exception) {
+                    logger.info("Not authenticated with AWS, enable debug logs in case this unexpected.");
+                    logger.debug("Not authenticated with AWS", exception);
+                }
+            }
+
             if (s3Endpoint == null) {
                 s3Endpoint = new URI("https:///");
             }
