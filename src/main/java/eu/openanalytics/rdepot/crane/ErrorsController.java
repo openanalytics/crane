@@ -92,8 +92,9 @@ public class ErrorsController implements ErrorController {
     }
 
     @RequestMapping(value = "/logout-success", method = RequestMethod.GET)
-    public String getLogoutSuccessPage(HttpServletRequest request, HttpServletResponse response) {
+    public String getLogoutSuccessPage(HttpServletResponse response, ModelMap map) {
         setNoCacheHeader(response);
+        map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
         return "logout-success";
     }
 
