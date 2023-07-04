@@ -20,7 +20,6 @@
  */
 package eu.openanalytics.rdepot.crane.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.ClientAuthorizationException;
@@ -45,16 +44,19 @@ import java.time.Duration;
 
 public class OpenIdReAuthorizeFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
+    private final OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
-    @Autowired
-    private OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
+    private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
 
     private final Clock clock = Clock.systemUTC();
 
     // use clock skew of 40 seconds instead of 60 seconds. Otherwise, if the access token is valid for 1 minute, it would get refreshed at each request.
     private final Duration clockSkew = Duration.ofSeconds(40);
+
+    public OpenIdReAuthorizeFilter(OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager, OAuth2AuthorizedClientService oAuth2AuthorizedClientService) {
+        this.oAuth2AuthorizedClientService = oAuth2AuthorizedClientService;
+        this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
+    }
 
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain chain) throws ServletException, IOException {
