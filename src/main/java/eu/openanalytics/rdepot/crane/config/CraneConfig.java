@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.rdepot.crane.config;
 
+import eu.openanalytics.rdepot.crane.model.CacheRule;
 import eu.openanalytics.rdepot.crane.model.Repository;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.slf4j.Logger;
@@ -73,6 +74,8 @@ public class CraneConfig {
     private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
     private Path root;
 
+    private List<CacheRule> defaultCache;
+
     public Path getRoot() {
         return root;
     }
@@ -92,6 +95,13 @@ public class CraneConfig {
         }
 
         repositories.values().forEach(Repository::validate);
+        if (defaultCache != null) {
+            repositories.values().forEach(r -> {
+                if (r.getCache() == null) {
+                    r.setCache(defaultCache);
+                }
+            });
+        }
 
         if (storageLocation.startsWith("s3://")) {
             try (StsClient client = StsClient.create()) {
@@ -229,5 +239,13 @@ public class CraneConfig {
 
     public void setOpenidLogoutUrl(String openidLogoutUrl) {
         this.openidLogoutUrl = openidLogoutUrl;
+    }
+
+    public List<CacheRule> getDefaultCache() {
+        return defaultCache;
+    }
+
+    public void setDefaultCache(List<CacheRule> defaultCache) {
+        this.defaultCache = defaultCache;
     }
 }
