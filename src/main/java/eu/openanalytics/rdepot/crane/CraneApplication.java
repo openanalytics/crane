@@ -20,8 +20,15 @@
  */
 package eu.openanalytics.rdepot.crane;
 
+import eu.openanalytics.rdepot.crane.security.OpenIdReAuthorizeFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.filter.OrderedRequestContextFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Properties;
@@ -34,6 +41,21 @@ public class CraneApplication {
         SpringApplication app = new SpringApplication(CraneApplication.class);
         app.setDefaultProperties(getDefaultProperties());
         app.run(args);
+    }
+
+    @Bean
+    public OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager(ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientRepository clientRepository) {
+        return new DefaultOAuth2AuthorizedClientManager(clientRegistrationRepository, clientRepository);
+    }
+
+    @Bean
+    public OpenIdReAuthorizeFilter openIdReAuthorizeFilter() {
+        return new OpenIdReAuthorizeFilter();
+    }
+
+    @Bean
+    public OrderedRequestContextFilter orderedRequestContextFilter() {
+        return new OrderedRequestContextFilter();
     }
 
     private static Properties getDefaultProperties() {

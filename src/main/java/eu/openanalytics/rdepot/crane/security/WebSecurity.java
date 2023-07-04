@@ -21,10 +21,13 @@
 package eu.openanalytics.rdepot.crane.security;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
+import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
+import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -38,6 +41,9 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,10 +56,16 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     private final CraneConfig config;
 
+    private final OpenIdReAuthorizeFilter openIdReAuthorizeFilter;
+
+    private final SpecExpressionResolver specExpressionResolver;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public WebSecurity(CraneConfig config) {
+    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver) {
         this.config = config;
+        this.openIdReAuthorizeFilter = openIdReAuthorizeFilter;
+        this.specExpressionResolver = specExpressionResolver;
     }
 
     @Override
@@ -66,6 +78,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers("/actuator/health").anonymous()
                 .antMatchers("/actuator/health/readiness").anonymous()
                 .antMatchers("/actuator/health/liveness").anonymous()
+                .antMatchers("/logout-success").anonymous()
                 .antMatchers("/").permitAll()
                 .antMatchers("/__index/webjars/**").permitAll()
                 .antMatchers("/{repoName}/**").access("@accessControlService.canAccess(authentication, #repoName)")
@@ -85,8 +98,31 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                     .oidcUserService(oidcUserService())
                 .and()
             .and()
-                .oauth2Client();
+                .oauth2Client()
+            .and()
+                .logout()
+                .logoutSuccessHandler(getLogoutSuccessHandler())
+            .and()
+                .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class);
         // @formatter:on
+    }
+
+    public LogoutSuccessHandler getLogoutSuccessHandler() {
+        return (httpServletRequest, httpServletResponse, authentication) -> {
+            String resolvedLogoutUrl = "/logout-success";
+            if (config.getOpenidLogoutUrl() != null) {
+                if (authentication != null) {
+                    SpecExpressionContext context = SpecExpressionContext.create(authentication.getPrincipal(), authentication.getCredentials());
+                    resolvedLogoutUrl = specExpressionResolver.evaluateToString(config.getOpenidLogoutUrl(), context);
+                } else {
+                    resolvedLogoutUrl = config.getOpenidLogoutUrl();
+                }
+            }
+
+            SimpleUrlLogoutSuccessHandler delegate = new SimpleUrlLogoutSuccessHandler();
+            delegate.setDefaultTargetUrl(resolvedLogoutUrl);
+            delegate.onLogoutSuccess(httpServletRequest, httpServletResponse, authentication);
+        };
     }
 
     private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {

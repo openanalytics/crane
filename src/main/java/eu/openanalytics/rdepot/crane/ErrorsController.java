@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -57,7 +58,7 @@ public class ErrorsController implements ErrorController {
         return "error";
     }
 
-    @RequestMapping(value =     "/access-denied", produces = "text/html")
+    @RequestMapping(value = "/access-denied", produces = "text/html")
     public String handleAccessDeniedAsHtml(HttpServletRequest request, HttpServletResponse response, ModelMap map) {
         setNoCacheHeader(response);
         map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
@@ -88,6 +89,12 @@ public class ErrorsController implements ErrorController {
             put("code", 403);
             put("resource", request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH).toString());
         }};
+    }
+
+    @RequestMapping(value = "/logout-success", method = RequestMethod.GET)
+    public String getLogoutSuccessPage(HttpServletRequest request, HttpServletResponse response) {
+        setNoCacheHeader(response);
+        return "logout-success";
     }
 
     /**

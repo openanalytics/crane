@@ -52,11 +52,13 @@ import software.amazon.awssdk.services.sts.model.StsException;
 @ConfigurationProperties(prefix = "app")
 public class CraneConfig {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private String storageLocation;
 
     private String openidIssuerUri;
+
+    private String openidLogoutUrl;
 
     private String openidGroupsClaim;
 
@@ -221,4 +223,11 @@ public class CraneConfig {
         this.s3Endpoint = s3Endpoint;
     }
 
+    public String getOpenidLogoutUrl() {
+        return openidLogoutUrl;
+    }
+
+    public void setOpenidLogoutUrl(String openidLogoutUrl) {
+        this.openidLogoutUrl = openidLogoutUrl;
+    }
 }
