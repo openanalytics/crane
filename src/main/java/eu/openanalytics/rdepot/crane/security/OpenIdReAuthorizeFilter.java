@@ -62,18 +62,18 @@ public class OpenIdReAuthorizeFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain chain) throws ServletException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!(auth instanceof OAuth2AuthenticationToken)) {
-            logger.info(String.format("No session auth: %s", request.getServletPath()));
+            logger.debug(String.format("No session auth: %s", request.getServletPath()));
             chain.doFilter(request, response);
             return;
         }
 
         String secFetchMode = request.getHeader("Sec-Fetch-Mode");
         if (secFetchMode != null && !secFetchMode.equals("navigate")) {
-            logger.info(String.format("Not trying re-authorization: %s", request.getServletPath()));
+            logger.debug(String.format("Not trying re-authorization: %s", request.getServletPath()));
             chain.doFilter(request, response);
             return;
         }
-        logger.info(String.format("Trying re-authorization: %s", request.getServletPath()));
+        logger.debug(String.format("Trying re-authorization: %s", request.getServletPath()));
         String clientId = ((OAuth2AuthenticationToken) auth).getAuthorizedClientRegistrationId();
         OAuth2AuthorizedClient authorizedClient = oAuth2AuthorizedClientService.loadAuthorizedClient(clientId, auth.getName());
 
