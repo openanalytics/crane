@@ -120,10 +120,11 @@ public class CraneConfig {
             final Map<String, String> env = new HashMap<>();
             env.put(S3Factory.PROTOCOL, s3Endpoint.getScheme());
 
-            String bucket = new URI(storageLocation).getAuthority();
+            URI uri = new URI(storageLocation);
+            String path = new URI("/" + uri.getAuthority() + uri.getPath()).getPath();
 
             try (FileSystem fs = FileSystems.newFileSystem(URI.create("s3:" + s3Endpoint.getSchemeSpecificPart()), env, Thread.currentThread().getContextClassLoader())) {
-                root = fs.getPath(new URI("/" + bucket).getPath());
+                root = fs.getPath(path);
             }
         } else {
             FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
