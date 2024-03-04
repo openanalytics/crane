@@ -21,7 +21,7 @@
 package eu.openanalytics.rdepot.crane.service.spel;
 
 
-import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.AccessControlService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;

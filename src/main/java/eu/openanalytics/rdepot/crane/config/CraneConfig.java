@@ -20,8 +20,8 @@
  */
 package eu.openanalytics.rdepot.crane.config;
 
-import eu.openanalytics.rdepot.crane.model.CacheRule;
-import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.model.config.CacheRule;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

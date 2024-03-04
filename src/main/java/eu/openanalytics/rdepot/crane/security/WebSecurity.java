@@ -80,7 +80,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers("/logout-success").anonymous()
                 .antMatchers("/").permitAll()
                 .antMatchers("/__index/webjars/**").permitAll()
-                .antMatchers("/{repoName}/**").access("@accessControlService.canAccess(authentication, #repoName)")
+                .antMatchers("/{repoName}/**").access("@pathAccessControlService.canAccess(authentication, request)")
                 .anyRequest().authenticated()
             .and()
                 .exceptionHandling().accessDeniedPage("/access-denied")

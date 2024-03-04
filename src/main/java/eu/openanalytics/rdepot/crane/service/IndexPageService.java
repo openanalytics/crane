@@ -21,10 +21,10 @@
 package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import eu.openanalytics.rdepot.crane.model.CraneDirectory;
-import eu.openanalytics.rdepot.crane.model.CraneFile;
-import eu.openanalytics.rdepot.crane.model.CraneResource;
-import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
+import eu.openanalytics.rdepot.crane.model.runtime.CraneFile;
+import eu.openanalytics.rdepot.crane.model.runtime.CraneResource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -40,9 +40,11 @@ import java.util.stream.Stream;
 public class IndexPageService {
 
     private final CraneConfig config;
+    private final PathAccessControlService pathAccessControlService;
 
-    public IndexPageService(CraneConfig config) {
+    public IndexPageService(CraneConfig config, PathAccessControlService pathAccessControlService) {
         this.config = config;
+        this.pathAccessControlService = pathAccessControlService;
     }
 
     public String getTemplateName(Repository repository) {
@@ -55,7 +57,7 @@ public class IndexPageService {
 
         try (Stream<Path> dirListing = Files.list(path)) {
             dirListing.forEach(p -> {
-                CraneResource craneResource = CraneResource.createFromPath(p,config);
+                CraneResource craneResource = CraneResource.createFromPath(p, config);
                 if (craneResource == null) {
                     // TODO
                     return;
@@ -63,7 +65,10 @@ public class IndexPageService {
                 if (craneResource instanceof CraneFile) {
                     craneFiles.add((CraneFile) craneResource);
                 } else if (craneResource instanceof CraneDirectory) {
-                    craneDirectories.add((CraneDirectory) craneResource);
+                    CraneDirectory craneDirectory = (CraneDirectory) craneResource;
+                    if (pathAccessControlService.canAccess(repository, craneDirectory)) {
+                        craneDirectories.add(craneDirectory);
+                    }
                 } else {
                     // TODO
                 }
@@ -77,7 +82,6 @@ public class IndexPageService {
             breadcrumbs.add(0, CraneResource.createFromPath(current, config));
             current = current.getParent();
         }
-
 
         Map<String, Object> map = new HashMap<>();
         map.put("files", craneFiles);

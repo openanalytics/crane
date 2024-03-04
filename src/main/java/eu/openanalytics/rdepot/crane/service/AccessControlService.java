@@ -20,8 +20,8 @@
  */
 package eu.openanalytics.rdepot.crane.service;
 
-import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.model.config.PathComponent;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -37,28 +37,13 @@ import java.util.List;
 @Service
 public class AccessControlService {
 
-    private final CraneConfig craneConfig;
     private final SpecExpressionResolver specExpressionResolver;
 
-    public AccessControlService(CraneConfig craneConfig, SpecExpressionResolver specExpressionResolver) {
-        this.craneConfig = craneConfig;
+    public AccessControlService(SpecExpressionResolver specExpressionResolver) {
         this.specExpressionResolver = specExpressionResolver;
     }
 
-    public boolean canAccess(Authentication auth, String repositoryName) {
-        if (auth == null || repositoryName == null) {
-            return false;
-        }
-
-        Repository repository = craneConfig.getRepository(repositoryName);
-        if (repository == null) {
-            return false;
-        }
-
-        return canAccess(auth, repository);
-    }
-
-    public boolean canAccess(Authentication auth, Repository repository) {
+    public boolean canAccessRepository(Authentication auth, Repository repository) {
         if (auth == null || repository == null) {
             return false;
         }
@@ -67,7 +52,16 @@ public class AccessControlService {
             return true;
         }
 
-        if (allowedByNetwork(auth, repository)) {
+
+        return canAccess(auth, repository);
+    }
+
+    public boolean canAccess(Authentication auth, PathComponent PathComponent) {
+        if (auth == null || PathComponent == null) {
+            return false;
+        }
+
+        if (allowedByNetwork(auth, PathComponent)) {
             return true;
         }
 
@@ -76,31 +70,31 @@ public class AccessControlService {
             return false;
         }
 
-        if (repository.isAccessAnyAuthenticatedUser()) {
+        if (PathComponent.isAccessAnyAuthenticatedUser()) {
             return true;
         }
 
-        if (allowedByGroups(auth, repository)) {
+        if (allowedByGroups(auth, PathComponent)) {
             return true;
         }
 
-        if (allowedByUsers(auth, repository)) {
+        if (allowedByUsers(auth, PathComponent)) {
             return true;
         }
 
-        if (allowedByExpression(auth, repository)) {
+        if (allowedByExpression(auth, PathComponent)) {
             return true;
         }
 
         return false;
     }
 
-    public boolean allowedByGroups(Authentication auth, Repository spec) {
-        if (!spec.hasGroupAccess()) {
+    public boolean allowedByGroups(Authentication auth, PathComponent PathComponent) {
+        if (!PathComponent.hasGroupAccess()) {
             // no groups defined -> this user has no access based on the groups
             return false;
         }
-        for (String group : spec.getAccessGroups()) {
+        for (String group : PathComponent.getAccessGroups()) {
             if (isMember(auth, group)) {
                 return true;
             }
@@ -108,12 +102,12 @@ public class AccessControlService {
         return false;
     }
 
-    public boolean allowedByUsers(Authentication auth, Repository repository) {
-        if (!repository.hasUserAccess()) {
+    public boolean allowedByUsers(Authentication auth, PathComponent PathComponent) {
+        if (!PathComponent.hasUserAccess()) {
             // no users defined -> this user has no access based on the users
             return false;
         }
-        for (String user : repository.getAccessUsers()) {
+        for (String user : PathComponent.getAccessUsers()) {
             if (auth.getName().equals(user)) {
                 return true;
             }
@@ -121,8 +115,8 @@ public class AccessControlService {
         return false;
     }
 
-    public boolean allowedByNetwork(Authentication auth, Repository repository) {
-        if (!repository.hasNetworkAccess()) {
+    public boolean allowedByNetwork(Authentication auth, PathComponent PathComponent) {
+        if (!PathComponent.hasNetworkAccess()) {
             // no ip address ranges defined -> this user has no access based on ip address
             return false;
         }
@@ -130,7 +124,7 @@ public class AccessControlService {
         if (details == null) {
             return false;
         }
-        for (IpAddressMatcher matcher : repository.getAccessNetworkMatchers()) {
+        for (IpAddressMatcher matcher : PathComponent.getAccessNetworkMatchers()) {
             if (matcher.matches(details.getRemoteAddress())) {
                 return true;
             }
@@ -139,13 +133,13 @@ public class AccessControlService {
     }
 
 
-    public boolean allowedByExpression(Authentication auth, Repository repository) {
-        if (!repository.hasExpressionAccess()) {
+    public boolean allowedByExpression(Authentication auth, PathComponent PathComponent) {
+        if (!PathComponent.hasExpressionAccess()) {
             // no expression defined -> this user has no access based on the expression
             return false;
         }
-        SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), repository);
-        return specExpressionResolver.evaluateToBoolean(repository.getAccessExpression(), context);
+        SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), PathComponent);
+        return specExpressionResolver.evaluateToBoolean(PathComponent.getAccessExpression(), context);
     }
 
     public boolean isMember(Authentication auth, String group) {

@@ -18,15 +18,25 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.rdepot.crane.model;
+package eu.openanalytics.rdepot.crane.model.config;
 
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class Repository {
+/***
+ * Representation of a single component in a path, containing access-control and containing sub-components.
+ * E.g. in /my/path/filename, `my`, `path` and `filename` are all a component represented by this class.
+ * In order to represent a filesystem tree with access-control, this class contains sub-components.
+ */
+public class PathComponent {
+
+    private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
 
     private String name;
     private List<String> accessGroups;
@@ -35,11 +45,7 @@ public class Repository {
     private List<String> accessNetwork;
     private List<IpAddressMatcher> accessNetworkMatchers;
     private String accessExpression;
-    private Boolean isPublic = false;
-    private String indexFileName = "index.html";
-    private List<CacheRule> cache;
-
-    private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
+    private Map<String, PathComponent> components;
 
     public String getName() {
         return name;
@@ -47,6 +53,25 @@ public class Repository {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<PathComponent> getPaths() {
+        if (components != null) {
+            return new ArrayList<>(components.values());
+        }
+        return null;
+    }
+
+    public void setPaths(List<PathComponent> paths) {
+        this.components = paths.stream().collect(Collectors.toMap(PathComponent::getName, p -> p));
+    }
+
+    public boolean hasPaths() {
+        return components != null && !components.isEmpty();
+    }
+
+    public Optional<PathComponent> getPath(String name) {
+        return Optional.ofNullable(components.get(name));
     }
 
     public List<String> getAccessGroups() {
@@ -72,7 +97,7 @@ public class Repository {
     public void setAccessNetwork(List<String> accessIpRanges) {
         this.accessNetwork = accessIpRanges;
         this.accessNetworkMatchers = accessIpRanges.stream()
-            .map(IpAddressMatcher::new).collect(Collectors.toList());;
+            .map(IpAddressMatcher::new).collect(Collectors.toList());
     }
 
     public List<IpAddressMatcher> getAccessNetworkMatchers() {
@@ -103,14 +128,6 @@ public class Repository {
         return accessExpression != null && accessExpression.length() > 0;
     }
 
-    public Boolean getPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
     public void setAccessAnyAuthenticatedUser(boolean accessAnyAuthenticatedUser) {
         this.accessAnyAuthenticatedUser = accessAnyAuthenticatedUser;
     }
@@ -119,43 +136,29 @@ public class Repository {
         return accessAnyAuthenticatedUser;
     }
 
-    public String getIndexFileName() {
-        return indexFileName;
-    }
-
-    public void setIndexFileName(String indexFileName) {
-        this.indexFileName = indexFileName;
-    }
-
     public void validate() {
-        if (name == null) {
-            throw new RuntimeException("Repository has no name");
+        if (getName() == null) {
+            throw new RuntimeException("PathComponent has no name");
         }
 
         // restrict Repository name in order to limit chances of path traversal
-        if (!namePattern.matcher(name).matches()) {
-            throw new RuntimeException(String.format("Repository name %s contains invalid characters", name));
-        }
-
-        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
+        if (!namePattern.matcher(getName()).matches()) {
+            throw new RuntimeException(String.format("PathComponent name %s contains invalid characters", name));
         }
 
         if (isAccessAnyAuthenticatedUser() && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add user-based access control properties to a repo that allows any authenticated user", name));
+            throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot add user-based access control properties to a repo that allows any authenticated user", name));
         }
 
         if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
             accessAnyAuthenticatedUser = true;
         }
-    }
 
-    public List<CacheRule> getCache() {
-        return cache;
-    }
-
-    public void setCache(List<CacheRule> cache) {
-        this.cache = cache;
+        if (components != null) {
+            for (PathComponent component : components.values()) {
+                component.validate();
+            }
+        }
     }
 
 }

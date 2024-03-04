@@ -20,7 +20,7 @@
  */
 package eu.openanalytics.rdepot.crane;
 
-import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.IndexPageService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;

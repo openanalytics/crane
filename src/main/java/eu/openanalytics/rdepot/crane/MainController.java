@@ -21,7 +21,7 @@
 package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.AccessControlService;
 import eu.openanalytics.rdepot.crane.service.UserService;
 import org.springframework.security.core.Authentication;
@@ -61,11 +61,11 @@ public class MainController {
         boolean authenticated = userService.isAuthenticated();
 
         List<String> repositories = config.getRepositories().stream()
-            .filter(r -> accessControlService.canAccess(user, r))
+            .filter(r -> accessControlService.canAccessRepository(user, r))
             .map(Repository::getName)
             .collect(Collectors.toList());
 
-        if (repositories.size() == 0 && !authenticated) {
+        if (repositories.isEmpty() && !authenticated) {
             // no repositories found and not authenticated -> ask the user to login
             return "redirect:" + userService.getLoginUrl();
         }

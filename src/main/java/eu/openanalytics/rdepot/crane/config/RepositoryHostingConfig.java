@@ -21,7 +21,7 @@
 package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.RepositoryHostingHandler;
-import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.HttpRequestHandler;

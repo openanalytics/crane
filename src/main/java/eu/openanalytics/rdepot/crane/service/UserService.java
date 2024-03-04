@@ -50,4 +50,8 @@ public class UserService {
         return !(user instanceof AnonymousAuthenticationToken);
     }
 
+    public Authentication getUser() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
+
 }

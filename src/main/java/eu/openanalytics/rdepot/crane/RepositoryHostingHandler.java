@@ -20,8 +20,8 @@
  */
 package eu.openanalytics.rdepot.crane;
 
-import eu.openanalytics.rdepot.crane.model.CacheRule;
-import eu.openanalytics.rdepot.crane.model.Repository;
+import eu.openanalytics.rdepot.crane.model.config.CacheRule;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
 import org.apache.tika.Tika;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
@@ -38,13 +38,11 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class RepositoryHostingHandler implements HttpRequestHandler {
 
@@ -70,16 +68,11 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Optional<Path> path = getPath(request);
-        if (path.isEmpty()) {
-            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
-            request.getRequestDispatcher("/error").forward(request, response);
-            return;
-        }
+        Path path = getPath(request);
 
-        if (!Files.exists(path.get())) {
-            if (path.get().endsWith(repository.getIndexFileName())) {
-                Path directory = path.get().getParent();
+        if (!Files.exists(path)) {
+            if (path.endsWith(repository.getIndexFileName())) {
+                Path directory = path.getParent();
                 if (Files.isDirectory(directory)) {
                     request.setAttribute("path", directory);
                     request.setAttribute("repo", repository);
@@ -91,57 +84,32 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
             request.getRequestDispatcher("/error").forward(request, response);
             return;
         }
-        if (Files.isDirectory(path.get())) {
+        if (Files.isDirectory(path)) {
             response.sendRedirect(request.getRequestURI() + "/");
             return;
         }
-        if (new ServletWebRequest(request, response).checkNotModified(Files.getLastModifiedTime(path.get()).toMillis())) {
+        if (new ServletWebRequest(request, response).checkNotModified(Files.getLastModifiedTime(path).toMillis())) {
             return;
         }
 
-        InputStreamResource resource = new InputStreamResource(Files.newInputStream(path.get()));
+        InputStreamResource resource = new InputStreamResource(Files.newInputStream(path));
         addCachingHeaders(request, response);
 
         ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
-        MediaType mediaType = getMediaType(path.get());
+        MediaType mediaType = getMediaType(path);
         resourceHttpMessageConverter.write(resource, mediaType, outputMessage);
     }
 
-    private Optional<Path> getPath(HttpServletRequest request) {
+    private Path getPath(HttpServletRequest request) {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-        if (path.contains("%")) {
-            // don't support encoded paths
-            return Optional.empty();
+        if (Path.of(path).isAbsolute()) {
+            throw new IllegalStateException("Path should be relative");
         }
-
-        Path file = Path.of(path);
-        if (file.isAbsolute()) {
-            // path should be a relative path
-            return Optional.empty();
-        }
-
-        // TODO test this
-        File absolutePath = new File( "/" + path);
-
-        try {
-            String canonicalPath = absolutePath.getCanonicalPath();
-            if (!new File(canonicalPath).isAbsolute()) {
-                return Optional.empty();
-            }
-            if (!absolutePath.getAbsolutePath().equals(canonicalPath)) {
-                return Optional.empty();
-            }
-        } catch (IOException e) {
-            return Optional.empty();
-        }
-
-        // TODO is it save to use path?
         if (request.getRequestURI().endsWith("/")) {
-            return Optional.of(repositoryRoot.resolve(path).resolve(repository.getIndexFileName()));
+            return repositoryRoot.resolve(path).resolve(repository.getIndexFileName());
         } else {
-            return Optional.of(repositoryRoot.resolve(path));
+            return repositoryRoot.resolve(path);
         }
-
     }
 
     private void addCachingHeaders(HttpServletRequest request, HttpServletResponse response) {
