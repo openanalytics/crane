@@ -83,7 +83,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers("/{repoName}/**").access("@pathAccessControlService.canAccess(authentication, request)")
                 .anyRequest().authenticated()
             .and()
-                .exceptionHandling().accessDeniedPage("/access-denied")
+                .exceptionHandling().accessDeniedPage("/error")
             .and()
             .oauth2ResourceServer()
                 .jwt()

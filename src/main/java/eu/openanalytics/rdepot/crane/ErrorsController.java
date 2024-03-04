@@ -23,11 +23,13 @@ package eu.openanalytics.rdepot.crane;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.RequestDispatcher;
@@ -40,55 +42,37 @@ import java.util.Map;
 public class ErrorsController implements ErrorController {
 
     @RequestMapping(value = "/error", produces = "text/html")
-    public String handleErrorAsHtml(HttpServletRequest request, HttpServletResponse response, ModelMap map) {
+    public ModelAndView handleErrorAsHtml(HttpServletRequest request, HttpServletResponse response, ModelMap map) {
         setNoCacheHeader(response);
         map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
         map.put("resource", request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH));
 
-        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+        int status = getStatus(request, response);
 
-        if (status != null) {
-            int statusCode = Integer.parseInt(status.toString());
-
-            if (statusCode == HttpStatus.NOT_FOUND.value()) {
-                return "not-found";
-            }
+        if (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value()) {
+            return new ModelAndView("not-found", HttpStatus.NOT_FOUND);
         }
 
-        return "error";
-    }
-
-    @RequestMapping(value = "/access-denied", produces = "text/html")
-    public String handleAccessDeniedAsHtml(HttpServletRequest request, HttpServletResponse response, ModelMap map) {
-        setNoCacheHeader(response);
-        map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
-        map.put("resource", request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH));
-        return "access-denied";
+        return new ModelAndView("not-found", HttpStatus.valueOf(status));
     }
 
     @RequestMapping("/error")
     @ResponseBody
-    public Map<String, Object> handleError(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Map<String, Object>> handleError(HttpServletRequest request, HttpServletResponse response) {
         setNoCacheHeader(response);
-        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+        int status = getStatus(request, response);
 
-        return new HashMap<>() {{
-            put("status", "error");
-            put("code", status != null ? Integer.parseInt(status.toString()) : null);
-            put("resource", request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH).toString());
-        }};
-    }
+        String error = "error";
+        if (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value()) {
+            error = "not-found";
+            status = 404;
+        }
 
-    @RequestMapping( "/access-denied")
-    @ResponseBody
-    public Map<String, Object> handleAccessDenied(HttpServletRequest request, HttpServletResponse response) {
-        setNoCacheHeader(response);
-
-        return new HashMap<>() {{
-            put("status", "access_denied");
-            put("code", 403);
-            put("resource", request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH).toString());
-        }};
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("status", error);
+        resp.put("code", status);
+        resp.put("resource", request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH).toString());
+        return new ResponseEntity<>(resp, HttpStatus.valueOf(status));
     }
 
     @RequestMapping(value = "/logout-success", method = RequestMethod.GET)
@@ -103,6 +87,17 @@ public class ErrorsController implements ErrorController {
      */
     private void setNoCacheHeader(HttpServletResponse response) {
         response.setHeader("Cache-Control", CacheControl.noCache().getHeaderValue());
+    }
+
+    private int getStatus(HttpServletRequest request, HttpServletResponse response) {
+        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+        if (status != null) {
+            return Integer.parseInt(status.toString());
+        }
+        if (response.getStatus() != 200) {
+            return response.getStatus();
+        }
+        return 500;
     }
 
 }
