@@ -56,12 +56,16 @@ public class AccessControlService {
         return canAccess(auth, repository);
     }
 
-    public boolean canAccess(Authentication auth, PathComponent PathComponent) {
-        if (auth == null || PathComponent == null) {
+    public boolean canAccess(Authentication auth, PathComponent pathComponent) {
+        if (auth == null || pathComponent == null) {
             return false;
         }
 
-        if (allowedByNetwork(auth, PathComponent)) {
+        if (pathComponent.getPublic()) {
+            return true;
+        }
+
+        if (allowedByNetwork(auth, pathComponent)) {
             return true;
         }
 
@@ -70,19 +74,19 @@ public class AccessControlService {
             return false;
         }
 
-        if (PathComponent.isAccessAnyAuthenticatedUser()) {
+        if (pathComponent.isAccessAnyAuthenticatedUser()) {
             return true;
         }
 
-        if (allowedByGroups(auth, PathComponent)) {
+        if (allowedByGroups(auth, pathComponent)) {
             return true;
         }
 
-        if (allowedByUsers(auth, PathComponent)) {
+        if (allowedByUsers(auth, pathComponent)) {
             return true;
         }
 
-        if (allowedByExpression(auth, PathComponent)) {
+        if (allowedByExpression(auth, pathComponent)) {
             return true;
         }
 

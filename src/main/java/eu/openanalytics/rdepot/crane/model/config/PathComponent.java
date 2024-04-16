@@ -136,6 +136,10 @@ public class PathComponent {
         return accessAnyAuthenticatedUser;
     }
 
+    public boolean getPublic() {
+        return false;
+    }
+
     public void validate() {
         if (getName() == null) {
             throw new RuntimeException("PathComponent has no name");

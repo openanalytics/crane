@@ -28,7 +28,8 @@ public class Repository extends PathComponent {
     private String indexFileName = "index.html";
     private List<CacheRule> cache;
 
-    public Boolean getPublic() {
+    @Override
+    public boolean getPublic() {
         return isPublic;
     }
 
