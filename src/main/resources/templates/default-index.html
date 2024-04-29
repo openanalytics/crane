@@ -26,7 +26,7 @@
         <title th:text="${title}"></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <link rel="stylesheet" media="screen"
-              th:href="@{'/__index/webjars/datatables/1.13.2/css/jquery.dataTables.min.css'}"/>
+              th:href="@{'/__index/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
         <style>
             h1 {
                 margin-bottom: 20px;
@@ -114,8 +114,8 @@
 
             </table>
         </div>
-        <script th:src="@{/__index/webjars/jquery/3.6.4/jquery.min.js}"></script>
-        <script th:src="@{/__index/webjars/datatables/1.13.2/js/jquery.dataTables.min.js}"></script>
+        <script th:src="@{/__index/webjars/jquery/3.7.1/jquery.min.js}"></script>
+        <script th:src="@{/__index/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
         <script>
             $(document).ready(function () {
                 $('table').DataTable({

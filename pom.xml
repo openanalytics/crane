@@ -92,7 +92,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>2.7.0</version>
+            <version>2.9.2</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
@@ -105,17 +105,17 @@
         <dependency>
             <groupId>org.carlspring.cloud.aws</groupId>
             <artifactId>s3fs-nio</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.4</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>datatables</artifactId>
-            <version>1.13.2</version>
+            <version>2.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
-            <version>3.6.4</version>
+            <version>3.7.1</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
@@ -129,7 +129,7 @@
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
-                <version>2.17.269</version>
+                <version>2.25.40</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
