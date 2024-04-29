@@ -21,15 +21,18 @@
 package eu.openanalytics.rdepot.crane.security;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
+import eu.openanalytics.rdepot.crane.service.PathAccessControlService;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
@@ -40,6 +43,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
@@ -50,8 +54,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
+@Configuration
 @EnableWebSecurity
-public class WebSecurity extends WebSecurityConfigurerAdapter {
+public class WebSecurity {
 
     private final CraneConfig config;
 
@@ -67,43 +74,30 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         this.specExpressionResolver = specExpressionResolver;
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        //@formatter:off
+    @Bean
+    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf().disable()
-            .authorizeRequests()
-                .antMatchers("/.well-known/configured-openid-configuration").permitAll()
-                .antMatchers("/actuator/health").anonymous()
-                .antMatchers("/actuator/health/readiness").anonymous()
-                .antMatchers("/actuator/health/liveness").anonymous()
-                .antMatchers("/logout-success").anonymous()
-                .antMatchers("/").permitAll()
-                .antMatchers("/__index/webjars/**").permitAll()
-                .antMatchers("/{repoName}/**").access("@pathAccessControlService.canAccess(authentication, request)")
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/.well-known/configured-openid-configuration").permitAll()
+                .requestMatchers("/actuator/health").anonymous()
+                .requestMatchers("/actuator/health/readiness").anonymous()
+                .requestMatchers("/actuator/health/liveness").anonymous()
+                .requestMatchers("/logout-success").anonymous()
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/__index/webjars/**").permitAll()
+                .requestMatchers("/{repoName}/**").access(
+                    PathAccessControlService::canAccess
+                )
                 .anyRequest().authenticated()
-            .and()
-                .exceptionHandling().accessDeniedPage("/error")
-            .and()
-            .oauth2ResourceServer()
-                .jwt()
-                    .jwkSetUri(config.getJwksUri())
-                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                .and()
-            .and()
-            .oauth2Login()
-                .userInfoEndpoint()
-                    .userAuthoritiesMapper(new NullAuthoritiesMapper())
-                    .oidcUserService(oidcUserService())
-                .and()
-            .and()
-                .oauth2Client()
-            .and()
-                .logout()
-                .logoutSuccessHandler(getLogoutSuccessHandler())
-            .and()
-                .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class);
-        // @formatter:on
+            ).exceptionHandling(exception -> exception.accessDeniedPage("/error"))
+            .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(jwtAuthenticationConverter())))
+            .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper())
+                .oidcUserService(oidcUserService())))
+            .oauth2Client(withDefaults())
+            .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
+            .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
     }
 
     public LogoutSuccessHandler getLogoutSuccessHandler() {
