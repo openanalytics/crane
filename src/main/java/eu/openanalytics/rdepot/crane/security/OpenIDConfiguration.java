@@ -20,10 +20,10 @@
  */
 package eu.openanalytics.rdepot.crane.security;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.filter.OrderedRequestContextFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
@@ -43,14 +43,19 @@ public class OpenIDConfiguration {
     }
 
     @Bean
-    public OAuth2AuthorizedClientService oAuth2AuthorizedClientService(Environment environment, ClientRegistrationRepository clientRegistrationRepository, RedisTemplate<String, OAuth2AuthorizedClient> oAuth2AuthorizedClientRedisTemplate) {
-        if (environment.getProperty("spring.session.store-type", "none").equals("redis")) {
-            return new RedisOAuth2AuthorizedClientService(oAuth2AuthorizedClientRedisTemplate);
-        }
+    @ConditionalOnProperty(name = "spring.session.store-type", havingValue = "redis")
+    public OAuth2AuthorizedClientService redisOAuth2AuthorizedClientService(RedisTemplate<String, OAuth2AuthorizedClient> oAuth2AuthorizedClientRedisTemplate) {
+        return new RedisOAuth2AuthorizedClientService(oAuth2AuthorizedClientRedisTemplate);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "spring.session.store-type", havingValue = "none")
+    public OAuth2AuthorizedClientService inMemoryOAuth2AuthorizedClientService(ClientRegistrationRepository clientRegistrationRepository) {
         return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository);
     }
 
     @Bean
+    @ConditionalOnProperty(name = "spring.session.store-type", havingValue = "redis")
     public RedisTemplate<String, OAuth2AuthorizedClient> oAuth2AuthorizedClientRedisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, OAuth2AuthorizedClient> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);

@@ -22,12 +22,13 @@ package eu.openanalytics.rdepot.crane;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Properties;
 
 @EnableWebMvc
-@SpringBootApplication
+@SpringBootApplication(exclude = RedisAutoConfiguration.class)
 public class CraneApplication {
 
     public static void main(String[] args) {
