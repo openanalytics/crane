@@ -69,7 +69,7 @@ public class WebSecurity {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private PathAccessControlService pathAccessControlService;
+    private final PathAccessControlService pathAccessControlService;
 
     public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, PathAccessControlService pathAccessControlService) {
         this.config = config;
@@ -96,12 +96,10 @@ public class WebSecurity {
                 ).permitAll()
                 .requestMatchers("/{repoName}/**")
                 .access((authentication, context) -> new AuthorizationDecision(pathAccessControlService.canAccess(authentication.get(), context.getRequest())))
-                .anyRequest()
-                .authenticated())
+                .anyRequest().authenticated())
             .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
             .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(jwtAuthenticationConverter())))
-            .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper())
-                .oidcUserService(oidcUserService())))
+            .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(oidcUserService())))
             .oauth2Client(withDefaults())
             .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
             .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class);
@@ -134,10 +132,7 @@ public class WebSecurity {
                 Object claimValue = userRequest.getIdToken().getClaims().get(config.getOpenidGroupsClaim());
                 Set<GrantedAuthority> mappedAuthorities = mapAuthorities(claimValue);
 
-                return new DefaultOidcUser(mappedAuthorities,
-                    userRequest.getIdToken(),
-                    config.getOpenidUsernameClaim()
-                );
+                return new DefaultOidcUser(mappedAuthorities, userRequest.getIdToken(), config.getOpenidUsernameClaim());
             }
         };
     }
@@ -200,8 +195,7 @@ public class WebSecurity {
             List<String> result = new ArrayList<>();
             try {
                 Object value = new JSONParser(JSONParser.MODE_PERMISSIVE).parse((String) claimValue);
-                if (value instanceof List) {
-                    List<?> valueList = (List<?>) value;
+                if (value instanceof List valueList) {
                     valueList.forEach(o -> result.add(o.toString()));
                 }
             } catch (ParseException e) {

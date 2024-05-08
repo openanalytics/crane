@@ -64,8 +64,7 @@ public class IndexPageService {
                 }
                 if (craneResource instanceof CraneFile) {
                     craneFiles.add((CraneFile) craneResource);
-                } else if (craneResource instanceof CraneDirectory) {
-                    CraneDirectory craneDirectory = (CraneDirectory) craneResource;
+                } else if (craneResource instanceof CraneDirectory craneDirectory) {
                     if (pathAccessControlService.canAccess(repository, craneDirectory)) {
                         craneDirectories.add(craneDirectory);
                     }

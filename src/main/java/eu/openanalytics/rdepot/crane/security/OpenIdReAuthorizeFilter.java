@@ -107,7 +107,7 @@ public class OpenIdReAuthorizeFilter extends OncePerRequestFilter {
         return clock.instant().isAfter(authorizedClient.getAccessToken().getExpiresAt().minus(this.clockSkew));
     }
 
-    private void invalidateSession(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, Authentication auth) throws IOException {
+    private void invalidateSession(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, Authentication auth) {
         logger.info(String.format("OpenID access token expired, invalidating internal session [user: %s, request: %s]", auth.getName(), request.getServletPath()));
         HttpSession session = request.getSession(false);
         if (session != null) {

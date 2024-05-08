@@ -27,9 +27,7 @@ import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -37,15 +35,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 @Service
 public class PathAccessControlService {
 
-    private AccessControlService accessControlService;
-    private CraneConfig craneConfig;
+    private final AccessControlService accessControlService;
+    private final CraneConfig craneConfig;
     private final UserService userService;
-    private final Logger logger = LoggerFactory.getLogger(PathAccessControlService.class);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public PathAccessControlService(AccessControlService accessControlService, CraneConfig craneConfig, UserService userService) {
         this.accessControlService = accessControlService;
@@ -60,7 +57,7 @@ public class PathAccessControlService {
      * @param request the request to check
      * @return whether the user can access the path in the request
      */
-    public Boolean canAccess(Authentication auth, HttpServletRequest request) {
+    public boolean canAccess(Authentication auth, HttpServletRequest request) {
         if (auth == null || request == null) {
             return false;
         }
