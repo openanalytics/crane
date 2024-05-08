@@ -32,8 +32,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
@@ -83,20 +83,22 @@ public class WebSecurity {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/.well-known/configured-openid-configuration").permitAll()
-                .requestMatchers("/actuator/health").anonymous()
-                .requestMatchers("/actuator/health/readiness").anonymous()
-                .requestMatchers("/actuator/health/liveness").anonymous()
-                .requestMatchers("/logout-success").anonymous()
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/__index").permitAll()
-                .requestMatchers("/__index/webjars/**").permitAll()
-                .requestMatchers("/error").permitAll()
-                .requestMatchers("/{repoName}/**").access(
-                    (authentication, context) -> new AuthorizationDecision(pathAccessControlService.canAccess(authentication.get(), context.getRequest()))
-                )
-                .anyRequest().authenticated()
-            ).exceptionHandling(exception -> exception.accessDeniedPage("/error"))
+                .requestMatchers(
+                    "/",
+                    "/.well-known/configured-openid-configuration",
+                    "/__index",
+                    "/__index/webjars/**",
+                    "/actuator/health",
+                    "/actuator/health/liveness",
+                    "/actuator/health/readiness",
+                    "/error",
+                    "/logout-success"
+                ).permitAll()
+                .requestMatchers("/{repoName}/**")
+                .access((authentication, context) -> new AuthorizationDecision(pathAccessControlService.canAccess(authentication.get(), context.getRequest())))
+                .anyRequest()
+                .authenticated())
+            .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
             .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(jwtAuthenticationConverter())))
             .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper())
                 .oidcUserService(oidcUserService())))
