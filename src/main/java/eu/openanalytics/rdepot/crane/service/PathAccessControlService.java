@@ -24,6 +24,7 @@ import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -31,7 +32,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -42,20 +42,15 @@ import java.util.function.Supplier;
 @Service
 public class PathAccessControlService {
 
-    private static AccessControlService accessControlService;
-    private static CraneConfig craneConfig;
+    private AccessControlService accessControlService;
+    private CraneConfig craneConfig;
     private final UserService userService;
-    private static final Logger logger = LoggerFactory.getLogger(PathAccessControlService.class);
+    private final Logger logger = LoggerFactory.getLogger(PathAccessControlService.class);
 
     public PathAccessControlService(AccessControlService accessControlService, CraneConfig craneConfig, UserService userService) {
-        PathAccessControlService.accessControlService = accessControlService;
-        PathAccessControlService.craneConfig = craneConfig;
+        this.accessControlService = accessControlService;
+        this.craneConfig = craneConfig;
         this.userService = userService;
-    }
-
-    public static AuthorizationDecision canAccess(Supplier<Authentication> supplier, RequestAuthorizationContext context) {
-        Boolean val = PathAccessControlService.canAccess(supplier.get(), context.getRequest());
-        return val != null ? new AuthorizationDecision(val) : null;
     }
 
     /**
@@ -65,21 +60,21 @@ public class PathAccessControlService {
      * @param request the request to check
      * @return whether the user can access the path in the request
      */
-    public static Boolean canAccess(Authentication auth, HttpServletRequest request) {
+    public Boolean canAccess(Authentication auth, HttpServletRequest request) {
         if (auth == null || request == null) {
-            return null;
+            return false;
         }
 
         String requestPath = request.getServletPath();
         if (requestPath == null || !checkPathSecurity(requestPath)) {
-            return null;
+            return false;
         }
         try {
             Path path = Path.of(requestPath);
 
             Repository repository = craneConfig.getRepository(path.getName(0).toString());
             if (repository == null) {
-                return null;
+                return false;
             }
 
             Iterator<Path> iterator = path.iterator();
@@ -87,7 +82,7 @@ public class PathAccessControlService {
 
             return canAccess(auth, requestPath, repository, iterator);
         } catch (IllegalArgumentException e) {
-            return null;
+            return false;
         }
     }
 
@@ -109,7 +104,7 @@ public class PathAccessControlService {
      * @param path the path to check
      * @return whether the path can be trusted
      */
-    private static boolean checkPathSecurity(String path) {
+    private boolean checkPathSecurity(String path) {
         if (path.contains("%")) {
             // don't support encoded paths
             return false;
@@ -131,7 +126,7 @@ public class PathAccessControlService {
         return true;
     }
 
-    private static boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
+    private boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
         if (!accessControlService.canAccess(auth, pathComponent)) {
             logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, pathComponent.getName());
             return false;

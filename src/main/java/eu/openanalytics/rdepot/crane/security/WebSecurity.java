@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -68,10 +69,13 @@ public class WebSecurity {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver) {
+    private PathAccessControlService pathAccessControlService;
+
+    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, PathAccessControlService pathAccessControlService) {
         this.config = config;
         this.openIdReAuthorizeFilter = openIdReAuthorizeFilter;
         this.specExpressionResolver = specExpressionResolver;
+        this.pathAccessControlService = pathAccessControlService;
     }
 
     @Bean
@@ -85,9 +89,11 @@ public class WebSecurity {
                 .requestMatchers("/actuator/health/liveness").anonymous()
                 .requestMatchers("/logout-success").anonymous()
                 .requestMatchers("/").permitAll()
+                .requestMatchers("/__index").permitAll()
                 .requestMatchers("/__index/webjars/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 .requestMatchers("/{repoName}/**").access(
-                    PathAccessControlService::canAccess
+                    (authentication, context) -> new AuthorizationDecision(pathAccessControlService.canAccess(authentication.get(), context.getRequest()))
                 )
                 .anyRequest().authenticated()
             ).exceptionHandling(exception -> exception.accessDeniedPage("/error"))

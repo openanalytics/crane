@@ -22,6 +22,9 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.IndexPageService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,9 +44,15 @@ public class IndexPageController {
     }
 
     @GetMapping("/__index")
-    public String main(ModelMap map, HttpServletRequest request) throws IOException {
+    public String main(ModelMap map, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Path path = (Path) request.getAttribute("path");
         Repository repo = (Repository) request.getAttribute("repo");
+
+        if (path == null || repo == null) {
+            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
+            request.getRequestDispatcher("/error").forward(request, response);
+            return null;
+        }
 
         String resource = (String) request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH);
         resource = resource.replace(repo.getIndexFileName(), "");
