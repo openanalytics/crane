@@ -22,6 +22,8 @@ package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.RepositoryHostingHandler;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.HttpRequestHandler;
@@ -36,8 +38,12 @@ public class RepositoryHostingConfig {
 
     private final CraneConfig config;
 
-    public RepositoryHostingConfig(CraneConfig config) {
+    @Autowired
+    private final ApplicationEventPublisher publisher;
+
+    public RepositoryHostingConfig(CraneConfig config, ApplicationEventPublisher publisher) {
         this.config = config;
+        this.publisher = publisher;
     }
 
     @Bean
@@ -46,7 +52,7 @@ public class RepositoryHostingConfig {
 
         for (Repository repository : config.getRepositories()) {
             Path repositoryRoot = config.getRoot().resolve(repository.getName());
-            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot);
+            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot, publisher);
             urlMap.put(String.format("/%s/**", repository.getName()), resourceHttpRequestHandler);
         }
 

@@ -57,6 +57,10 @@ public class CraneConfig {
 
     private String storageLocation;
 
+    private String auditLogging;
+
+    private Path auditLoggingPath;
+
     private String openidIssuerUri;
 
     private String openidLogoutUrl;
@@ -129,6 +133,11 @@ public class CraneConfig {
         } else {
             FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
             root = fs.getPath(new URI(storageLocation).getPath());
+        }
+
+        if (auditLogging != null) {
+            FileSystem fs = root.getFileSystem();
+            auditLoggingPath = fs.getPath(new URI(auditLogging).getPath());
         }
     }
 
@@ -248,5 +257,13 @@ public class CraneConfig {
 
     public void setDefaultCache(List<CacheRule> defaultCache) {
         this.defaultCache = defaultCache;
+    }
+
+    public String getAuditLogging() { return auditLogging; }
+
+    public Path getAuditLoggingPath() { return auditLoggingPath; }
+
+    public void setAuditLogging(String auditLogging) {
+        this.auditLogging = auditLogging;
     }
 }

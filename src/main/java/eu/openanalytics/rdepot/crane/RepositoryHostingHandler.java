@@ -22,7 +22,9 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.security.auditing.RepositoryHandlerEvent;
 import org.apache.tika.Tika;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -38,6 +40,7 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,10 +54,13 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
     private final Repository repository;
     private final Map<AntPathRequestMatcher, String> cacheRules;
 
-    public RepositoryHostingHandler(Repository repository, Path repositoryRoot) {
+    private final ApplicationEventPublisher publisher;
+
+    public RepositoryHostingHandler(Repository repository, Path repositoryRoot, ApplicationEventPublisher publisher) {
         this.repository = repository;
         this.repositoryRoot = repositoryRoot;
         this.cacheRules = new HashMap<>();
+        this.publisher = publisher;
 
         if (repository.getCache() != null) {
             for (CacheRule cache : repository.getCache()) {
@@ -68,6 +74,7 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        publisher.publishEvent(new RepositoryHandlerEvent(request));
         Path path = getPath(request);
 
         if (!Files.exists(path)) {

@@ -91,6 +91,7 @@ public class WebSecurity {
                     "/actuator/health",
                     "/actuator/health/liveness",
                     "/actuator/health/readiness",
+                    "/actuator/auditevents",
                     "/error",
                     "/logout-success"
                 ).permitAll()
