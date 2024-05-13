@@ -136,7 +136,7 @@ public class CraneConfig {
         }
 
         if (auditLogging != null) {
-            FileSystem fs = root.getFileSystem();
+            FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
             auditLoggingPath = fs.getPath(new URI(auditLogging).getPath());
         }
     }
