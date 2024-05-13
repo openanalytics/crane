@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class RepositoryHandlerEvent extends AuditApplicationEvent {
-    public RepositoryHandlerEvent(HttpServletRequest request) {
+public class RepositoryHandlerAuditEvent extends AuditApplicationEvent {
+    public RepositoryHandlerAuditEvent(HttpServletRequest request) {
         super(principal(request), "REPOSITORY_HANDLER", info(request));
     }
 

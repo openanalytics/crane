@@ -22,7 +22,8 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.security.auditing.RepositoryHandlerEvent;
+import eu.openanalytics.rdepot.crane.security.auditing.ErrorHandlerAuditEvent;
+import eu.openanalytics.rdepot.crane.security.auditing.RepositoryHandlerAuditEvent;
 import org.apache.tika.Tika;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
@@ -74,13 +75,13 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        publisher.publishEvent(new RepositoryHandlerEvent(request));
         Path path = getPath(request);
 
         if (!Files.exists(path)) {
             if (path.endsWith(repository.getIndexFileName())) {
                 Path directory = path.getParent();
                 if (Files.isDirectory(directory)) {
+                    publisher.publishEvent(new RepositoryHandlerAuditEvent(request));
                     request.setAttribute("path", directory);
                     request.setAttribute("repo", repository);
                     request.getRequestDispatcher("/__index").forward(request, response);
@@ -88,6 +89,7 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
                 }
             }
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
+            publisher.publishEvent(new ErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND.value()));
             request.getRequestDispatcher("/error").forward(request, response);
             return;
         }
@@ -99,6 +101,7 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
             return;
         }
 
+        publisher.publishEvent(new RepositoryHandlerAuditEvent(request));
         InputStreamResource resource = new InputStreamResource(Files.newInputStream(path));
         addCachingHeaders(request, response);
 
