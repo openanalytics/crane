@@ -1,0 +1,51 @@
+server:
+  port: 7070
+app:
+  storage-location: /tmp/repository/
+  openid-issuer-uri: http://localhost:8080/realms/crane
+  repositories:
+    - name: public_repo
+      public: true
+      paths:
+        - name: private_repo
+        - name: restricted_repo
+          access-users: demo
+        - name: restricted_to_users_repo
+          access-users: [demo, test]
+    - name: private_repo
+    - name: restricted_repo
+      access-users: demo
+    - name: restricted_to_users_repo
+      access-users: [demo, test]
+    - name: restricted_to_group_repo
+      access-users: demo
+    - name: mime_types
+      public: true
+    - name: cache_txt_repo
+      public: true
+      cache:
+        - pattern: "/**/*.txt"
+          max-age: "P1D"
+    - name: network_restricted_repo
+      access-network:
+        - 192.168.18.0/24
+    - name: network_restricted_or_authenticated_user_repo
+      access-any-authenticated-user: true
+      access-network:
+        - 192.168.18.0/24
+    - name: network_restricted_or_demo_user_repo
+      access-users: demo
+      access-network:
+        - 192.168.18.0/24
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          crane:
+            client-id: crane_client
+            client-secret: my-example-secret
+            scope: openid
+        provider:
+          crane:
+            issuer-uri: http://localhost:8080/realms/crane

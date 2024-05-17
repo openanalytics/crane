@@ -40,7 +40,7 @@ public class CraneApplication {
         app.run(args);
     }
 
-    private static Properties getDefaultProperties() {
+    public static Properties getDefaultProperties() {
         Properties properties = new Properties();
 
         // Health configuration
