@@ -44,7 +44,7 @@ spring:
         registration:
           crane:
             client-id: crane_client
-            client-secret: my-example-secret
+            client-secret: secret
             scope: openid
         provider:
           crane:

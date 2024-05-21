@@ -23,7 +23,7 @@ public class CraneInstance implements AutoCloseable {
     public final CraneClient client;
     @Container
     public final KeycloakContainer keycloak = new KeycloakContainer()
-        .withRealmImportFiles("crane-realm.json", "crane-users-0.json")
+        .withRealmImportFiles("crane-realm.json")
         .withExposedPorts(8080)
         .withExtraHost("localhost", "127.0.0.1");
     public final int port;
