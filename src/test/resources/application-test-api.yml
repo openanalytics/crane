@@ -3,6 +3,7 @@ server:
 app:
   storage-location: /tmp/repository/
   openid-issuer-uri: http://localhost:8080/realms/crane
+  openid-groups-claim: realm_roles
   repositories:
     - name: public_repo
       public: true
@@ -18,7 +19,11 @@ app:
     - name: restricted_to_users_repo
       access-users: [demo, test]
     - name: restricted_to_group_repo
-      access-users: demo
+      access-groups: scientists
+    - name: restricted_to_groups_repo
+      access-groups:
+        - scientists
+        - mathematicians
     - name: mime_types
       public: true
     - name: cache_txt_repo

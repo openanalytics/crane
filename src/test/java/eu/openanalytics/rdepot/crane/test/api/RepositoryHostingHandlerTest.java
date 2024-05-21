@@ -77,6 +77,35 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
+
+    @Test
+    public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupKeycloakRoles() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        String repository = "/restricted_to_group_repo";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+
+        String file = repository + "/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+    }
+
+    @Test
+    public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakRoles() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        String repository = "/restricted_to_groups_repo";
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+
+        String file = repository + "/file.txt";
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+    }
+    
     @Test
     public void testAccessToNonExistentRepository() {
         ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
