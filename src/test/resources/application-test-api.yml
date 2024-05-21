@@ -1,6 +1,9 @@
 server:
   port: 7070
 app:
+  default-cache:
+    - pattern: "/**/default_cached_file.html"
+      max-age: "PT66M"
   storage-location: /tmp/repository/
   openid-issuer-uri: http://localhost:8080/realms/crane
   openid-groups-claim: realm_roles
@@ -31,6 +34,13 @@ app:
       cache:
         - pattern: "/**/*.txt"
           max-age: "P1D"
+    - name: cache_txt_and_csv_repo
+      public: true
+      cache:
+        - pattern: "/**/*.txt"
+          max-age: "PT1M"
+        - pattern: "/**/*.csv"
+          max-age: "PT50S"
     - name: network_restricted_repo
       access-network:
         - 192.168.18.0/24

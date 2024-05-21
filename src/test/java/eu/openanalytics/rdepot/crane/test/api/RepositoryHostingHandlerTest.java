@@ -268,7 +268,7 @@ public class RepositoryHostingHandlerTest {
     }
 
     @Test
-    public void testCacheHeaders() {
+    public void testSingleCacheRule() {
         ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
         String repository = "/cache_txt_repo";
 
@@ -294,5 +294,43 @@ public class RepositoryHostingHandlerTest {
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(json));
         resp.assertHasNoCachingHeader();
         resp.assertMaxAgeInSeconds(0);
+    }
+
+    @Test
+    public void testMultipleCacheRules() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        String repository = "/cache_txt_and_csv_repo";
+
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository))
+            .assertHasNoCachingHeader();
+
+        String text = repository + "/file.txt";
+        Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(text));
+        resp.assertMissingNoCachingHeader();
+        resp.assertMaxAgeInSeconds(60);
+
+        String html = repository + "/file.html";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(html));
+        resp.assertHasNoCachingHeader();
+        resp.assertMaxAgeInSeconds(0);
+
+        String csv = repository + "/file.csv";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(csv));
+        resp.assertMissingNoCachingHeader();
+        resp.assertMaxAgeInSeconds(50);
+
+        String json = repository + "/file.json";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(json));
+        resp.assertHasNoCachingHeader();
+        resp.assertMaxAgeInSeconds(0);
+    }
+
+    @Test
+    void testDefaultCache() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+
+        Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/public_repo/default_cached_file.html"));
+        resp.assertMissingNoCachingHeader();
+        resp.assertMaxAgeInSeconds(3960);
     }
 }
