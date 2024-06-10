@@ -14,8 +14,9 @@
           "value": "demo"
         }
       ],
-      "realmRoles" : [ "mathematicians", "scientists" ]
-    },
+      "realmRoles" : [ "mathematicians", "scientists" ],
+      "groups" : [ "/mathematicians", "/scientists" ]
+  },
     {
       "username": "test",
       "firstName": "Test",
@@ -28,8 +29,9 @@
           "value": "test"
         }
       ],
-      "realmRoles" : [ "mathematicians" ]
-    }
+      "realmRoles" : [ "mathematicians" ],
+      "groups" : [ "/mathematicians" ]
+  }
   ],
   "roles": {
     "realm": [
@@ -43,6 +45,13 @@
       }
     ]
   },
+  "groups" : [ {
+    "name" : "mathematicians",
+    "path" : "/mathematicians"
+  }, {
+    "name" : "scientists",
+    "path" : "/scientists"
+  } ],
   "clients": [
     {
       "clientId": "crane_client",
@@ -50,12 +59,11 @@
       "adminUrl": "",
       "baseUrl": "",
       "bearerOnly": false,
-      "redirectUris" : [ "http://localhost:7070/*", "http://localhost:9090/*" ],
+      "redirectUris" : [ "http://localhost*" ],
       "secret": "secret",
       "authorizationServicesEnabled": true,
       "directAccessGrantsEnabled": true,
       "protocolMappers" : [ {
-        "id" : "86053ac9-bb5e-4a48-b839-7e2e18f3d7c7",
         "name" : "realm_roles",
         "protocol" : "openid-connect",
         "protocolMapper" : "oidc-usermodel-realm-role-mapper",
@@ -69,6 +77,20 @@
           "access.token.claim" : "true",
           "claim.name" : "realm_roles",
           "jsonType.label" : "String"
+        }
+      }, {
+        "name" : "groups",
+        "protocol" : "openid-connect",
+        "protocolMapper" : "oidc-group-membership-mapper",
+        "consentRequired" : false,
+        "config" : {
+          "full.path" : "false",
+          "introspection.token.claim" : "true",
+          "userinfo.token.claim" : "true",
+          "id.token.claim" : "true",
+          "lightweight.claim" : "false",
+          "access.token.claim" : "true",
+          "claim.name" : "groups"
         }
       } ]
     }

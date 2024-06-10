@@ -1,5 +1,3 @@
-server:
-  port: 7070
 app:
   default-cache:
     - pattern: "/**/default_cached_file.html"
@@ -27,6 +25,10 @@ app:
       access-groups:
         - scientists
         - mathematicians
+    - name: restricted_simple_expression_repo
+      access-expression: "#{groups.contains('MATHEMATICIANS')}"
+    - name: restricted_expression_using_and_repo
+      access-expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
     - name: mime_types
       public: true
     - name: cache_txt_repo
@@ -41,17 +43,6 @@ app:
           max-age: "PT1M"
         - pattern: "/**/*.csv"
           max-age: "PT50S"
-    - name: network_restricted_repo
-      access-network:
-        - 192.168.18.0/24
-    - name: network_restricted_or_authenticated_user_repo
-      access-any-authenticated-user: true
-      access-network:
-        - 192.168.18.0/24
-    - name: network_restricted_or_demo_user_repo
-      access-users: demo
-      access-network:
-        - 192.168.18.0/24
 spring:
   security:
     oauth2:

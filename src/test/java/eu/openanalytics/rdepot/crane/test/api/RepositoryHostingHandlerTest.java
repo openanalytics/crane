@@ -5,18 +5,23 @@ import eu.openanalytics.rdepot.crane.test.helpers.CraneInstance;
 import eu.openanalytics.rdepot.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 @Testcontainers
 public class RepositoryHostingHandlerTest {
     private static final CraneInstance inst = new CraneInstance("application-test-api.yml");
 
+    private static final CraneInstance groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7071, new HashMap<>(), false);
+
     @AfterAll
-    public static void afterAll() { inst.close(); }
+    public static void afterAll() {
+        inst.close();
+        groupsInst.close();
+    }
 
     @Test
     public void testAccessToPublicRepository() {
@@ -102,7 +107,63 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
-    
+
+    @Test
+    public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupKeycloakGroups() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(groupsInst);
+        String repository = "/restricted_to_group_repo";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+
+        String file = repository + "/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+    }
+
+    @Test
+    public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakGroups() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(groupsInst);
+        String repository = "/restricted_to_groups_repo";
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+
+        String file = repository + "/file.txt";
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+    }
+
+    @Test
+    public void testAccessToSimpleExpressionRepository() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        String repository = "/restricted_simple_expression_repo";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+
+        String file = repository + "/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+    }
+
+    @Test
+    public void testAccessToExpressionUsingAndRepository() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        String repository = "/restricted_expression_using_and_repo";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+
+        String file = repository + "/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+    }
+
     @Test
     public void testAccessToNonExistentRepository() {
         ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
