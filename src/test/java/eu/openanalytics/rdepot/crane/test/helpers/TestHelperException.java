@@ -1,6 +1,6 @@
 package eu.openanalytics.rdepot.crane.test.helpers;
 
-public class TestHelperException extends  RuntimeException {
+public class TestHelperException extends RuntimeException {
     public TestHelperException(String message) {
         super(message);
     }

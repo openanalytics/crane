@@ -100,6 +100,8 @@ public class CraneInstance implements AutoCloseable {
                 logger.info("Crane available!");
             }
         } catch (Throwable t) {
+            closeKeycloak();
+            closeRedis();
             throw new TestHelperException("Error during startup of Crane", t);
         }
     }
@@ -129,18 +131,25 @@ public class CraneInstance implements AutoCloseable {
         }
     }
 
-    @Override
-    public void close() {
-        app.stop();
-        app.close();
+    private void closeKeycloak() {
         if (isRunningKeykloak){
             keycloak.stop();
             keycloak.close();
         }
+    }
+
+    private void closeRedis() {
         if (isRnningRedis) {
             redis.stop();
             redis.close();
         }
+    }
+    @Override
+    public void close() {
+        app.stop();
+        app.close();
+        closeKeycloak();
+        closeRedis();
         try {
             thread.join();
         } catch (InterruptedException ex) {
