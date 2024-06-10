@@ -1,5 +1,6 @@
 package eu.openanalytics.rdepot.crane.test.helpers;
 
+import com.redis.testcontainers.RedisContainer;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,13 +10,11 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CraneInstance implements AutoCloseable {
@@ -26,18 +25,28 @@ public class CraneInstance implements AutoCloseable {
         .withRealmImportFiles("crane-realm.json")
         .withExposedPorts(8080)
         .withExtraHost("localhost", "127.0.0.1");
+    @Container
+    public final RedisContainer redis = new RedisContainer(DockerImageName.parse("redis:6.2.6"));
     public final int port;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Thread thread;
     private ConfigurableApplicationContext app;
+    private boolean isRunningKeykloak;
+    private boolean isRnningRedis;
 
+    public CraneInstance(String configFileName, boolean startKeycloak) {
+        this(configFileName, 7070, new HashMap<>(), startKeycloak);
+    }
     public CraneInstance(String configFileName) {
-        this(configFileName, 7070, new HashMap<>());
+        this(configFileName, 7070, new HashMap<>(), true);
     }
 
-    public CraneInstance(String configFileName, int port, Map<String, String> properties) {
-        keycloak.setPortBindings(Collections.singletonList("8080:8080"));
-        keycloak.start();
+    public CraneInstance(String configFileName, int port, Map<String, String> properties, boolean startKeycloak) {
+        isRunningKeykloak = startKeycloak;
+        if (startKeycloak) {
+            keycloak.setPortBindings(List.of("8080:8080"));
+            keycloak.start();
+        }
         try {
             this.port = port;
             int mgmtPort = port % 1000 + 9000;
@@ -48,8 +57,13 @@ public class CraneInstance implements AutoCloseable {
             allProperties.put("spring.config.location", "src/test/resources/" + configFileName);
             allProperties.put("server.port", port);
             allProperties.put("management.server.port", mgmtPort);
-            allProperties.put("proxy.kubernetes.namespace", "itest");
+            allProperties.put("proxy.kubernetes.namespace", "test");
             allProperties.putAll(properties);
+            isRnningRedis = allProperties.get("spring.session.store-type") == "redis";
+            if (isRnningRedis) {
+                redis.setPortBindings(List.of("6379:6379"));
+                redis.start();
+            }
             application.setDefaultProperties(allProperties);
 
             copyResourcesToTmp();
@@ -115,13 +129,18 @@ public class CraneInstance implements AutoCloseable {
         }
     }
 
-
     @Override
     public void close() {
         app.stop();
         app.close();
-        keycloak.stop();
-        keycloak.close();
+        if (isRunningKeykloak){
+            keycloak.stop();
+            keycloak.close();
+        }
+        if (isRnningRedis) {
+            redis.stop();
+            redis.close();
+        }
         try {
             thread.join();
         } catch (InterruptedException ex) {

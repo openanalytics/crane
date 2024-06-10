@@ -1,6 +1,7 @@
 package eu.openanalytics.rdepot.crane.test.helpers;
 
 import org.junit.jupiter.api.Assertions;
+import org.thymeleaf.util.StringUtils;
 
 import java.io.IOException;
 
@@ -79,5 +80,9 @@ public class Response {
 
     public void assertHasNoCachingHeader() {
         Assertions.assertTrue(response.cacheControl().noCache());
+    }
+
+    public void assertRedirectedTo(String redirectTo) {
+        Assertions.assertEquals(redirectTo, "/" + StringUtils.join(response.request().url().pathSegments(), "/"));
     }
 }
