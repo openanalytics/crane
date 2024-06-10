@@ -11,10 +11,12 @@ import java.util.HashMap;
 
 public class ControllerTest {
     private static final CraneInstance inst = new CraneInstance("application-test-api.yml");
+    private static final CraneInstance redisInst = new CraneInstance("application-test-redis.yml", 7071, new HashMap<>(), false);
 
     @AfterAll
     public static void afterAll() { 
         inst.close();
+        redisInst.close(); 
     }
 
     @Test
@@ -45,6 +47,17 @@ public class ControllerTest {
     public void testLogout() {
         ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
         Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/logout"));
+        resp.assertSuccess();
+        resp.assertRedirectedTo("/logout-success");
+    }
+
+    @Test
+    public void testRedis() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(redisInst);
+
+        Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/private_repo"));
+        resp.assertSuccess();
+        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/logout"));
         resp.assertSuccess();
         resp.assertRedirectedTo("/logout-success");
     }

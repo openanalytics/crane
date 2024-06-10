@@ -1,0 +1,20 @@
+app:
+  storage-location: /tmp/repository/
+  openid-issuer-uri: http://localhost:8080/realms/crane
+  openid-groups-claim: groups
+  repositories:
+    - name: private_repo
+spring:
+  session:
+    store-type: redis
+  security:
+    oauth2:
+      client:
+        registration:
+          crane:
+            client-id: crane_client
+            client-secret: secret
+            scope: openid
+        provider:
+          crane:
+            issuer-uri: http://localhost:8080/realms/crane
