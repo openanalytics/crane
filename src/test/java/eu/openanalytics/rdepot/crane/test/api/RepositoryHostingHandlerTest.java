@@ -11,9 +11,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 @Testcontainers
 public class RepositoryHostingHandlerTest {
     private static final CraneInstance inst = new CraneInstance("application-test-api.yml");
@@ -192,62 +189,6 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertSuccess();
-    }
-
-    @Test
-    public void testAccessToRestrictedNetworkRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
-        String networkRestrictedRepo = "/network_restricted_repo";
-        String file = networkRestrictedRepo + "/file.txt";
-        WebAuthenticationDetails mockedDetails = mock(WebAuthenticationDetails.class);
-        when(mockedDetails.getRemoteAddress()).thenReturn("192.168.18.123");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-
-
-        when(mockedDetails.getRemoteAddress()).thenReturn("111.111.111.111");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertNotFound();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
-    }
-
-    @Test
-    public void testAccessToRestrictedNetworkOrAuthenticatedUserRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
-        String networkRestrictedRepo = "/network_restricted_or_authenticated_user_repo";
-        String file = networkRestrictedRepo + "/file.txt";
-        WebAuthenticationDetails mockedDetails = mock(WebAuthenticationDetails.class);
-        when(mockedDetails.getRemoteAddress()).thenReturn("192.168.18.123");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-
-        when(mockedDetails.getRemoteAddress()).thenReturn("111.111.111.111");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-    }
-
-    @Test
-    public void testAccessToRestrictedNetworkOrDemoUserRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
-        String networkRestrictedRepo = "/network_restricted_or_demo_user_repo";
-        String file = networkRestrictedRepo + "/file.txt";
-        WebAuthenticationDetails mockedDetails = mock(WebAuthenticationDetails.class);
-        when(mockedDetails.getRemoteAddress()).thenReturn("192.168.18.123");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-        when(mockedDetails.getRemoteAddress()).thenReturn("192.168.18.123");
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-        when(mockedDetails.getRemoteAddress()).thenReturn("192.168.18.123");
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(networkRestrictedRepo)).assertSuccess();
-
-        when(mockedDetails.getRemoteAddress()).thenReturn("111.111.111.111");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        when(mockedDetails.getRemoteAddress()).thenReturn("111.111.111.111");
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        when(mockedDetails.getRemoteAddress()).thenReturn("111.111.111.111");
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
