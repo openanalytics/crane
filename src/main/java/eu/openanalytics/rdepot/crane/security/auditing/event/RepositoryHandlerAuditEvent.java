@@ -18,29 +18,12 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.rdepot.crane.security.auditing;
+package eu.openanalytics.rdepot.crane.security.auditing.event;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
-
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 public class RepositoryHandlerAuditEvent extends AuditApplicationEvent {
     public RepositoryHandlerAuditEvent(HttpServletRequest request) {
         super(principal(request), "REPOSITORY_HANDLER", info(request));
-    }
-
-    private static String principal(HttpServletRequest request) {
-        return Optional.ofNullable(request.getUserPrincipal()).map(Principal::getName).orElse("anonymousUser");
-    }
-
-    private static Map<String, Object> info(HttpServletRequest request) {
-        Map<String, Object> information = new HashMap<>();
-        information.put("method", request.getMethod());
-        information.put("request_path", request.getRequestURI());
-        return information;
     }
 }

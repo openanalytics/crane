@@ -22,8 +22,8 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.security.auditing.ErrorHandlerAuditEvent;
-import eu.openanalytics.rdepot.crane.security.auditing.RepositoryHandlerAuditEvent;
+import eu.openanalytics.rdepot.crane.security.auditing.event.ErrorHandlerAuditEvent;
+import eu.openanalytics.rdepot.crane.security.auditing.event.RepositoryHandlerAuditEvent;
 import org.apache.tika.Tika;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;

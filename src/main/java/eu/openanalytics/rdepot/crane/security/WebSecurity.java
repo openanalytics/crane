@@ -21,7 +21,7 @@
 package eu.openanalytics.rdepot.crane.security;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import eu.openanalytics.rdepot.crane.security.auditing.LogoutHandlerAuditEvent;
+import eu.openanalytics.rdepot.crane.security.auditing.event.LogoutHandlerAuditEvent;
 import eu.openanalytics.rdepot.crane.service.PathAccessControlService;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
