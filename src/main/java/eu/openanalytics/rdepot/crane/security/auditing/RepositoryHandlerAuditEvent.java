@@ -40,7 +40,7 @@ public class RepositoryHandlerAuditEvent extends AuditApplicationEvent {
     private static Map<String, Object> info(HttpServletRequest request) {
         Map<String, Object> information = new HashMap<>();
         information.put("method", request.getMethod());
-        information.put("path", request.getRequestURI());
+        information.put("request_path", request.getRequestURI());
         return information;
     }
 }

@@ -28,7 +28,7 @@ public class AuthenticationAuditListener extends AbstractAuthenticationAuditList
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("remoteAddress", getRemoteAddress(event));
         String path = getPath(event);
-        data.put("path", path);
+        data.put("request_path", path);
         publish(new AuditEvent(name, AUTHENTICATION_SUCCESS, data));
     }
 
