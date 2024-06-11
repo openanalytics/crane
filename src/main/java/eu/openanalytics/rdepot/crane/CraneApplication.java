@@ -52,10 +52,6 @@ public class CraneApplication {
         // enable Kubernetes probes
         properties.put("management.endpoint.health.probes.enabled", true);
 
-        if (properties.getProperty("app.audit-logging") == null) {
-            properties.put("management.endpoints.web.exposure.include", "health,auditevents");
-        }
-
         // use in-memory session storage by default. Can be overwritten in application.yml
         properties.put("spring.session.store-type", "none");
 
