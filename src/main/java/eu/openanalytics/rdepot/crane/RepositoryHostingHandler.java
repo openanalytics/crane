@@ -23,6 +23,7 @@ package eu.openanalytics.rdepot.crane;
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
+import eu.openanalytics.rdepot.crane.service.UserService;
 import org.apache.tika.Tika;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
@@ -52,14 +53,15 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
     private final Path repositoryRoot;
     private final Repository repository;
     private final Map<AntPathRequestMatcher, String> cacheRules;
-
+    private final UserService userService;
     private final AuditingService auditingService;
 
-    public RepositoryHostingHandler(Repository repository, Path repositoryRoot, AuditingService auditingService) {
+    public RepositoryHostingHandler(Repository repository, Path repositoryRoot, AuditingService auditingService, UserService userService) {
         this.repository = repository;
         this.repositoryRoot = repositoryRoot;
         this.cacheRules = new HashMap<>();
         this.auditingService = auditingService;
+        this.userService = userService;
 
         if (repository.getCache() != null) {
             for (CacheRule cache : repository.getCache()) {
@@ -85,6 +87,9 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
                     request.getRequestDispatcher("/__index").forward(request, response);
                     return;
                 }
+            }
+            if (request.getUserPrincipal() == null) {
+                response.sendRedirect(userService.getLoginPath());
             }
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND);

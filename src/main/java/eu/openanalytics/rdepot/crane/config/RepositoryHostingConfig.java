@@ -23,6 +23,7 @@ package eu.openanalytics.rdepot.crane.config;
 import eu.openanalytics.rdepot.crane.RepositoryHostingHandler;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
+import eu.openanalytics.rdepot.crane.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.HttpRequestHandler;
@@ -36,12 +37,14 @@ import java.util.Map;
 public class RepositoryHostingConfig {
 
     private final CraneConfig config;
+    private final UserService userService;
 
     private final AuditingService auditingService;
 
-    public RepositoryHostingConfig(CraneConfig config, AuditingService auditingService) {
+    public RepositoryHostingConfig(CraneConfig config, AuditingService auditingService, UserService userService) {
         this.config = config;
         this.auditingService = auditingService;
+        this.userService = userService;
     }
 
     @Bean
@@ -50,7 +53,7 @@ public class RepositoryHostingConfig {
 
         for (Repository repository : config.getRepositories()) {
             Path repositoryRoot = config.getRoot().resolve(repository.getName());
-            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot, auditingService);
+            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot, auditingService, userService);
             urlMap.put(String.format("/%s/**", repository.getName()), resourceHttpRequestHandler);
         }
 

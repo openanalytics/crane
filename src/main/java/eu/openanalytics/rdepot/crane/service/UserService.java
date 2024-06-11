@@ -37,6 +37,14 @@ public class UserService {
         clientRegistrationId = clientRegistrationRepository.iterator().next().getRegistrationId();
     }
 
+    public String getLoginPath() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path(OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI)
+            .path("/")
+            .path(clientRegistrationId)
+            .build().getPath();
+    }
+
     public String getLoginUrl() {
         return ServletUriComponentsBuilder.fromCurrentContextPath()
             .path(OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI)
