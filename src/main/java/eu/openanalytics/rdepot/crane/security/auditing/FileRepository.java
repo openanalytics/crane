@@ -21,7 +21,10 @@
 package eu.openanalytics.rdepot.crane.security.auditing;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
@@ -30,33 +33,42 @@ import java.io.*;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class FileRepository implements AuditEventRepository {
+public class FileRepository implements AuditEventRepository, AutoCloseable {
     private final Path auditLogFileName;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+        .registerModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
+    private final FileWriter writer;
 
     public FileRepository(CraneConfig craneConfig) {
         auditLogFileName = craneConfig.getAuditLoggingPath();
-        objectMapper.findAndRegisterModules();
+        try {
+            writer = new FileWriter(auditLogFileName.toFile(), true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    synchronized public void add(AuditEvent event) {
-        if (auditLogFileName != null) {
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(auditLogFileName.toFile(), true));
-                writer.write(this.objectMapper.writeValueAsString(event));
-                writer.newLine();
-                writer.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+    public synchronized void add(AuditEvent event) {
+        try {
+            writer.write(this.objectMapper.writeValueAsString(event) + "\n");
+            writer.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
-    private static class AuditEventData extends AuditEvent{
+
+    @Override
+    public void close() throws Exception {
+        writer.close();
+    }
+
+    private static class AuditEventData extends AuditEvent {
         public AuditEventData() {
             super("", "", new HashMap<>());
         }
