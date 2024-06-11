@@ -20,12 +20,17 @@
  */
 package eu.openanalytics.rdepot.crane.model.config;
 
+import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
+
+import java.nio.file.Path;
 import java.util.List;
 
 public class Repository extends PathComponent {
 
     private String indexFileName = "index.html";
     private List<CacheRule> cache;
+    private String storageLocation;
+    private Path storagePath;
 
     public String getIndexFileName() {
         return indexFileName;
@@ -43,4 +48,27 @@ public class Repository extends PathComponent {
         this.cache = cache;
     }
 
+    public void validate() {
+        super.validate();
+
+        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
+        }
+    }
+
+    public String getStorageLocation() {
+        return storageLocation;
+    }
+
+    public void setStorageLocation(String storageLocation) {
+        this.storageLocation = storageLocation;
+    }
+
+    public Path getStoragePath() {
+        return storagePath;
+    }
+
+    public void setStoragePath(Path storagePath) {
+        this.storagePath = storagePath;
+    }
 }

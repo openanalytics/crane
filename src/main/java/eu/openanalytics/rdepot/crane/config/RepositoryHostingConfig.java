@@ -52,7 +52,7 @@ public class RepositoryHostingConfig {
         Map<String, HttpRequestHandler> urlMap = new LinkedHashMap<>();
 
         for (Repository repository : config.getRepositories()) {
-            Path repositoryRoot = config.getRoot().resolve(repository.getName());
+            Path repositoryRoot = repository.getStoragePath().resolve(repository.getName());
             RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot, auditingService, userService);
             urlMap.put(String.format("/%s/**", repository.getName()), resourceHttpRequestHandler);
         }

@@ -98,15 +98,27 @@ public class CraneConfig {
             throw new IllegalArgumentException("Incorrect configuration detected: no repositories configured");
         }
 
-        repositories.values().forEach(Repository::validate);
-        if (defaultCache != null) {
-            repositories.values().forEach(r -> {
-                if (r.getCache() == null) {
-                    r.setCache(defaultCache);
-                }
-            });
-        }
+        root = storageLocationToPath(storageLocation);
 
+        repositories.values().forEach(Repository::validate);
+        repositories.values().forEach(r -> {
+            if (defaultCache != null && r.getCache() == null) {
+                r.setCache(defaultCache);
+            }
+            if (r.getStorageLocation() == null) {
+                r.setStorageLocation(storageLocation);
+                r.setStoragePath(root);
+            } else {
+                try {
+                    r.setStoragePath(storageLocationToPath(r.getStorageLocation()));
+                } catch (IOException | URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
+    private Path storageLocationToPath(String storageLocation) throws IOException, URISyntaxException {
         if (storageLocation.startsWith("s3://")) {
             try (StsClient client = StsClient.create()) {
                 try {
@@ -128,11 +140,11 @@ public class CraneConfig {
             String path = new URI("/" + uri.getAuthority() + uri.getPath()).getPath();
 
             try (FileSystem fs = FileSystems.newFileSystem(URI.create("s3:" + s3Endpoint.getSchemeSpecificPart()), env, Thread.currentThread().getContextClassLoader())) {
-                root = fs.getPath(path);
+                return fs.getPath(path);
             }
         } else {
             FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
-            root = fs.getPath(new URI(storageLocation).getPath());
+            return fs.getPath(new URI(storageLocation).getPath());
         }
 
         if (auditLogging != null) {
