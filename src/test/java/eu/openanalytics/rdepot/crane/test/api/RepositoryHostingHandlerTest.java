@@ -355,4 +355,57 @@ public class RepositoryHostingHandlerTest {
         resp.assertMissingNoCachingHeader();
         resp.assertMaxAgeInSeconds(3960);
     }
+
+    @Test
+    void testPathTraversalAttack() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+
+        String attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
+        Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertBadRequest();
+
+        attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertBadRequest();
+
+        attack_path = "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd";
+        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertBadRequest();
+
+        attack_path = "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertBadRequest();
+
+        attack_path = "/%2e%2e/%2e%2e/etc/passwd";
+        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertNotFound();
+
+        attack_path = "/%2e%2e/%2e%2e/etc/passwd";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertUnauthorizedRedirectToLogIn();
+
+        attack_path = "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd";
+        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertNotFound();
+
+        attack_path = "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertUnauthorizedRedirectToLogIn();
+
+        attack_path = "/..%2f..%2fetc/passwd";
+        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertBadRequest();
+
+        attack_path = "/..%2f..%2fetc/passwd";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertBadRequest();
+
+        attack_path = "/public_repo/..%2f..%2f..%2f/etc/passwd";
+        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertBadRequest();
+
+        attack_path = "/public_repo/..%2f..%2f..%2f/etc/passwd";
+        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp.assertBadRequest();
+    }
 }

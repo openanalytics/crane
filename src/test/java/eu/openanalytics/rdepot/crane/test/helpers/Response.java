@@ -105,4 +105,8 @@ public class Response {
     public void assertRedirectedTo(String redirectTo) {
         Assertions.assertEquals(redirectTo, "/" + StringUtils.join(response.request().url().pathSegments(), "/"));
     }
+
+    public void assertBadRequest() {
+        Assertions.assertEquals(400, code());
+    }
 }
