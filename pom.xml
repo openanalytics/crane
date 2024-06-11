@@ -243,6 +243,7 @@
                     <aggregate>true</aggregate>
                     <strictCheck>true</strictCheck>
                     <excludes>
+                        <exclude>src/test/resources/**/*</exclude>
                         <exclude>**/*.properties</exclude>
                         <exclude>**/*.yml</exclude>
                         <exclude>**/*.json</exclude>
