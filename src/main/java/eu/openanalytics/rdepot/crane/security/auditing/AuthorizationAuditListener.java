@@ -30,22 +30,17 @@ public class AuthorizationAuditListener extends AbstractAuthorizationAuditListen
     private void onAuthorizationDeniedEvent(AuthorizationDeniedEvent<?> event) {
         String name = getName(event.getAuthentication());
         Map<String, Object> data = new LinkedHashMap<>();
-        Object details = getDetails(event.getAuthentication());
-        if (details != null) {
-            data.put("details", details);
-        }
-        String path = getPath(event.getSource());
-        data.put("path", path);
-        if (ignorePaths.contains(path) || name.equals("anonymousUser")) {
+        data.put("remoteAddress", getRemoteAddress(event));
+        if (name.equals("anonymousUser")) {
             return;
         }
         publish(new AuditEvent(name, AUTHORIZATION_FAILURE, data));
     }
 
-    private String getPath(Object source) {
+    private String getRemoteAddress(AuthorizationDeniedEvent<?> event) {
         try {
-            SecurityContextHolderAwareRequestWrapper wrapper = (SecurityContextHolderAwareRequestWrapper) source;
-            return wrapper.getRequestURI();
+            SecurityContextHolderAwareRequestWrapper wrapper = (SecurityContextHolderAwareRequestWrapper) event.getSource();
+            return wrapper.getRemoteAddr();
         } catch (Exception e) {
             return "";
         }
