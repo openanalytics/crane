@@ -30,6 +30,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -38,12 +39,12 @@ public class FileRepository implements AuditEventRepository {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public FileRepository(CraneConfig craneConfig) {
-        this.auditLogFileName = craneConfig.getAuditLoggingPath();
-        this.objectMapper.findAndRegisterModules();
+        auditLogFileName = craneConfig.getAuditLoggingPath();
+        objectMapper.findAndRegisterModules();
     }
 
     @Override
-    public void add(AuditEvent event) {
+    synchronized public void add(AuditEvent event) {
         if (auditLogFileName != null) {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(auditLogFileName.toFile(), true));
@@ -91,7 +92,7 @@ public class FileRepository implements AuditEventRepository {
                 return condition;
             }).toList();
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            return new ArrayList<>();
         }
     }
 }
