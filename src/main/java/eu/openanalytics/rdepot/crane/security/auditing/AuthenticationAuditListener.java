@@ -47,8 +47,6 @@ public class AuthenticationAuditListener extends AbstractAuthenticationAuditList
         String name = event.getAuthentication().getName();
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("remoteAddress", getRemoteAddress(event));
-        String path = getPath(event);
-        data.put("request_path", path);
         publish(new AuditEvent(name, AUTHENTICATION_SUCCESS, data));
     }
 
@@ -56,15 +54,6 @@ public class AuthenticationAuditListener extends AbstractAuthenticationAuditList
         try {
             WebAuthenticationDetails details = (WebAuthenticationDetails) event.getAuthentication().getDetails();
             return details.getRemoteAddress();
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
-    private String getPath(AuthenticationSuccessEvent event) {
-        try {
-            SecurityContextHolderAwareRequestWrapper wrapper = (SecurityContextHolderAwareRequestWrapper) event.getSource();
-            return wrapper.getRequestURI();
         } catch (Exception e) {
             return "";
         }
