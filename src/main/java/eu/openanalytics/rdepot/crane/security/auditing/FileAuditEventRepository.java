@@ -28,15 +28,20 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
+import org.springframework.scheduling.annotation.Async;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class FileRepository implements AuditEventRepository, AutoCloseable {
+public class FileAuditEventRepository implements AuditEventRepository, AutoCloseable {
     private final Path auditLogFileName;
     private final ObjectMapper objectMapper = new ObjectMapper()
         .registerModule(new JavaTimeModule())
@@ -44,15 +49,12 @@ public class FileRepository implements AuditEventRepository, AutoCloseable {
         .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
     private final FileWriter writer;
 
-    public FileRepository(CraneConfig craneConfig) {
+    public FileAuditEventRepository(CraneConfig craneConfig) throws IOException {
         auditLogFileName = craneConfig.getAuditLoggingPath();
-        try {
-            writer = new FileWriter(auditLogFileName.toFile(), true);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writer = new FileWriter(auditLogFileName.toFile(), true);
     }
 
+    @Async
     @Override
     public synchronized void add(AuditEvent event) {
         try {
@@ -77,6 +79,7 @@ public class FileRepository implements AuditEventRepository, AutoCloseable {
             return new AuditEvent(super.getTimestamp(), super.getPrincipal(), super.getType(), super.getData());
         }
     }
+
     @Override
     public List<AuditEvent> find(String principal, Instant after, String type) {
         if (!auditLogFileName.toFile().exists()) {

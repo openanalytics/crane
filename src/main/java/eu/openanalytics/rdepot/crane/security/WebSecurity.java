@@ -21,7 +21,7 @@
 package eu.openanalytics.rdepot.crane.security;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import eu.openanalytics.rdepot.crane.security.auditing.event.LogoutHandlerAuditEvent;
+import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
 import eu.openanalytics.rdepot.crane.service.PathAccessControlService;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
@@ -29,7 +29,6 @@ import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -73,14 +72,14 @@ public class WebSecurity {
 
     private final PathAccessControlService pathAccessControlService;
 
-    private final ApplicationEventPublisher publisher;
+    private final AuditingService auditingService;
 
-    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, PathAccessControlService pathAccessControlService, ApplicationEventPublisher publisher) {
+    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, PathAccessControlService pathAccessControlService, AuditingService auditingService) {
         this.config = config;
         this.openIdReAuthorizeFilter = openIdReAuthorizeFilter;
         this.specExpressionResolver = specExpressionResolver;
         this.pathAccessControlService = pathAccessControlService;
-        this.publisher = publisher;
+        this.auditingService = auditingService;
     }
 
     @Bean
@@ -123,7 +122,7 @@ public class WebSecurity {
                     resolvedLogoutUrl = config.getOpenidLogoutUrl();
                 }
             }
-            publisher.publishEvent(new LogoutHandlerAuditEvent(httpServletRequest, httpServletResponse, authentication));
+            auditingService.createLogoutHandlerAuditEvent(httpServletRequest);
             SimpleUrlLogoutSuccessHandler delegate = new SimpleUrlLogoutSuccessHandler();
             delegate.setDefaultTargetUrl(resolvedLogoutUrl);
             delegate.onLogoutSuccess(httpServletRequest, httpServletResponse, authentication);

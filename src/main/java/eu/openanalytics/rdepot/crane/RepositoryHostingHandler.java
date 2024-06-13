@@ -22,10 +22,8 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.security.auditing.event.ErrorHandlerAuditEvent;
-import eu.openanalytics.rdepot.crane.security.auditing.event.RepositoryHandlerAuditEvent;
+import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
 import org.apache.tika.Tika;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -55,13 +53,13 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
     private final Repository repository;
     private final Map<AntPathRequestMatcher, String> cacheRules;
 
-    private final ApplicationEventPublisher publisher;
+    private final AuditingService auditingService;
 
-    public RepositoryHostingHandler(Repository repository, Path repositoryRoot, ApplicationEventPublisher publisher) {
+    public RepositoryHostingHandler(Repository repository, Path repositoryRoot, AuditingService auditingService) {
         this.repository = repository;
         this.repositoryRoot = repositoryRoot;
         this.cacheRules = new HashMap<>();
-        this.publisher = publisher;
+        this.auditingService = auditingService;
 
         if (repository.getCache() != null) {
             for (CacheRule cache : repository.getCache()) {
@@ -81,7 +79,7 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
             if (path.endsWith(repository.getIndexFileName())) {
                 Path directory = path.getParent();
                 if (Files.isDirectory(directory)) {
-                    publisher.publishEvent(new RepositoryHandlerAuditEvent(request));
+                    auditingService.createRepositoryHandlerAuditEvent(request);
                     request.setAttribute("path", directory);
                     request.setAttribute("repo", repository);
                     request.getRequestDispatcher("/__index").forward(request, response);
@@ -89,7 +87,7 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
                 }
             }
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
-            publisher.publishEvent(new ErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND.value()));
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND);
             request.getRequestDispatcher("/error").forward(request, response);
             return;
         }
@@ -101,7 +99,7 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
             return;
         }
 
-        publisher.publishEvent(new RepositoryHandlerAuditEvent(request));
+        auditingService.createRepositoryHandlerAuditEvent(request);
         InputStreamResource resource = new InputStreamResource(Files.newInputStream(path));
         addCachingHeaders(request, response);
 

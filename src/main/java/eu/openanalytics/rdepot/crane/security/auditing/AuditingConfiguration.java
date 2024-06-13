@@ -21,22 +21,20 @@
 package eu.openanalytics.rdepot.crane.security.auditing;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.IOException;
+
 @Configuration
 public class AuditingConfiguration {
 
-    @Autowired
-    private CraneConfig craneConfig;
-
-	@Bean
+    @Bean
     @ConditionalOnProperty(value = "app.audit-logging")
-	public AuditEventRepository auditEventRepository() {
-		return new FileRepository(craneConfig);
-	}
+    public AuditEventRepository auditEventRepository(CraneConfig craneConfig) throws IOException {
+        return new FileAuditEventRepository(craneConfig);
+    }
 
 }

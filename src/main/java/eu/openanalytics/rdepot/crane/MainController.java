@@ -22,8 +22,10 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
 import eu.openanalytics.rdepot.crane.service.AccessControlService;
 import eu.openanalytics.rdepot.crane.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -42,11 +44,13 @@ public class MainController {
     private final AccessControlService accessControlService;
 
     private final UserService userService;
+    private final AuditingService auditingService;
 
-    public MainController(CraneConfig config, AccessControlService accessControlService, UserService userService) {
+    public MainController(CraneConfig config, AccessControlService accessControlService, UserService userService, AuditingService auditingService) {
         this.config = config;
         this.accessControlService = accessControlService;
         this.userService = userService;
+        this.auditingService = auditingService;
     }
 
     @GetMapping("/.well-known/configured-openid-configuration")
@@ -56,7 +60,7 @@ public class MainController {
     }
 
     @GetMapping(value = "/", produces = "text/html")
-    public String getRepositoriesAsHtml(ModelMap map) {
+    public String getRepositoriesAsHtml(HttpServletRequest request, ModelMap map) {
         Authentication user = SecurityContextHolder.getContext().getAuthentication();
         boolean authenticated = userService.isAuthenticated();
 
@@ -64,6 +68,8 @@ public class MainController {
             .filter(r -> accessControlService.canAccessRepository(user, r))
             .map(Repository::getName)
             .collect(Collectors.toList());
+
+        auditingService.createListRepositoriesAuditEvent(request);
 
         if (repositories.isEmpty() && !authenticated) {
             // no repositories found and not authenticated -> ask the user to login

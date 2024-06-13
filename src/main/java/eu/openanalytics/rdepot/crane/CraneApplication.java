@@ -21,14 +21,17 @@
 package eu.openanalytics.rdepot.crane;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Properties;
 
+@EnableAsync
 @EnableWebMvc
-@SpringBootApplication(exclude = RedisAutoConfiguration.class)
+@SpringBootApplication(exclude = {RedisAutoConfiguration.class, AuditAutoConfiguration.class})
 public class CraneApplication {
 
     public static void main(String[] args) {
