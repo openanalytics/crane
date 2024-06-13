@@ -46,6 +46,7 @@ public class PathComponent {
     private List<IpAddressMatcher> accessNetworkMatchers;
     private String accessExpression;
     private Map<String, PathComponent> components;
+    private boolean isPublic = false;
 
     public String getName() {
         return name;
@@ -137,8 +138,13 @@ public class PathComponent {
     }
 
     public boolean getPublic() {
-        return false;
+        return isPublic;
     }
+
+    public void setPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
 
     public void validate() {
         if (getName() == null) {
@@ -156,6 +162,10 @@ public class PathComponent {
 
         if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
             accessAnyAuthenticatedUser = true;
+        }
+
+        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
         }
 
         if (components != null) {

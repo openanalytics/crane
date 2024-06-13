@@ -65,7 +65,7 @@ public class MainController {
         boolean authenticated = userService.isAuthenticated();
 
         List<String> repositories = config.getRepositories().stream()
-            .filter(r -> accessControlService.canAccessRepository(user, r))
+            .filter(r -> accessControlService.canAccess(user, r))
             .map(Repository::getName)
             .collect(Collectors.toList());
 

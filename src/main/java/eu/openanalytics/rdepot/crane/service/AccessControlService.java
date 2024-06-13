@@ -21,7 +21,6 @@
 package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
-import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -41,19 +40,6 @@ public class AccessControlService {
 
     public AccessControlService(SpecExpressionResolver specExpressionResolver) {
         this.specExpressionResolver = specExpressionResolver;
-    }
-
-    public boolean canAccessRepository(Authentication auth, Repository repository) {
-        if (auth == null || repository == null) {
-            return false;
-        }
-
-        if (repository.getPublic()) {
-            return true;
-        }
-
-
-        return canAccess(auth, repository);
     }
 
     public boolean canAccess(Authentication auth, PathComponent pathComponent) {

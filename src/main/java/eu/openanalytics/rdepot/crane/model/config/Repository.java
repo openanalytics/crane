@@ -24,18 +24,8 @@ import java.util.List;
 
 public class Repository extends PathComponent {
 
-    private Boolean isPublic = false;
     private String indexFileName = "index.html";
     private List<CacheRule> cache;
-
-    @Override
-    public boolean getPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
 
     public String getIndexFileName() {
         return indexFileName;
@@ -51,14 +41,6 @@ public class Repository extends PathComponent {
 
     public void setCache(List<CacheRule> cache) {
         this.cache = cache;
-    }
-
-    public void validate() {
-        super.validate();
-
-        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
-        }
     }
 
 }
