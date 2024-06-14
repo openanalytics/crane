@@ -37,4 +37,10 @@ public class AuditingConfiguration {
         return new FileAuditEventRepository(craneConfig);
     }
 
+    @Bean
+    @ConditionalOnProperty(value = "app.audit-logging",matchIfMissing = true)
+    public AuditEventRepository noAuditEventRepository(CraneConfig craneConfig) throws IOException {
+        return new NoAuditEventRepository(craneConfig);
+    }
+
 }
