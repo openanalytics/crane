@@ -21,12 +21,21 @@
 package eu.openanalytics.rdepot.crane.test.config;
 
 import eu.openanalytics.rdepot.crane.test.helpers.CraneInstance;
+import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.rdepot.crane.test.helpers.TestHelperException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class CraneConfigTest {
+
+    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
+
+    @BeforeAll
+    public  static void beforeAll() {
+        keycloakInstance.start();
+    }
 
     @Test
     public void testConfigurationWithMissingStoragePath() {
@@ -43,7 +52,7 @@ public class CraneConfigTest {
     public void testConfigurationWithoutOpenidIssuerUri() {
         TestHelperException exception = Assertions.assertThrows(
             TestHelperException.class,
-            () -> new CraneInstance("application-no-openid-issuer-uri.yml")
+            () -> new CraneInstance("application-no-openid-issuer-uri.yml", false)
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);

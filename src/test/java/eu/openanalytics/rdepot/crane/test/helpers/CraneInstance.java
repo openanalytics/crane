@@ -41,7 +41,6 @@
 package eu.openanalytics.rdepot.crane.test.helpers;
 
 import com.redis.testcontainers.RedisContainer;
-import dasniko.testcontainers.keycloak.KeycloakContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import eu.openanalytics.rdepot.crane.CraneApplication;
@@ -61,35 +60,35 @@ public class CraneInstance implements AutoCloseable {
 
     public final CraneClient client;
     @Container
-    public final KeycloakContainer keycloak = new KeycloakContainer()
-        .withRealmImportFiles("crane-realm.json")
-        .withExposedPorts(8080)
-        .withExtraHost("localhost", "127.0.0.1");
-    @Container
     public final RedisContainer redis = new RedisContainer(DockerImageName.parse("redis:6.2.6"));
     public final int port;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Thread thread;
     private ConfigurableApplicationContext app;
-    private boolean isRunningKeykloak;
-    private boolean isRnningRedis;
+    private final boolean isRunningRedis;
 
-    public CraneInstance(String configFileName, boolean startKeycloak) {
-        this(configFileName, 7070, new HashMap<>(), startKeycloak);
-    }
     public CraneInstance(String configFileName) {
-        this(configFileName, 7070, new HashMap<>(), true);
+        this(configFileName, 7271, new HashMap<>(), true);
     }
 
-    public CraneInstance(String configFileName, int port, Map<String, String> properties, boolean startKeycloak) {
-        isRunningKeykloak = startKeycloak;
-        if (startKeycloak) {
-            keycloak.setPortBindings(List.of("8080:8080"));
-            keycloak.start();
-        }
+    public CraneInstance(String configFileName, boolean setupKeycloak) {
+        this(configFileName, 7271, new HashMap<>(), setupKeycloak);
+    }
+
+    public CraneInstance(String configFileName, Map<String, String> properties) {
+        this(configFileName, 7271, properties, true);
+    }
+
+    public CraneInstance(String configFileName, int port, Map<String, String> properties, boolean setupKeycloak) {
         try {
             this.port = port;
             int mgmtPort = port % 1000 + 9000;
+            String keycloakUri = String.format(
+                "http://%s:%s/realms/crane",
+                System.getProperty("http.keycloak.host"),
+                System.getProperty("http.keycloak.port")
+            );
+
 
             SpringApplication application = new SpringApplication(CraneApplication.class);
             application.addPrimarySources(Collections.singletonList(TestConfiguration.class));
@@ -98,9 +97,16 @@ public class CraneInstance implements AutoCloseable {
             allProperties.put("server.port", port);
             allProperties.put("management.server.port", mgmtPort);
             allProperties.put("proxy.kubernetes.namespace", "test");
+            if (setupKeycloak) {
+                allProperties.put("app.openid-issuer-uri", keycloakUri);
+                allProperties.put("spring.security.oauth2.client.provider.crane.issuer-uri", keycloakUri);
+            }
+            allProperties.put("spring.security.oauth2.client.registration.crane.client-id", "crane_client");
+            allProperties.put("spring.security.oauth2.client.registration.crane.client-secret", "secret");
+            allProperties.put("spring.security.oauth2.client.registration.crane.scope", "openid");
             allProperties.putAll(properties);
-            isRnningRedis = allProperties.get("spring.session.store-type") == "redis";
-            if (isRnningRedis) {
+            isRunningRedis = allProperties.get("spring.session.store-type").equals("redis");
+            if (isRunningRedis) {
                 redis.setPortBindings(List.of("6379:6379"));
                 redis.start();
             }
@@ -140,7 +146,6 @@ public class CraneInstance implements AutoCloseable {
                 logger.info("Crane available!");
             }
         } catch (Throwable t) {
-            closeKeycloak();
             closeRedis();
             throw new TestHelperException("Error during startup of Crane", t);
         }
@@ -171,15 +176,8 @@ public class CraneInstance implements AutoCloseable {
         }
     }
 
-    private void closeKeycloak() {
-        if (isRunningKeykloak){
-            keycloak.stop();
-            keycloak.close();
-        }
-    }
-
     private void closeRedis() {
-        if (isRnningRedis) {
+        if (isRunningRedis) {
             redis.stop();
             redis.close();
         }
@@ -188,7 +186,6 @@ public class CraneInstance implements AutoCloseable {
     public void close() {
         app.stop();
         app.close();
-        closeKeycloak();
         closeRedis();
         try {
             thread.join();
@@ -196,5 +193,4 @@ public class CraneInstance implements AutoCloseable {
             throw new RuntimeException(ex);
         }
     }
-
 }

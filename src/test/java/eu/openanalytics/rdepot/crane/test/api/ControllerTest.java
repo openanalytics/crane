@@ -22,17 +22,27 @@ package eu.openanalytics.rdepot.crane.test.api;
 
 import eu.openanalytics.rdepot.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.rdepot.crane.test.helpers.CraneInstance;
+import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.rdepot.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
 
 public class ControllerTest {
-    private static final CraneInstance inst = new CraneInstance("application-test-api.yml");
-    private static final CraneInstance redisInst = new CraneInstance("application-test-redis.yml", 7071, new HashMap<>(), false);
+    private static CraneInstance inst;
+    private static CraneInstance redisInst;
+    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
+
+    @BeforeAll
+    public  static void beforeAll() {
+        keycloakInstance.start();
+        inst = new CraneInstance("application-test-api.yml");
+        redisInst = new CraneInstance("application-test-api.yml", 7071, new HashMap<>(), true);
+    }
 
     @AfterAll
     public static void afterAll() {

@@ -22,8 +22,10 @@ package eu.openanalytics.rdepot.crane.test.api;
 
 import eu.openanalytics.rdepot.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.rdepot.crane.test.helpers.CraneInstance;
+import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.rdepot.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -33,9 +35,16 @@ import java.util.List;
 
 @Testcontainers
 public class RepositoryHostingHandlerTest {
-    private static final CraneInstance inst = new CraneInstance("application-test-api.yml");
+    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
+    private static CraneInstance inst;
+    private static CraneInstance groupsInst;
 
-    private static final CraneInstance groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7071, new HashMap<>(), false);
+    @BeforeAll
+    public static void beforeAll() {
+        keycloakInstance.start();
+        inst = new CraneInstance("application-test-api.yml");
+        groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7273, new HashMap<>(), true);
+    }
 
     @AfterAll
     public static void afterAll() {

@@ -20,12 +20,10 @@
  */
 package eu.openanalytics.rdepot.crane.test.service;
 
-import dasniko.testcontainers.keycloak.KeycloakContainer;
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.AccessControlService;
-import org.apache.http.util.Asserts;
-import org.junit.jupiter.api.AfterAll;
+import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,35 +32,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import org.testcontainers.junit.jupiter.Container;
 
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "app.openid-issuer-uri=http://localhost:9189/realms/crane",
+    "spring.security.oauth2.client.provider.crane.issuer-uri=http://localhost:9189/realms/crane"
+})
 public class AccessControlServiceTest {
-    @Container
-    private static final KeycloakContainer keycloakContainer = new KeycloakContainer()
-        .withRealmImportFiles("crane-realm.json")
-        .withExposedPorts(8080)
-        .withExtraHost("localhost", "127.0.0.1");
+    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
 
+    @BeforeAll
+    public  static void beforeAll() {
+        keycloakInstance.start();
+    }
     @Autowired
     private AccessControlService accessControlService;
 
-    @BeforeAll
-    public static void initKeycloak() {
-        keycloakContainer.setPortBindings(List.of("8080:8080"));
-        keycloakContainer.start();
-    }
-
-    @AfterAll
-    public static void closeKeycloak() {
-        keycloakContainer.stop();
-        keycloakContainer.close();
-    }
     @Test
     public void testAccessToRestrictedNetworkRepository() {
         String allowed_ip = "192.168.18.123";
