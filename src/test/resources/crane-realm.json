@@ -1,5 +1,6 @@
 {
   "realm": "crane",
+  "accessTokenLifespan" : 18000,
   "enabled": true,
   "users": [
     {
