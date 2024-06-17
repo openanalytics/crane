@@ -14,4 +14,4 @@ spring:
             scope: openid
         provider:
           crane:
-            issuer-uri: http://localhost:8080/realms/crane
+            issuer-uri: http://localhost:9189/realms/crane
