@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crane
+spec:
+  selector:
+    matchLabels:
+      app: crane
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: crane
+    spec:
+      containers:
+        - name: crane
+          ports:
+            - containerPort: 9080
+              name: http-crane
+          image: crane
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /tmp/repositories
+              name: crane-pv
+            - mountPath: /opt/crane/application.yml
+              subPath: application.yml
+              name: crane-config
+          env:
+            - name: OAUTH2_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: crane-client-creds
+                  key: client-secret
+            - name: OAUTH2_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: crane-client-creds
+                  key: client-id
+      volumes:
+      - name: crane-config
+        configMap:
+          name: crane
+      - name: crane-pv
+        persistentVolumeClaim:
+          claimName: crane-pvc
+      serviceAccount: crane-sa
+
+

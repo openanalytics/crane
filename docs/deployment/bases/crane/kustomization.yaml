@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - resources/crane.deployment.yaml
+  - resources/crane.service.yaml
+  - resources/crane.sa.yaml
+
+configMapGenerator:
+  - files:
+      - kustomizeconfig/application.yml
+    name: crane
+
+images:
+  - name: crane
+    newName: openanalytics/crane-snapshot
+    newTag: 0.2.0-SNAPSHOT-20240206.10073
+

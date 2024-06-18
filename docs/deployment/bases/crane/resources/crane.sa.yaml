@@ -1,0 +1,6 @@
+---
+# ServiceAccount to run the operator in
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crane-sa
