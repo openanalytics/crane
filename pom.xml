@@ -187,6 +187,7 @@
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.raml</exclude>
                         <exclude>**/*.sh</exclude>
+                        <exclude>**/*.txt</exclude>
                         <exclude>**/*.xml</exclude>
                         <exclude>LICENSE</exclude>
                         <exclude>LICENSE_HEADER</exclude>
