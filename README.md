@@ -8,4 +8,27 @@ project assets.
 
 Learn more at https://crane.rdepot.io
 
-**(c) Copyright Open Analytics NV, 2021-2022 - Apache License 2.0**
+**(c) Copyright Open Analytics NV, 2021-2024 - Apache License 2.0**
+
+## Building from source
+
+Clone this repository and run
+
+```bash
+mvn -U clean install
+```
+
+The build will result in a single `.jar` file: `target/crane-${CRANE_VERSION}-SNAPSHOT-exec.jar` where crane
+
+## Running
+
+Crane can either be run locally or using the [docker image](https://hub.docker.com/r/openanalytics/crane-snapshot).
+
+To run crane locally the following command can be used:
+```bash
+java -jar target/crane-${CRANE_VERSION}-SNAPSHOT-exec.jar
+```
+
+## Java Version
+This project requires JDK 17.
+
