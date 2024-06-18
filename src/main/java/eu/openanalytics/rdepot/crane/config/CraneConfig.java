@@ -98,6 +98,11 @@ public class CraneConfig {
             throw new IllegalArgumentException("Incorrect configuration detected: no repositories configured");
         }
 
+        if (auditLogging != null) {
+            FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
+            auditLoggingPath = fs.getPath(new URI(auditLogging).getPath());
+        }
+
         root = storageLocationToPath(storageLocation);
 
         repositories.values().forEach(Repository::validate);
@@ -145,11 +150,6 @@ public class CraneConfig {
         } else {
             FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
             return fs.getPath(new URI(storageLocation).getPath());
-        }
-
-        if (auditLogging != null) {
-            FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
-            auditLoggingPath = fs.getPath(new URI(auditLogging).getPath());
         }
     }
 
