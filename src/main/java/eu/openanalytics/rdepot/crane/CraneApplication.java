@@ -58,6 +58,9 @@ public class CraneApplication {
         // use in-memory session storage by default. Can be overwritten in application.yml
         properties.put("spring.session.store-type", "none");
 
+        // hide "Started CraneApplication in ..." since we already log the version number
+        properties.put("spring.main.log-startup-info", "false");
+
         // ====================
 
         return properties;

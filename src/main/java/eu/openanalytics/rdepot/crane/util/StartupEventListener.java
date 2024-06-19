@@ -22,7 +22,6 @@ package eu.openanalytics.rdepot.crane.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.event.EventListener;
@@ -30,17 +29,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StartupEventListener {
+
     private final Logger logger = LoggerFactory.getLogger(StartupEventListener.class);
 
-    @Autowired
-    private BuildProperties buildProperties;
+    private final BuildProperties buildProperties;
+
+    public StartupEventListener(BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
+    }
 
     @EventListener
     public void onStartup(ApplicationReadyEvent event) {
-        String startupMsg = String.format(
-            "Started %s %s",
-            buildProperties.getName(), buildProperties.getVersion()
-        );
-        logger.info(startupMsg);
+        logger.info("Started {} {}", buildProperties.getName(), buildProperties.getVersion());
     }
+
 }
