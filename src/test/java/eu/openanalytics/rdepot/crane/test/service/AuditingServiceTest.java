@@ -38,6 +38,7 @@ import java.util.Map;
 @Testcontainers
 public class AuditingServiceTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
+    private static final String ANONYMOUS_USER = "anonymousUser";
     private static CraneInstance inst;
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
     private static BufferedReader bufferedReader;
@@ -70,15 +71,18 @@ public class AuditingServiceTest {
         ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/"));
-        checkLoggingLine("/", "LIST_REPOSITORIES");
+        checkUnauthenticatedAuditLog("/", "LIST_REPOSITORIES");
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/"));
-        checkLoggingLine("/", "AUTHENTICATION_SUCCESS", "demo");
-        checkLoggingLine("/", "LIST_REPOSITORIES", "demo");
+        checkTwoAuditLogs(
+            "/", "AUTHENTICATION_SUCCESS", "demo",
+            "/", "LIST_REPOSITORIES", "demo");
 
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/"));
-        checkLoggingLine("/", "AUTHENTICATION_SUCCESS", "test");
-        checkLoggingLine("/", "LIST_REPOSITORIES", "test");
+        checkTwoAuditLogs(
+            "/", "AUTHENTICATION_SUCCESS", "test",
+            "/", "LIST_REPOSITORIES", "test"
+        );
     }
 
     private FileAuditEventRepository.AuditEventData readAuditEventData() throws IOException, InterruptedException {
@@ -92,11 +96,13 @@ public class AuditingServiceTest {
         ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/private_repo"));
-        checkLoggingLine("/private_repo", "AUTHORIZATION_FAILURE");
+        checkUnauthenticatedAuditLog("/private_repo", "AUTHORIZATION_FAILURE");
 
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/restricted_repo"));
-        checkLoggingLine("/restricted_repo", "AUTHENTICATION_SUCCESS", "test");
-        checkLoggingLine("/restricted_repo", "AUTHORIZATION_FAILURE", "test");
+        checkTwoAuditLogs(
+            "/restricted_repo", "AUTHENTICATION_SUCCESS", "test",
+            "/restricted_repo", "AUTHORIZATION_FAILURE", "test"
+        );
     }
 
     @Test
@@ -104,15 +110,18 @@ public class AuditingServiceTest {
         ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/logout"));
-        checkLoggingLine("/logout", "LOGOUT");
+        checkUnauthenticatedAuditLog("/logout", "LOGOUT");
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/logout"));
-        checkLoggingLine("/logout", "LOGOUT");
-        checkLoggingLine("/logout-success", "AUTHENTICATION_SUCCESS", "demo");
+        checkTwoAuditLogs(
+            "/logout", "LOGOUT", ANONYMOUS_USER,
+            "/logout-success", "AUTHENTICATION_SUCCESS", "demo"
+        );
 
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/logout"));
-        checkLoggingLine( "/logout", "LOGOUT");
-        checkLoggingLine("/logout-success", "AUTHENTICATION_SUCCESS", "test");
+        checkTwoAuditLogs( "/logout", "LOGOUT", ANONYMOUS_USER,
+        "/logout-success", "AUTHENTICATION_SUCCESS", "test"
+        );
     }
 
     @Test
@@ -120,19 +129,35 @@ public class AuditingServiceTest {
         ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/undefined_repository"));
-        checkLoggingLine("/undefined_repository", "AUTHENTICATION_SUCCESS", "demo");
-        checkLoggingLine("/undefined_repository", "AUTHORIZATION_FAILURE", "demo");
+        checkTwoAuditLogs(
+            "/undefined_repository", "AUTHENTICATION_SUCCESS", "demo",
+            "/undefined_repository", "AUTHORIZATION_FAILURE", "demo"
+        );
     }
-    private void checkLoggingLine(String path, String type, String username) throws IOException, InterruptedException {
+    private void checkAuditLog(String path, String type, String username) throws IOException, InterruptedException {
         FileAuditEventRepository.AuditEventData auditEventData = readAuditEventData();
-        
-        Assertions.assertEquals(auditEventData.getPrincipal(), username);
-        Assertions.assertEquals(auditEventData.getData().get("path"), path);
-        Assertions.assertEquals(auditEventData.getType(), type);
+
+        Assertions.assertEquals(username, auditEventData.getPrincipal());
+        Assertions.assertEquals(path, auditEventData.getData().get("request_path"));
+        Assertions.assertEquals(type, auditEventData.getType());
     }
 
-    private void checkLoggingLine(String path, String type) throws IOException, InterruptedException {
-        checkLoggingLine(path, type, "anonymousUser");
+    private void checkTwoAuditLogs(String path1, String type1, String username1, String path2, String type2, String username2) throws IOException, InterruptedException {
+        // Reading two lines to prevent next tests from failing in case a previous tests fails
+        // at a request logging two audit events
+        FileAuditEventRepository.AuditEventData firstAuditEvent = readAuditEventData();
+        FileAuditEventRepository.AuditEventData secondAuditEvent = readAuditEventData();
+
+        Assertions.assertEquals(username1, firstAuditEvent.getPrincipal());
+        Assertions.assertEquals(path1, firstAuditEvent.getData().get("request_path"));
+        Assertions.assertEquals(type1, firstAuditEvent.getType());
+
+        Assertions.assertEquals(username2, secondAuditEvent.getPrincipal());
+        Assertions.assertEquals(path2, secondAuditEvent.getData().get("request_path"));
+        Assertions.assertEquals(type2, secondAuditEvent.getType());
+    }
+    private void checkUnauthenticatedAuditLog(String path, String type) throws IOException, InterruptedException {
+        checkAuditLog(path, type, ANONYMOUS_USER);
     }
 
     private static void clearAuditLoggingFile() {
