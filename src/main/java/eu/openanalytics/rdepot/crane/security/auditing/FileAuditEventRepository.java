@@ -70,7 +70,7 @@ public class FileAuditEventRepository implements AuditEventRepository, AutoClose
         writer.close();
     }
 
-    private static class AuditEventData extends AuditEvent {
+    public static class AuditEventData extends AuditEvent {
         public AuditEventData() {
             super("", "", new HashMap<>());
         }
