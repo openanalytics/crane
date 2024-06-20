@@ -20,8 +20,6 @@
  */
 package eu.openanalytics.rdepot.crane.model.config;
 
-import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
-
 import java.nio.file.Path;
 import java.util.List;
 
