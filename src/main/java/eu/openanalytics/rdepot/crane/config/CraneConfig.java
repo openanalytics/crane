@@ -79,6 +79,8 @@ public class CraneConfig {
     private Path root;
 
     private List<CacheRule> defaultCache;
+    private StsClient stsClient;
+    private String callerIdentityArn;
 
     public Path getRoot() {
         return root;
@@ -114,21 +116,21 @@ public class CraneConfig {
                 r.setStorageLocation(storageLocation);
                 r.setStoragePath(root);
             } else {
-                    r.setStoragePath(storageLocationToPath(r.getStorageLocation()));
+                r.setStoragePath(storageLocationToPath(r.getStorageLocation()));
             }
+        }
+        close();
+    }
+
+    private void close() {
+        if (stsClient != null) {
+            stsClient.close();
         }
     }
 
     private Path storageLocationToPath(String storageLocation) throws IOException, URISyntaxException {
         if (storageLocation.startsWith("s3://")) {
-            try (StsClient client = StsClient.create()) {
-                try {
-                    logger.info("Using AWS identity: " + client.getCallerIdentity().arn());
-                } catch (StsException exception) {
-                    logger.info("Not authenticated with AWS, enable debug logs in case this unexpected.");
-                    logger.debug("Not authenticated with AWS", exception);
-                }
-            }
+            checkStsAuthentication();
 
             if (s3Endpoint == null) {
                 s3Endpoint = new URI("https:///");
@@ -146,6 +148,21 @@ public class CraneConfig {
         } else {
             FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
             return fs.getPath(new URI(storageLocation).getPath());
+        }
+    }
+
+    private void checkStsAuthentication() {
+        if (stsClient == null) {
+            stsClient = StsClient.create();
+        }
+        try {
+            if (callerIdentityArn == null) {
+                callerIdentityArn = stsClient.getCallerIdentity().arn();
+            }
+            logger.info("Using AWS identity: " + callerIdentityArn);
+        } catch (StsException exception) {
+            logger.info("Not authenticated with AWS, enable debug logs in case this unexpected.");
+            logger.debug("Not authenticated with AWS", exception);
         }
     }
 
