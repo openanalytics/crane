@@ -106,7 +106,7 @@ public class CraneConfig {
         root = storageLocationToPath(storageLocation);
 
         repositories.values().forEach(Repository::validate);
-        repositories.values().forEach(r -> {
+        for (Repository r : repositories.values()) {
             if (defaultCache != null && r.getCache() == null) {
                 r.setCache(defaultCache);
             }
@@ -114,13 +114,9 @@ public class CraneConfig {
                 r.setStorageLocation(storageLocation);
                 r.setStoragePath(root);
             } else {
-                try {
                     r.setStoragePath(storageLocationToPath(r.getStorageLocation()));
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
             }
-        });
+        }
     }
 
     private Path storageLocationToPath(String storageLocation) throws IOException, URISyntaxException {
