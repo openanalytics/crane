@@ -22,6 +22,7 @@ package eu.openanalytics.rdepot.crane.security.auditing;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,8 +39,8 @@ public class AuditingConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value = "app.audit-logging",matchIfMissing = true)
-    public AuditEventRepository noAuditEventRepository(CraneConfig craneConfig) throws IOException {
+    @ConditionalOnMissingBean
+    public AuditEventRepository noAuditEventRepository(CraneConfig craneConfig) {
         return new NoAuditEventRepository(craneConfig);
     }
 
