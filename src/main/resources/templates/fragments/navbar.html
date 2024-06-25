@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <header>
+        <img class="logo" src="https://www.openanalytics.eu/shinyproxy/logo.png">
+        <pre class="crane"> ██████╗██████╗  █████╗ ███╗   ██╗███████╗
+██╔════╝██╔══██╗██╔══██╗████╗  ██║██╔════╝
+██║     ██████╔╝███████║██╔██╗ ██║█████╗
+██║     ██╔══██╗██╔══██║██║╚██╗██║██╔══╝
+╚██████╗██║  ██║██║  ██║██║ ╚████║███████╗
+ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝
+</pre>
+        <div class="nav">
+            <a class="header-field header-button" th:href="@{'/'}">Home</a>
+            <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!authenticated}">
+                Login to see all repositories.
+            </a>
+            <p class="header-field" th:if="${authenticated}" >
+                Logged in as <b th:text="${username}"></b>
+            </p>
+        </div>
+        <style>
+            .logo {
+                width: 50px;
+            }
+
+            header {
+                display: flex;
+                height: 50px;
+                border-bottom: 2px solid #e8e8e8;
+                padding-bottom: 5px;
+            }
+
+            .crane {
+                color: #000;
+                font-size: 6px;
+                line-height: 7px;
+                margin: 5px 0 0 5px;
+            }
+
+            .nav {
+               display: flex;
+               flex: auto;
+               justify-content: space-between;
+               margin-left: 25px;
+            }
+
+            .header-field  {
+                align-self: center;
+                font-size: 16px;
+                line-height: 18px;
+                color: black;
+            }
+
+            .header-button {
+                text-decoration: none;
+                padding: 10px;
+                border-radius: 10px;
+                border: 1px solid transparent;
+            }
+
+            .header-button:hover {
+                border: 1px solid lightgray;
+                background: #e6e6e6;
+            }
+        </style>
+    </header>
+</body>
+</html>

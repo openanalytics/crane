@@ -27,10 +27,8 @@
 </head>
 <body>
 <div class="container">
+    <div th:insert="fragments/navbar.html"> </div>
     <h1>Repositories</h1>
-    <a th:href="@{${loginUrl}}" th:if="${!authenticated}">
-        Login to see all repositories.
-    </a>
     <p th:if="${repositories.isEmpty()}">You do not have access to any repository.</p>
     <ul>
         <li th:each="repository: ${repositories}">
@@ -39,6 +37,8 @@
     </ul>
 </div>
 </body>
+
+</html>
 
 <style>
     h1 {
@@ -73,4 +73,3 @@
     }
 
 </style>
-</html>
