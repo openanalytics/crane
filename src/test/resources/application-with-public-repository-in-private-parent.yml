@@ -1,0 +1,11 @@
+app:
+  default-cache:
+    - pattern: "/**/default_cached_file.html"
+      max-age: "PT66M"
+  storage-location: /tmp/repository/
+  openid-groups-claim: realm_roles
+  repositories:
+    - name: private_repo
+      paths:
+        - name: public_repo
+          public: true

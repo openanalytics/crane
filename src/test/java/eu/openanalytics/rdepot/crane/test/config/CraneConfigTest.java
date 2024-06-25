@@ -28,6 +28,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang3.exception.ExceptionUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CraneConfigTest {
 
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
@@ -68,5 +71,21 @@ public class CraneConfigTest {
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
         Assertions.assertEquals(rootCause.getMessage(), "Incorrect configuration detected: no repositories configured");
+    }
+
+    @Test
+    public void testConfigurationWithAPublicRepositoryWithAPrivateParent() {
+        TestHelperException exception = Assertions.assertThrows(
+            TestHelperException.class,
+            () -> {
+                new CraneInstance("application-with-public-repository-in-private-parent.yml");
+            }
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals(
+            "PathComponent public_repo is invalid, cannot have a public repository (public_repo) in a private repository (private_repo)",
+            rootCause.getMessage()
+            );
     }
 }
