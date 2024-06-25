@@ -20,6 +20,8 @@
  */
 package eu.openanalytics.rdepot.crane;
 
+import eu.openanalytics.rdepot.crane.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -40,6 +42,11 @@ import java.util.Map;
 
 @Controller
 public class ErrorsController implements ErrorController {
+    private final UserService userService;
+
+    public ErrorsController(UserService userService) {
+        this.userService = userService;
+    }
 
     @RequestMapping(value = "/error", produces = "text/html")
     public ModelAndView handleErrorAsHtml(HttpServletRequest request, HttpServletResponse response, ModelMap map) {
@@ -79,6 +86,8 @@ public class ErrorsController implements ErrorController {
     public String getLogoutSuccessPage(HttpServletResponse response, ModelMap map) {
         setNoCacheHeader(response);
         map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
+        map.put("authenticated", false);
+        map.put("loginUrl", userService.getLoginUrl());
         return "logout-success";
     }
 
