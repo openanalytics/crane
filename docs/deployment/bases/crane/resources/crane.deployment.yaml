@@ -20,8 +20,6 @@ spec:
           image: crane
           imagePullPolicy: Always
           volumeMounts:
-            - mountPath: /tmp/repositories
-              name: crane-pv
             - mountPath: /opt/crane/application.yml
               subPath: application.yml
               name: crane-config
@@ -40,9 +38,6 @@ spec:
       - name: crane-config
         configMap:
           name: crane
-      - name: crane-pv
-        persistentVolumeClaim:
-          claimName: crane-pvc
       serviceAccount: crane-sa
 
 
