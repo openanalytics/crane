@@ -170,6 +170,9 @@ public class PathComponent {
 
         if (components != null) {
             for (PathComponent component : components.values()) {
+                if (component.getPublic() && !getPublic()) {
+                    throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot have a public repository (%s) in a private repository (%s)", component.name, component.name, name));
+                }
                 component.validate();
             }
         }
