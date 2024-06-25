@@ -1,0 +1,98 @@
+{
+    "realm": "crane",
+    "enabled": true,
+    "users": [
+      {
+        "username": "demo",
+        "firstName": "demo",
+        "lastName": "demo",
+        "email": "demo@demo.demo",
+        "enabled": true,
+        "credentials": [
+          {
+            "type": "password",
+            "value": "demo"
+          }
+        ],
+        "realmRoles" : [ "mathematicians", "scientists" ],
+        "groups" : [ "/mathematicians", "/scientists" ]
+    },
+      {
+        "username": "test",
+        "firstName": "Test",
+        "lastName": "Tester",
+        "email": "test@email.com",
+        "enabled": true,
+        "credentials": [
+          {
+            "type": "password",
+            "value": "test"
+          }
+        ],
+        "realmRoles" : [ "mathematicians" ],
+        "groups" : [ "/mathematicians" ]
+    }
+    ],
+    "roles": {
+      "realm": [
+        {
+          "name": "scientists",
+          "description": "Scientists doing science things"
+        },
+        {
+          "name": "mathematicians",
+          "description": "Mathematicians doing math things"
+        }
+      ]
+    },
+    "groups" : [ {
+      "name" : "mathematicians",
+      "path" : "/mathematicians"
+    }, {
+      "name" : "scientists",
+      "path" : "/scientists"
+    } ],
+    "clients": [
+      {
+        "clientId": "crane_client",
+        "enabled": true,
+        "adminUrl": "",
+        "baseUrl": "",
+        "bearerOnly": false,
+        "redirectUris" : [ "*" ],
+        "secret": "secret",
+        "authorizationServicesEnabled": true,
+        "directAccessGrantsEnabled": true,
+        "protocolMappers" : [ {
+          "name" : "realm_roles",
+          "protocol" : "openid-connect",
+          "protocolMapper" : "oidc-usermodel-realm-role-mapper",
+          "consentRequired" : false,
+          "config" : {
+            "introspection.token.claim" : "false",
+            "multivalued" : "true",
+            "userinfo.token.claim" : "true",
+            "id.token.claim" : "true",
+            "lightweight.claim" : "false",
+            "access.token.claim" : "true",
+            "claim.name" : "realm_roles",
+            "jsonType.label" : "String"
+          }
+        }, {
+          "name" : "groups",
+          "protocol" : "openid-connect",
+          "protocolMapper" : "oidc-group-membership-mapper",
+          "consentRequired" : false,
+          "config" : {
+            "full.path" : "false",
+            "introspection.token.claim" : "true",
+            "userinfo.token.claim" : "true",
+            "id.token.claim" : "true",
+            "lightweight.claim" : "false",
+            "access.token.claim" : "true",
+            "claim.name" : "groups"
+          }
+        } ]
+      }
+    ]
+  }
