@@ -49,6 +49,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,6 +85,8 @@ public class WebSecurity {
 
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+        requestCache.setMatchingRequestParameterName(null);
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authz -> authz
@@ -107,7 +110,8 @@ public class WebSecurity {
             .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(oidcUserService())))
             .oauth2Client(withDefaults())
             .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
-            .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
+            .requestCache((cache) -> cache.requestCache(requestCache));
         return http.build();
     }
 
