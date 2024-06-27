@@ -22,6 +22,7 @@ package eu.openanalytics.rdepot.crane.model.config;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Repository extends PathComponent {
 
@@ -46,8 +47,28 @@ public class Repository extends PathComponent {
         this.cache = cache;
     }
 
+    public void validateRepositoryName() {
+        List<String> invalidRepositoryNames = List.of(
+            // OIDC related urls
+            "logout", "login",
+            // RequestMappers
+            "logout-success", "error",
+            // other urls
+            "actuator", "favicon.ico", ".well-known"
+        );
+        if (invalidRepositoryNames.contains(getName()) || getName().startsWith("__")) {
+            throw new IllegalArgumentException(
+                String.format(
+                    "Repository %s name is invalid, repository names should not start with '__' and should be different from: %s",
+                    getName(), invalidRepositoryNames.stream().map(name -> "'" + name + "'").collect(Collectors.joining(", "))));
+        }
+//            - OIDC related URLs
+    }
+
     public void validate() {
         super.validate();
+
+        validateRepositoryName();
 
         if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
             throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
