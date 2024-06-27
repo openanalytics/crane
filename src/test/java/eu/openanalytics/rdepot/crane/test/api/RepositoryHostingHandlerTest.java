@@ -417,4 +417,18 @@ public class RepositoryHostingHandlerTest {
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
         resp.assertBadRequest();
     }
+
+    @Test
+    public void testPublicInPublicRepository() {
+        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        String repository = "/public_repo/public_in_public_repo";
+        String file = "/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+    }
 }

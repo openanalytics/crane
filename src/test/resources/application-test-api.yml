@@ -8,6 +8,8 @@ app:
     - name: public_repo
       public: true
       paths:
+        - name: public_in_public_repo
+          public: true
         - name: private_repo
         - name: restricted_repo
           access-users: demo
