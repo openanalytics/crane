@@ -22,6 +22,7 @@ package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.service.UserService;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,22 +30,22 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.stereotype.Component;
+import org.springframework.ui.ModelMap;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.StsException;
@@ -54,7 +55,7 @@ import software.amazon.awssdk.services.sts.model.StsException;
 public class CraneConfig {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
+    private final UserService userService;
     private String storageLocation;
 
     private String auditLogging;
@@ -71,6 +72,7 @@ public class CraneConfig {
 
     private String templatePath;
 
+    private String logoUrl = "https://www.openanalytics.eu/shinyproxy/logo.png";
     private URI s3Endpoint;
 
     private Map<String, Repository> repositories = new HashMap<>();
@@ -82,12 +84,17 @@ public class CraneConfig {
     private StsClient stsClient;
     private String callerIdentityArn;
 
+    public CraneConfig(UserService userService) {
+        this.userService = userService;
+    }
+
     public Path getRoot() {
         return root;
     }
 
     @PostConstruct
     public void init() throws IOException, URISyntaxException {
+        logoUrl = resolveImageURI(logoUrl);
         if (storageLocation == null) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location not set");
         }
@@ -164,6 +171,29 @@ public class CraneConfig {
             logger.info("Not authenticated with AWS, enable debug logs in case this unexpected.");
             logger.debug("Not authenticated with AWS", exception);
         }
+    }
+
+    protected String resolveImageURI(String resourceURI) {
+        if (resourceURI == null || resourceURI.isEmpty()) {
+            return null;
+        }
+
+        String resolvedValue = resourceURI;
+        if (resourceURI.toLowerCase().startsWith("file://")) {
+            String mimetype = URLConnection.guessContentTypeFromName(resourceURI);
+            if (mimetype == null) {
+                logger.warn("Cannot determine mimetype for resource: " + resourceURI);
+            } else {
+                try (InputStream input = new URL(resourceURI).openConnection().getInputStream()) {
+                    byte[] data = StreamUtils.copyToByteArray(input);
+                    String encoded = Base64.getEncoder().encodeToString(data);
+                    resolvedValue = String.format("data:%s;base64,%s", mimetype, encoded);
+                } catch (IOException e) {
+                    logger.warn("Failed to convert file URI to data URI: " + resourceURI, e);
+                }
+            }
+        }
+        return resolvedValue;
     }
 
     public void setStorageLocation(String storageLocation) {
@@ -276,6 +306,14 @@ public class CraneConfig {
         this.openidLogoutUrl = openidLogoutUrl;
     }
 
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
     public List<CacheRule> getDefaultCache() {
         return defaultCache;
     }
@@ -290,5 +328,15 @@ public class CraneConfig {
 
     public void setAuditLogging(String auditLogging) {
         this.auditLogging = auditLogging;
+    }
+
+    public void prepareMap(ModelMap map) {
+        boolean authenticated = userService.isAuthenticated();
+        map.put("logo", logoUrl);
+        map.put("authenticated", authenticated);
+        if (authenticated) {
+            map.put("username", userService.getUser().getName());
+        }
+        map.put("loginUrl", userService.getLoginUrl());
     }
 }
