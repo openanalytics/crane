@@ -1,7 +1,7 @@
 /**
  * Crane
  *
- * Copyright (C) 2021-2024 Open Analytics
+ * Copyright (C) 2021-2022 Open Analytics
  *
  * ===========================================================================
  *
@@ -46,7 +46,7 @@ public class PathComponent {
     private List<IpAddressMatcher> accessNetworkMatchers;
     private String accessExpression;
     private Map<String, PathComponent> components;
-    private boolean isPublic = false;
+    protected boolean isPublic = false;
 
     public String getName() {
         return name;
