@@ -20,9 +20,9 @@
  */
 package eu.openanalytics.rdepot.crane;
 
+import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.IndexPageService;
-import eu.openanalytics.rdepot.crane.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -40,11 +40,11 @@ public class IndexPageController {
 
     private final IndexPageService indexPageService;
 
-    private final UserService userService;
+    private final CraneConfig config;
 
-    public IndexPageController(IndexPageService indexPageService, UserService userService) {
+    public IndexPageController(IndexPageService indexPageService, CraneConfig config) {
         this.indexPageService = indexPageService;
-        this.userService = userService;
+        this.config = config;
     }
 
     @GetMapping("/__index")
@@ -60,14 +60,9 @@ public class IndexPageController {
 
         String resource = (String) request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH);
         resource = resource.replace(repo.getIndexFileName(), "");
+        config.prepareMap(map);
         map.put("resource", resource);
         map.putAll(indexPageService.getTemplateVariables(repo, path));
-        boolean authenticated = userService.isAuthenticated();
-        if (authenticated) {
-            map.put("username", userService.getUser().getName());
-        }
-        map.put("authenticated", userService.isAuthenticated());
-        map.put("loginUrl", userService.getLoginUrl());
         return indexPageService.getTemplateName(repo);
     }
 

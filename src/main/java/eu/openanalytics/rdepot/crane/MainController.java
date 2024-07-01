@@ -77,12 +77,7 @@ public class MainController {
         }
 
         map.put("repositories", repositories);
-        map.put("authenticated", authenticated);
-        if (authenticated) {
-            map.put("username", userService.getUser().getName());
-        }
-        map.put("loginUrl", userService.getLoginUrl());
-
+        config.prepareMap(map);
         return "repositories";
     }
 
