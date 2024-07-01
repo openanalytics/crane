@@ -86,7 +86,7 @@
     </head>
     <body>
         <div class="container">
-            <div th:insert="fragments/navbar.html"> </div>
+            <div th:insert="~{fragments/navbar.html}"> </div>
             <h1>Directory <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block></code></h1>
 
             <table>

@@ -27,7 +27,7 @@
 </head>
 <body>
 <div class="container">
-    <div th:insert="fragments/navbar.html"> </div>
+    <div th:insert="~{fragments/navbar.html}"> </div>
     <h1>Repositories</h1>
     <p th:if="${repositories.isEmpty()}">You do not have access to any repository.</p>
     <ul>
