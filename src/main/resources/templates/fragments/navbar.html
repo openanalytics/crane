@@ -28,6 +28,7 @@
 </head>
 <body>
     <header>
+        <a class="logo" th:href="@{'/'}">
             <img class="logo" th:src="${logo}">
             <pre class="crane"> ██████╗██████╗  █████╗ ███╗   ██╗███████╗
 ██╔════╝██╔══██╗██╔══██╗████╗  ██║██╔════╝
@@ -36,6 +37,7 @@
 ╚██████╗██║  ██║██║  ██║██║ ╚████║███████╗
  ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝
 </pre>
+        </a>
         <div class="nav">
             <a class="header-field header-button" th:href="@{'/'}">Home</a>
             <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!authenticated}">
