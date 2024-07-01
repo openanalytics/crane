@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crane
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - crane-demo.local
+      secretName: ingress-tls
+  rules:
+    - host: crane-demo.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: crane
+                port:
+                  name: http-crane

@@ -9,8 +9,3 @@ configMapGenerator:
   - files:
       - config/crane-realm.json
     name: keycloak-realm
-
-images:
-  - name: keycloak
-    newName: quay.io/keycloak/keycloak
-    newTag: 25.0.0

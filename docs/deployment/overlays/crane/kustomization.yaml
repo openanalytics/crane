@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../bases/crane
+  - ../../bases/keycloak
+  - resources/crane.ingress.yaml
+  - resources/keycloak.ingress.yaml
+
+patches:
+  - path: patches/crane.deployment.yaml
+
+secretGenerator:
+  - name: crane-client-creds
+    envs:
+      - secrets/crane.env
+  - name: ingress-tls
+    # This certificate is used since OpenID requires TLS.
+    # In production systems, you should use proper TLS certificates and these files are not be needed.
+    # The included certificates should only be used as a demo, do NOT use them in production.
+    # Commands to generate the cert:
+    # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out insecure-self-signed-tls.crt -keyout insecure-self-signed-tls.key -subj "/CN=crane-demo.local"
+    files:
+      - tls.crt=secrets/insecure-self-signed-tls.crt
+      - tls.key=secrets/insecure-self-signed-tls.key
+    type: "kubernetes.io/tls"

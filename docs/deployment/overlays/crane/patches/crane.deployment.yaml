@@ -1,0 +1,37 @@
+# This file patches the Crane deployment such that it trusts the self-signed certificate of Keycloak.
+# In production systems, you should use proper TLS certificates and this file is not be needed.
+# The included certificates should only be used as a demo, do NOT use them in production.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crane
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: java-trust-store
+          image: openjdk:11-jre-slim-buster
+          command:
+            - /bin/sh
+            - -c
+            - |
+              openssl x509 -outform der -in /etc/ssl/certs/certificate.crt -out /tmp/certificate.der
+              keytool -import -alias certificate -keystore $JAVA_HOME/lib/security/cacerts -file /tmp/certificate.der -deststorepass changeit -noprompt
+              cp $JAVA_HOME/lib/security/* /certs -r
+          volumeMounts:
+            - name: certificate
+              mountPath: /etc/ssl/certs/certificate.crt
+              subPath: tls.crt
+            - name: certs
+              mountPath: /certs
+      containers:
+        - name: crane
+          volumeMounts:
+            - name: certs
+              mountPath: /usr/local/openjdk-11/lib/security
+      volumes:
+        - name: certs
+          emptyDir: { }
+        - name: certificate
+          secret:
+            secretName: ingress-tls

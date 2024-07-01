@@ -1,9 +1,6 @@
-server:
-  port: 9080
-
 app:
-  storage-location: s3://example-bucket
-  openid-issuer-uri: http://${KEYCLOAK_SERVICE_HOST}:${KEYCLOAK_SERVICE_PORT}/realms/crane
+  storage-location: /mnt/crane/
+  openid-issuer-uri: "${OAUTH2_ISSUER_URI}"
   repositories:
     - name: project1
       public: true
@@ -21,5 +18,4 @@ spring:
             scope: openid
         provider:
           crane:
-            issuer-uri: http://${KEYCLOAK_SERVICE_HOST}:${KEYCLOAK_SERVICE_PORT}/realms/crane
-
+            issuer-uri: "${OAUTH2_ISSUER_URI}"

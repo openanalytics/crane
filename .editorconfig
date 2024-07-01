@@ -5,7 +5,7 @@ end_of_line = lf
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*.{java,xml,yaml}]
+[*.{java,xml}]
 indent_style = space
 indent_size = 4
 charset = utf-8
@@ -17,3 +17,6 @@ indent_style = tab
 indent_style = space
 indent_size = 4
 charset = utf-8
+
+[{*.yaml,*.yml}]
+indent_size = 2

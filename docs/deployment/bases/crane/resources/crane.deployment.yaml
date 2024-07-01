@@ -12,32 +12,26 @@ spec:
       labels:
         app: crane
     spec:
+      serviceAccountName: crane-sa
       containers:
         - name: crane
           ports:
-            - containerPort: 9080
+            - containerPort: 8080
               name: http-crane
-          image: crane
+          image: openanalytics/crane-snapshot:0.2.0-SNAPSHOT-20240206.10073
           imagePullPolicy: Always
           volumeMounts:
             - mountPath: /opt/crane/application.yml
               subPath: application.yml
               name: crane-config
-          env:
-            - name: OAUTH2_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: crane-client-creds
-                  key: client-secret
-            - name: OAUTH2_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: crane-client-creds
-                  key: client-id
+            - mountPath: /mnt/crane
+              name: data
+          envFrom:
+            - secretRef:
+                name: crane-client-creds
       volumes:
-      - name: crane-config
-        configMap:
-          name: crane
-      serviceAccount: crane-sa
-
-
+        - name: crane-config
+          configMap:
+            name: crane
+        - name: data
+          emptyDir: {}
