@@ -84,8 +84,24 @@ public class CraneConfigTest {
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
         Assertions.assertEquals(
-            "PathComponent public_repo is invalid, cannot have a public repository (public_repo) in a private repository (private_repo)",
+            "PathComponent public_repo is invalid, cannot have a public repository (public_repo) in a private parent (private_repo)",
             rootCause.getMessage()
             );
+    }
+
+    @Test
+    public void testConfigurationWithAPublicRepositoryWithAPrivateParentDeeperNesting() {
+        TestHelperException exception = Assertions.assertThrows(
+            TestHelperException.class,
+            () -> {
+                new CraneInstance("application-with-public-repository-in-private-parent-deeper-nesting.yml");
+            }
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals(
+            "PathComponent abc is invalid, cannot have a public repository (abc) in a private parent (private_repo)",
+            rootCause.getMessage()
+        );
     }
 }
