@@ -27,6 +27,7 @@
         <title>Crane - logout</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <link media="screen" rel="stylesheet" th:href="@{'/css/default.css'}"/>
     </head>
 
     <body>
@@ -34,48 +35,5 @@
             <div th:insert="~{fragments/navbar.html}"></div>
             <h1>You have been logged out successfully.</h1>
         </div>
-
-        <style>
-            h1 {
-                margin-bottom: 20px;
-                margin-top: 20px;
-                font-size: 30px;
-                font-family: inherit;
-                font-weight: 500;
-                line-height: 1.1;
-                color: inherit;
-            }
-
-            .container {
-                width: 1170px;
-                padding-right: 15px;
-                padding-left: 15px;
-                margin-right: auto;
-                margin-left: auto;
-            }
-
-            body {
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-                font-size: 14px;
-                line-height: 1.42857143;
-                color: #333;
-                background-color: #fff;
-            }
-
-            a {
-                color: #337ab7;
-                text-decoration: none;
-            }
-
-            code {
-                padding: 2px 4px;
-                font-size: 90%;
-                color: #c7254e;
-                background-color: #f9f2f4;
-                border-radius: 4px;
-            }
-        </style>
-
     </body>
-
 </html>
