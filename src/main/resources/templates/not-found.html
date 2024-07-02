@@ -28,6 +28,7 @@
 </head>
 <body>
 <div class="container">
+    <div th:insert="~{fragments/navbar.html}"> </div>
     <h1>Not found</h1>
     <p>The resource <code th:text="${resource}"></code> was not found.</p>
     <a th:href="${mainPage}">Go back to the main page</a>
