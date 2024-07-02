@@ -72,7 +72,6 @@ public class WebSecurity {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final PathAccessControlService pathAccessControlService;
-
     private final AuditingService auditingService;
 
     public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, PathAccessControlService pathAccessControlService, AuditingService auditingService) {
@@ -94,6 +93,7 @@ public class WebSecurity {
                     "/",
                     "/.well-known/configured-openid-configuration",
                     "/__index",
+                    "/__index/css/**",
                     "/__index/webjars/**",
                     "/actuator/health",
                     "/actuator/health/liveness",
