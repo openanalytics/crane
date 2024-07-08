@@ -333,4 +333,9 @@ public class CraneConfig {
     public void setAuditLogging(String auditLogging) {
         this.auditLogging = auditLogging;
     }
+
+    public boolean hasPosixAccessControl() {
+        // TODO: add actual option
+        return true;
+    }
 }

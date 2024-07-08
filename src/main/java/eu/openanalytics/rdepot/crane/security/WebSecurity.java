@@ -22,7 +22,7 @@ package eu.openanalytics.rdepot.crane.security;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
-import eu.openanalytics.rdepot.crane.service.PathAccessControlService;
+import eu.openanalytics.rdepot.crane.service.CraneAccessControlService;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
 import net.minidev.json.parser.JSONParser;
@@ -71,14 +71,14 @@ public class WebSecurity {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final PathAccessControlService pathAccessControlService;
+    private final CraneAccessControlService craneAccessControlService;
     private final AuditingService auditingService;
 
-    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, PathAccessControlService pathAccessControlService, AuditingService auditingService) {
+    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, CraneAccessControlService craneAccessControlService, AuditingService auditingService) {
         this.config = config;
         this.openIdReAuthorizeFilter = openIdReAuthorizeFilter;
         this.specExpressionResolver = specExpressionResolver;
-        this.pathAccessControlService = pathAccessControlService;
+        this.craneAccessControlService = craneAccessControlService;
         this.auditingService = auditingService;
     }
 
@@ -104,7 +104,7 @@ public class WebSecurity {
                     "/logout-success"
                 ).permitAll()
                 .requestMatchers("/{repoName}/**")
-                .access((authentication, context) -> new AuthorizationDecision(pathAccessControlService.canAccess(authentication.get(), context.getRequest())))
+                .access((authentication, context) -> new AuthorizationDecision(craneAccessControlService.canAccess(authentication.get(), context.getRequest())))
                 .anyRequest().authenticated())
             .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
             .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(jwtAuthenticationConverter())))

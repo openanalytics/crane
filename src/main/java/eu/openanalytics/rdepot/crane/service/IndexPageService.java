@@ -40,9 +40,9 @@ import java.util.stream.Stream;
 public class IndexPageService {
 
     private final CraneConfig config;
-    private final PathAccessControlService pathAccessControlService;
+    private final CraneAccessControlService pathAccessControlService;
 
-    public IndexPageService(CraneConfig config, PathAccessControlService pathAccessControlService) {
+    public IndexPageService(CraneConfig config, CraneAccessControlService pathAccessControlService) {
         this.config = config;
         this.pathAccessControlService = pathAccessControlService;
     }

@@ -20,18 +20,12 @@
  */
 package eu.openanalytics.rdepot.crane.service;
 
-import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
-import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
@@ -39,91 +33,14 @@ import java.util.Optional;
 @Service
 public class PathAccessControlService {
 
-    private final AccessControlService accessControlService;
-    private final CraneConfig craneConfig;
-    private final UserService userService;
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final AccessControlService accessControlService;
 
-    public PathAccessControlService(AccessControlService accessControlService, CraneConfig craneConfig, UserService userService) {
+    public PathAccessControlService(AccessControlService accessControlService) {
         this.accessControlService = accessControlService;
-        this.craneConfig = craneConfig;
-        this.userService = userService;
     }
 
-    /**
-     * Whether the provided user can access the path in the provided request.
-     * Checks the request for path traversal.
-     * @param auth the user
-     * @param request the request to check
-     * @return whether the user can access the path in the request
-     */
-    public boolean canAccess(Authentication auth, HttpServletRequest request) {
-        if (auth == null || request == null) {
-            return false;
-        }
-
-        String requestPath = request.getServletPath();
-        if (requestPath == null || !checkPathSecurity(requestPath)) {
-            return false;
-        }
-        try {
-            Path path = Path.of(requestPath);
-
-            Repository repository = craneConfig.getRepository(path.getName(0).toString());
-            if (repository == null) {
-                return false;
-            }
-
-            Iterator<Path> iterator = path.iterator();
-            iterator.next();
-
-            return canAccess(auth, requestPath, repository, iterator);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Whether the current user can access the provided directory.
-     * @param repository the repository to which this directory belongs
-     * @param craneDirectory the directory to check
-     * @return whether the user can access
-     */
-    public boolean canAccess(Repository repository, CraneDirectory craneDirectory) {
-        Path path = Path.of(craneDirectory.getPath());
-        Iterator<Path> iterator = path.iterator();
-        iterator.next();
-        return canAccess(userService.getUser(), craneDirectory.getPath(), repository, iterator);
-    }
-
-    /**
-     * Checks the path for path traversal.
-     * @param path the path to check
-     * @return whether the path can be trusted
-     */
-    private boolean checkPathSecurity(String path) {
-        if (path.contains("%")) {
-            // don't support encoded paths
-            return false;
-        }
-
-        File absolutePath = new File(path);
-
-        try {
-            String canonicalPath = absolutePath.getCanonicalPath();
-            if (!new File(canonicalPath).isAbsolute()) {
-                return false;
-            }
-            if (!absolutePath.getAbsolutePath().equals(canonicalPath)) {
-                return false;
-            }
-        } catch (IOException e) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
+    public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
         if (!accessControlService.canAccess(auth, pathComponent)) {
             logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, pathComponent.getName());
             return false;
@@ -147,5 +64,4 @@ public class PathAccessControlService {
 
         return canAccess(auth, fullPath, nextPathComponent.get(), path);
     }
-
 }

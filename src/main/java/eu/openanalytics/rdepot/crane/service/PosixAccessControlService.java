@@ -1,5 +1,26 @@
+/**
+ * Crane
+ *
+ * Copyright (C) 2021-2024 Open Analytics
+ *
+ * ===========================================================================
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Apache License as published by
+ * The Apache Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * Apache License for more details.
+ *
+ * You should have received a copy of the Apache License
+ * along with this program.  If not, see <http://www.apache.org/licenses/>
+ */
 package eu.openanalytics.rdepot.crane.service;
 
+import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,29 +33,35 @@ import java.util.Set;
 
 @Service
 public class PosixAccessControlService {
-public boolean canAccess(Authentication auth, PathComponent pathComponent) {
-    if (auth == null || pathComponent == null) {
-        return false;
+    private final CraneConfig config;
+
+    public PosixAccessControlService(CraneConfig config) {
+        this.config = config;
     }
 
-    PosixFileAttributes attributes = null;
-    try {
-        attributes = pathComponent.getPosixFileAttributeView();
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }
+    public boolean canAccess(Authentication auth, PathComponent pathComponent) {
+        if (!config.hasPosixAccessControl() || auth == null || pathComponent == null) {
+            return false;
+        }
 
-    Set<PosixFilePermission> permissionSet = attributes.permissions();
-    if (attributes.owner().getName().equals(auth.getName()) && permissionSet.contains(PosixFilePermission.OWNER_READ)) {
-        return true;
-    } else if (permissionSet.contains(PosixFilePermission.GROUP_READ) && isMember(auth, attributes.group().getName())){
-        return true;
-    } else if (permissionSet.contains(PosixFilePermission.OTHERS_READ)) {
-        return true;
-    } else {
-        return false;
+        PosixFileAttributes attributes;
+        try {
+            attributes = pathComponent.getPosixFileAttributeView();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Set<PosixFilePermission> permissionSet = attributes.permissions();
+        if (attributes.owner().getName().equals(auth.getName()) && permissionSet.contains(PosixFilePermission.OWNER_READ)) {
+            return true;
+        } else if (permissionSet.contains(PosixFilePermission.GROUP_READ) && isMember(auth, attributes.group().getName())){
+            return true;
+        } else if (permissionSet.contains(PosixFilePermission.OTHERS_READ)) {
+            return true;
+        } else {
+            return false;
+        }
     }
-}
 
     private boolean isMember(Authentication auth, String group) {
         for (GrantedAuthority grantedAuthority: auth.getAuthorities()) {
@@ -46,6 +73,6 @@ public boolean canAccess(Authentication auth, PathComponent pathComponent) {
                 return true;
             }
         }
-        return false
+        return false;
     }
 }
