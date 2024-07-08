@@ -89,4 +89,14 @@ public class Repository extends PathComponent {
     public void setStoragePath(Path storagePath) {
         this.storagePath = storagePath;
     }
+
+    @Override
+    public PathComponent getParent() {
+        return null;
+    }
+
+    @Override
+    protected String getPosixPath() {
+        return storageLocation + getName();
+    }
 }

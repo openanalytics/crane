@@ -21,6 +21,7 @@
 package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
+import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.slf4j.Logger;
@@ -118,8 +119,18 @@ public class CraneConfig {
             } else {
                 r.setStoragePath(storageLocationToPath(r.getStorageLocation()));
             }
+            setParents(r);
         }
         close();
+    }
+
+    private void setParents(PathComponent pathComponent) {
+        if (pathComponent.getPaths() != null) {
+            for (PathComponent child : pathComponent.getPaths()) {
+                child.setParent(pathComponent);
+                setParents(child);
+            }
+        }
     }
 
     private void close() {
