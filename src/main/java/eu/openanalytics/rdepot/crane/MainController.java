@@ -33,23 +33,21 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
-public class MainController {
+public class MainController extends BaseUIController {
 
-    private final CraneConfig config;
 
     private final AccessControlService accessControlService;
 
-    private final UserService userService;
     private final AuditingService auditingService;
 
     public MainController(CraneConfig config, AccessControlService accessControlService, UserService userService, AuditingService auditingService) {
-        this.config = config;
+        super(userService, config);
         this.accessControlService = accessControlService;
-        this.userService = userService;
         this.auditingService = auditingService;
     }
 
@@ -77,7 +75,7 @@ public class MainController {
         }
 
         map.put("repositories", repositories);
-        config.prepareMap(map);
+        prepareMap(map);
         return "repositories";
     }
 

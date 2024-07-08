@@ -22,7 +22,6 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -42,13 +41,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-public class ErrorsController implements ErrorController {
-    private final UserService userService;
-    private final CraneConfig craneConfig;
+public class ErrorsController extends BaseUIController implements ErrorController {
 
     public ErrorsController(UserService userService, CraneConfig craneConfig) {
-        this.userService = userService;
-        this.craneConfig = craneConfig;
+        super(userService, craneConfig);
     }
 
     @RequestMapping(value = "/error", produces = "text/html")
@@ -59,7 +55,7 @@ public class ErrorsController implements ErrorController {
 
         int status = getStatus(request, response);
 
-        craneConfig.prepareMap(map);
+        prepareMap(map);
         if (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value()) {
             return new ModelAndView("not-found", HttpStatus.NOT_FOUND);
         }
@@ -88,7 +84,7 @@ public class ErrorsController implements ErrorController {
     @RequestMapping(value = "/logout-success", method = RequestMethod.GET)
     public String getLogoutSuccessPage(HttpServletResponse response, ModelMap map) {
         setNoCacheHeader(response);
-        craneConfig.prepareMap(map);
+        prepareMap(map);
         map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
         map.put("authenticated", false);
         map.put("loginUrl", userService.getLoginUrl());

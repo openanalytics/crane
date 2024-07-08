@@ -22,7 +22,6 @@ package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.service.UserService;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.stereotype.Component;
-import org.springframework.ui.ModelMap;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -55,7 +53,6 @@ import software.amazon.awssdk.services.sts.model.StsException;
 public class CraneConfig {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final UserService userService;
     private String storageLocation;
 
     private String auditLogging;
@@ -83,10 +80,6 @@ public class CraneConfig {
     private List<CacheRule> defaultCache;
     private StsClient stsClient;
     private String callerIdentityArn;
-
-    public CraneConfig(UserService userService) {
-        this.userService = userService;
-    }
 
     public Path getRoot() {
         return root;
@@ -328,15 +321,5 @@ public class CraneConfig {
 
     public void setAuditLogging(String auditLogging) {
         this.auditLogging = auditLogging;
-    }
-
-    public void prepareMap(ModelMap map) {
-        boolean authenticated = userService.isAuthenticated();
-        map.put("logo", logoUrl);
-        map.put("authenticated", authenticated);
-        if (authenticated) {
-            map.put("username", userService.getUser().getName());
-        }
-        map.put("loginUrl", userService.getLoginUrl());
     }
 }
