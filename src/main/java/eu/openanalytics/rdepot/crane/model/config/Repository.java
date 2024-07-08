@@ -62,7 +62,6 @@ public class Repository extends PathComponent {
                     "Repository name %s is invalid, repository names should not start with '__' and should be different from: %s",
                     getName(), invalidRepositoryNames.stream().map(name -> "'" + name + "'").collect(Collectors.joining(", "))));
         }
-//            - OIDC related URLs
     }
 
     public void validate() {
