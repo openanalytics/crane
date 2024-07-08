@@ -36,6 +36,7 @@ public class BaseUIController {
 
     protected void prepareMap(ModelMap map) {
         boolean authenticated = userService.isAuthenticated();
+        map.put("loginUrl", userService.getLoginUrl());
         map.put("logo", config.getLogoUrl());
         map.put("authenticated", authenticated);
         if (authenticated) {

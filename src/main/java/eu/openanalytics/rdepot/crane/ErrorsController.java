@@ -87,7 +87,6 @@ public class ErrorsController extends BaseUIController implements ErrorControlle
         prepareMap(map);
         map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
         map.put("authenticated", false);
-        map.put("loginUrl", userService.getLoginUrl());
         return "logout-success";
     }
 
