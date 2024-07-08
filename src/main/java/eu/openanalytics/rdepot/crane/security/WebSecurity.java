@@ -92,6 +92,7 @@ public class WebSecurity {
                 .requestMatchers(
                     "/",
                     "/.well-known/configured-openid-configuration",
+                    "/favicon.ico",
                     "/__index",
                     "/__index/css/**",
                     "/__index/webjars/**",

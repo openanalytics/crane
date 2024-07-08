@@ -33,6 +33,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,5 +79,8 @@ public class MainController extends BaseUIController {
         prepareMap(map);
         return "repositories";
     }
-
+    @GetMapping("favicon.ico")
+    @ResponseBody
+    void returnNoFavicon() {
+    }
 }
