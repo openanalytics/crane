@@ -181,7 +181,7 @@ public class PathComponent {
         }
     }
 
-    protected String getPosixPath() {
+    public String getPosixPath() {
         return String.format("%s/%s", getParent().getPosixPath(), getName());
     }
 

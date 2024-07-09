@@ -22,6 +22,8 @@ package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ import java.util.Set;
 @Service
 public class PosixAccessControlService {
     private final CraneConfig config;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public PosixAccessControlService(CraneConfig config) {
         this.config = config;
@@ -48,7 +51,8 @@ public class PosixAccessControlService {
         try {
             attributes = pathComponent.getPosixFileAttributeView();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.warn(String.format("Could not check POSIX file system permissions of %s", pathComponent.getPosixPath()), e);
+            return false;
         }
 
         Set<PosixFilePermission> permissionSet = attributes.permissions();

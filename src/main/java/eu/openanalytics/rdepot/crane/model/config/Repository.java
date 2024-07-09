@@ -96,7 +96,7 @@ public class Repository extends PathComponent {
     }
 
     @Override
-    protected String getPosixPath() {
+    public String getPosixPath() {
         return storageLocation + getName();
     }
 }
