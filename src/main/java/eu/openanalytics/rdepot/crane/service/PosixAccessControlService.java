@@ -60,8 +60,6 @@ public class PosixAccessControlService {
             return true;
         } else if (permissionSet.contains(PosixFilePermission.GROUP_READ) && isMember(auth, attributes.group().getName())){
             return true;
-        } else if (permissionSet.contains(PosixFilePermission.OTHERS_READ)) {
-            return true;
         } else {
             return false;
         }
