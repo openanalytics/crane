@@ -40,7 +40,7 @@ public class PosixAccessControlService {
     }
 
     public boolean canAccess(Authentication auth, PathComponent pathComponent) {
-        if (!config.hasPosixAccessControl() || auth == null || pathComponent == null) {
+        if (!config.isPosixAccessControl() || auth == null || pathComponent == null) {
             return false;
         }
 
