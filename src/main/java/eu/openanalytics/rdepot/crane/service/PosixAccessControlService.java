@@ -29,6 +29,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
@@ -37,12 +38,17 @@ import java.util.Set;
 public class PosixAccessControlService {
     private final CraneConfig config;
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
+    private static final boolean isPosix =
+        FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
     public PosixAccessControlService(CraneConfig config) {
         this.config = config;
     }
 
     public boolean canAccess(Authentication auth, PathComponent pathComponent) {
+        if (!isPosix) {
+            logger.warn("File system is not posix compliant");
+            return false;
+        }
         if (!config.isPosixAccessControl() || auth == null || pathComponent == null) {
             return false;
         }
@@ -50,8 +56,8 @@ public class PosixAccessControlService {
         PosixFileAttributes attributes;
         try {
             attributes = pathComponent.getPosixFileAttributeView();
-        } catch (IOException e) {
-            logger.warn(String.format("Could not check POSIX file system permissions of %s", pathComponent.getPosixPath()), e);
+        } catch (IOException e) { // TODO: find a way to produce this warning
+            logger.warn(String.format("Could not view POSIX file system permissions of %s", pathComponent.getPosixPath()), e);
             return false;
         }
 
