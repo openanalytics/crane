@@ -22,7 +22,7 @@ package eu.openanalytics.rdepot.crane.test.service;
 
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.service.AccessControlService;
+import eu.openanalytics.rdepot.crane.service.PathAccessControlService;
 import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
     "app.openid-issuer-uri=http://localhost:9189/realms/crane",
     "spring.security.oauth2.client.provider.crane.issuer-uri=http://localhost:9189/realms/crane"
 })
-public class AccessControlServiceTest {
+public class PathAccessControlServiceTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
 
     @BeforeAll
@@ -50,7 +50,7 @@ public class AccessControlServiceTest {
         keycloakInstance.start();
     }
     @Autowired
-    private AccessControlService accessControlService;
+    private PathAccessControlService pathAccessControlService;
 
     @Test
     public void testAccessToRestrictedNetworkRepository() {
@@ -61,18 +61,18 @@ public class AccessControlServiceTest {
 
         Authentication mockedAuthentication = mock(AnonymousAuthenticationToken.class);
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(accessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
+        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertFalse(accessControlService.canAccess(mockedAuthentication, repository), "Should not get access incorrect ip");
+        Assertions.assertFalse(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should not get access incorrect ip");
 
         mockedAuthentication = mock(Authentication.class);
         when(mockedAuthentication.getName()).thenReturn("demo");
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(accessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
+        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertFalse(accessControlService.canAccess(mockedAuthentication, repository), "Should not get access wrong not ip");
+        Assertions.assertFalse(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should not get access wrong not ip");
     }
 
     @Test
@@ -88,14 +88,14 @@ public class AccessControlServiceTest {
         when(mockedAuthentication.getName()).thenReturn("demo");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(accessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip and user");
+        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip and user");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertTrue(accessControlService.canAccess(mockedAuthentication, repository), "Should get access correct user but not ip");
+        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct user but not ip");
 
         when(mockedAuthentication.getName()).thenReturn("test");
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertFalse(accessControlService.canAccess(mockedAuthentication, repository), "Should not get access wrong user and ip");
+        Assertions.assertFalse(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should not get access wrong user and ip");
     }
 
     @Test
@@ -111,20 +111,20 @@ public class AccessControlServiceTest {
         when(mockedAuthentication.getName()).thenReturn("demo");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(accessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip and user is authenticated");
+        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip and user is authenticated");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertTrue(accessControlService.canAccess(mockedAuthentication, repository), "Should get access as user is authenticated");
+        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access as user is authenticated");
 
         when(mockedAuthentication.getName()).thenReturn("test");
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertTrue(accessControlService.canAccess(mockedAuthentication, repository), "Should get access user is authenticated");
+        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access user is authenticated");
 
         mockedAuthentication = mock(AnonymousAuthenticationToken.class);
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(accessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
+        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertFalse(accessControlService.canAccess(mockedAuthentication, repository), "Should not get access incorrect ip and anonymous");
+        Assertions.assertFalse(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should not get access incorrect ip and anonymous");
     }
 }
