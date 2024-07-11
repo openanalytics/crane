@@ -21,9 +21,9 @@
 package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
+import eu.openanalytics.rdepot.crane.model.runtime.CraneFile;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -121,8 +121,11 @@ public class CraneAccessControlService {
         return true;
     }
 
-    private boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
-        return posixAccessControlService.canAccess(auth, pathComponent) || pathAccessControlService.canAccess(auth, fullPath, pathComponent, path);
+    public boolean canAccessFile(Repository repository, CraneFile craneFile) {
+        return posixAccessControlService.canAccess(userService.getUser(), repository.getName() + "/" + craneFile.getName(), repository);
+    }
+    private boolean canAccess(Authentication auth, String fullPath, Repository repository, Iterator<Path> path) {
+        return posixAccessControlService.canAccess(auth, fullPath, repository) || pathAccessControlService.canAccess(auth, fullPath, repository, path);
     }
 
 }

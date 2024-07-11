@@ -22,12 +22,10 @@ package eu.openanalytics.rdepot.crane.model.config;
 
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFileAttributeView;
-import java.nio.file.attribute.PosixFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -191,10 +189,5 @@ public class PathComponent {
 
     public void setParent(PathComponent parent) {
         this.parent = parent;
-    }
-
-    public PosixFileAttributes getPosixFileAttributeView() throws IOException {
-        Path path = Path.of(getPosixPath());
-        return Files.getFileAttributeView(path, PosixFileAttributeView.class).readAttributes();
     }
 }

@@ -40,11 +40,11 @@ import java.util.stream.Stream;
 public class IndexPageService {
 
     private final CraneConfig config;
-    private final CraneAccessControlService pathAccessControlService;
+    private final CraneAccessControlService craneAccessControlService;
 
     public IndexPageService(CraneConfig config, CraneAccessControlService pathAccessControlService) {
         this.config = config;
-        this.pathAccessControlService = pathAccessControlService;
+        this.craneAccessControlService = pathAccessControlService;
     }
 
     public String getTemplateName(Repository repository) {
@@ -62,10 +62,11 @@ public class IndexPageService {
                     // TODO
                     return;
                 }
-                if (craneResource instanceof CraneFile) {
+                if (craneResource instanceof CraneFile craneFile) {
+                    if (craneAccessControlService.canAccessFile(repository, craneFile))
                     craneFiles.add((CraneFile) craneResource);
                 } else if (craneResource instanceof CraneDirectory craneDirectory) {
-                    if (pathAccessControlService.canAccess(repository, craneDirectory)) {
+                    if (craneAccessControlService.canAccess(repository, craneDirectory)) {
                         craneDirectories.add(craneDirectory);
                     }
                 } else {

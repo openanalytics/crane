@@ -37,17 +37,12 @@ import java.util.List;
 public class AccessControlService {
 
     private final SpecExpressionResolver specExpressionResolver;
-    private final PosixAccessControlService posixAccessControlService;
 
-    public AccessControlService(SpecExpressionResolver specExpressionResolver, PosixAccessControlService posixAccessControlService) {
+    public AccessControlService(SpecExpressionResolver specExpressionResolver) {
         this.specExpressionResolver = specExpressionResolver;
-        this.posixAccessControlService = posixAccessControlService;
     }
 
     public boolean canAccess(Authentication auth, PathComponent pathComponent) {
-        if (posixAccessControlService.canAccess(auth, pathComponent)) {
-            return true;
-        }
         if (auth == null || pathComponent == null) {
             return false;
         }

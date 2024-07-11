@@ -22,6 +22,7 @@ package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
+import eu.openanalytics.rdepot.crane.model.config.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -30,8 +31,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Iterator;
 import java.util.Set;
 
 @Service
@@ -44,31 +49,52 @@ public class PosixAccessControlService {
         this.config = config;
     }
 
-    public boolean canAccess(Authentication auth, PathComponent pathComponent) {
+    public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
         if (!isPosix) {
             logger.warn("File system is not posix compliant");
             return false;
         }
-        if (!config.isPosixAccessControl() || auth == null || pathComponent == null) {
+        if (!config.isPosixAccessControl() || auth == null || repository == null) {
             return false;
         }
 
+        Iterator<Path> subsequentPaths = Path.of(fullPath).iterator();
+        String storageLocation = repository.getStorageLocation();
+        StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length()-1));
+        while (subsequentPaths.hasNext()) {
+            if (!canAccess(auth, pathBuilder.append("/").toString())) {
+                return false;
+            }
+            pathBuilder.append(subsequentPaths.next());
+        }
+        if (!canAccess(auth, pathBuilder.toString())) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean canAccess(Authentication auth, String path) {
         PosixFileAttributes attributes;
         try {
-            attributes = pathComponent.getPosixFileAttributeView();
+            attributes = Files.getFileAttributeView(Path.of(path), PosixFileAttributeView.class).readAttributes();
         } catch (IOException e) { // TODO: find a way to produce this warning
-            logger.warn(String.format("Could not view POSIX file system permissions of %s", pathComponent.getPosixPath()), e);
+            logger.warn(String.format("Could not view POSIX file system permissions of %s", path), e);
             return false;
         }
 
-        Set<PosixFilePermission> permissionSet = attributes.permissions();
-        if (attributes.owner().getName().equals(auth.getName()) && permissionSet.contains(PosixFilePermission.OWNER_READ)) {
-            return true;
-        } else if (permissionSet.contains(PosixFilePermission.GROUP_READ) && isMember(auth, attributes.group().getName())){
-            return true;
-        } else {
-            return false;
+        Set<PosixFilePermission> permissions = attributes.permissions();
+        boolean ownerAccess = attributes.owner().getName().equals(auth.getName()) && permissions.contains(PosixFilePermission.OWNER_READ);
+        boolean groupAccess = isMember(auth, attributes.group().getName()) && permissions.contains(PosixFilePermission.GROUP_READ);
+        return ownerAccess || groupAccess;
+    }
+
+    private String getFullPosixPath(PathComponent pathComponent, Iterator<Path> path) {
+        String posixPath = pathComponent.getPosixPath();
+        String lastPath = "";
+        while (path.hasNext()) {
+            lastPath = path.next().toString();
         }
+        return posixPath + lastPath;
     }
 
     private boolean isMember(Authentication auth, String group) {
