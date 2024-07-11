@@ -26,12 +26,15 @@ import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
 import eu.openanalytics.rdepot.crane.model.runtime.CraneFile;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 @Service
 public class CraneAccessControlService {
@@ -81,6 +84,11 @@ public class CraneAccessControlService {
         }
     }
 
+    public boolean canAccess(Authentication auth, Repository repository) {
+        String fullUrlPath = "/" + repository.getName();
+        return canAccess(auth, fullUrlPath, repository, Path.of(fullUrlPath).iterator());
+    }
+
     /**
      * Whether the current user can access the provided directory.
      * @param repository the repository to which this directory belongs
@@ -124,8 +132,34 @@ public class CraneAccessControlService {
     public boolean canAccessFile(Repository repository, CraneFile craneFile) {
         return posixAccessControlService.canAccess(userService.getUser(), repository.getName() + "/" + craneFile.getName(), repository);
     }
+
     private boolean canAccess(Authentication auth, String fullPath, Repository repository, Iterator<Path> path) {
-        return posixAccessControlService.canAccess(auth, fullPath, repository) || pathAccessControlService.canAccess(auth, fullPath, repository, path);
+        return pathAccessControlService.canAccess(auth, fullPath, repository, path) && posixAccessControlService.canAccess(auth, fullPath, repository);
+    }
+
+    public static boolean isMember(Authentication auth, String group) {
+        for (GrantedAuthority grantedAuth: auth.getAuthorities()) {
+            String groupName = grantedAuth.getAuthority().toUpperCase();
+            if (groupName.startsWith("ROLE_")) {
+                groupName = groupName.substring(5);
+            }
+            if (groupName.equalsIgnoreCase(group)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static List<String> getGroups(Authentication auth) {
+        List<String> groups = new ArrayList<>();
+        if (auth != null) {
+            for (GrantedAuthority grantedAuth: auth.getAuthorities()) {
+                String authName = grantedAuth.getAuthority().toUpperCase();
+                if (authName.startsWith("ROLE_")) authName = authName.substring(5);
+                groups.add(authName);
+            }
+        }
+        return groups;
     }
 
 }

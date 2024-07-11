@@ -24,7 +24,7 @@ import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.model.dto.ApiResponse;
 import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
-import eu.openanalytics.rdepot.crane.service.AccessControlService;
+import eu.openanalytics.rdepot.crane.service.CraneAccessControlService;
 import eu.openanalytics.rdepot.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,7 +35,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
@@ -46,13 +45,13 @@ import java.util.stream.Collectors;
 public class MainController extends BaseUIController {
 
 
-    private final AccessControlService accessControlService;
+    private final CraneAccessControlService craneAccessControlService;
 
     private final AuditingService auditingService;
 
-    public MainController(CraneConfig config, AccessControlService accessControlService, UserService userService, AuditingService auditingService) {
+    public MainController(CraneConfig config, UserService userService, CraneAccessControlService craneAccessControlService, AuditingService auditingService) {
         super(userService, config);
-        this.accessControlService = accessControlService;
+        this.craneAccessControlService = craneAccessControlService;
         this.auditingService = auditingService;
     }
 
@@ -68,7 +67,7 @@ public class MainController extends BaseUIController {
         boolean authenticated = userService.isAuthenticated();
 
         List<String> repositories = config.getRepositories().stream()
-            .filter(r -> accessControlService.canAccess(user, r))
+            .filter(r -> craneAccessControlService.canAccess(user, r))
             .map(Repository::getName)
             .collect(Collectors.toList());
 

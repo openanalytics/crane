@@ -52,9 +52,14 @@ public class PosixAccessControlService {
     public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
         if (!isPosix) {
             logger.warn("File system is not posix compliant");
-            return false;
+            return true;
         }
-        if (!config.isPosixAccessControl() || auth == null || repository == null) {
+
+        if (!config.isPosixAccessControl()) {
+            return true;
+        }
+
+        if (auth == null || repository == null) {
             return false;
         }
 
@@ -62,15 +67,14 @@ public class PosixAccessControlService {
         String storageLocation = repository.getStorageLocation();
         StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length()-1));
         while (subsequentPaths.hasNext()) {
-            if (!canAccess(auth, pathBuilder.append("/").toString())) {
+            String sub_directory = pathBuilder.append("/").toString();
+            if (!canAccess(auth, sub_directory)) {
                 return false;
             }
             pathBuilder.append(subsequentPaths.next());
         }
-        if (!canAccess(auth, pathBuilder.toString())) {
-            return false;
-        }
-        return true;
+        String full_path = pathBuilder.toString();
+        return canAccess(auth, full_path);
     }
 
     private boolean canAccess(Authentication auth, String path) {
@@ -84,29 +88,7 @@ public class PosixAccessControlService {
 
         Set<PosixFilePermission> permissions = attributes.permissions();
         boolean ownerAccess = attributes.owner().getName().equals(auth.getName()) && permissions.contains(PosixFilePermission.OWNER_READ);
-        boolean groupAccess = isMember(auth, attributes.group().getName()) && permissions.contains(PosixFilePermission.GROUP_READ);
+        boolean groupAccess = CraneAccessControlService.isMember(auth, attributes.group().getName()) && permissions.contains(PosixFilePermission.GROUP_READ);
         return ownerAccess || groupAccess;
-    }
-
-    private String getFullPosixPath(PathComponent pathComponent, Iterator<Path> path) {
-        String posixPath = pathComponent.getPosixPath();
-        String lastPath = "";
-        while (path.hasNext()) {
-            lastPath = path.next().toString();
-        }
-        return posixPath + lastPath;
-    }
-
-    private boolean isMember(Authentication auth, String group) {
-        for (GrantedAuthority grantedAuthority: auth.getAuthorities()) {
-            String groupName = grantedAuthority.getAuthority().toUpperCase();
-            if (groupName.startsWith("ROLE_")) {
-                groupName = groupName.substring(5);
-            }
-            if (groupName.equalsIgnoreCase(group)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -22,7 +22,7 @@ package eu.openanalytics.rdepot.crane.service.spel;
 
 
 import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.service.AccessControlService;
+import eu.openanalytics.rdepot.crane.service.CraneAccessControlService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -121,7 +121,7 @@ public class SpecExpressionContext {
                 ctx.claims = ((JwtAuthenticationToken) o).getToken().getClaims();
             }
             if (o instanceof Authentication) {
-                ctx.groups = AccessControlService.getGroups((Authentication) o);
+                ctx.groups = CraneAccessControlService.getGroups((Authentication) o);
             }
         }
         return ctx;
