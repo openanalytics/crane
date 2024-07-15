@@ -21,16 +21,13 @@
 package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
-import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributeView;
@@ -43,24 +40,22 @@ import java.util.Set;
 public class PosixAccessControlService {
     private final CraneConfig config;
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final boolean isPosix =
-        FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
     public PosixAccessControlService(CraneConfig config) {
         this.config = config;
     }
 
     public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
-        if (!isPosix) {
-            logger.warn("File system is not posix compliant");
-            return true;
-        }
-
         if (!config.isPosixAccessControl()) {
             return true;
         }
 
         if (auth == null || repository == null) {
             return false;
+        }
+
+        if (!pathSupportsPosix(repository.getStoragePath())) {
+            logger.warn("File system is not posix compliant");
+            return true;
         }
 
         Iterator<Path> subsequentPaths = Path.of(fullPath).iterator();
@@ -75,6 +70,10 @@ public class PosixAccessControlService {
         }
         String full_path = pathBuilder.toString();
         return canAccess(auth, full_path);
+    }
+
+    private boolean pathSupportsPosix(Path storagePath) {
+        return storagePath.getFileSystem().supportedFileAttributeViews().contains("posix");
     }
 
     private boolean canAccess(Authentication auth, String path) {
