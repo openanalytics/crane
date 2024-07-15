@@ -129,18 +129,8 @@ public class CraneConfig {
             } else {
                 r.setStoragePath(storageLocationToPath(r.getStorageLocation()));
             }
-            setParents(r);
         }
         close();
-    }
-
-    private void setParents(PathComponent pathComponent) {
-        if (pathComponent.getPaths() != null) {
-            for (PathComponent child : pathComponent.getPaths()) {
-                child.setParent(pathComponent);
-                setParents(child);
-            }
-        }
     }
 
     private void close() {

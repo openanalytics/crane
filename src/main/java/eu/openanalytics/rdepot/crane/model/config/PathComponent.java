@@ -47,7 +47,6 @@ public class PathComponent {
     private String accessExpression;
     private Map<String, PathComponent> components;
     protected boolean isPublic = false;
-    private PathComponent parent;
 
     public String getName() {
         return name;
@@ -177,17 +176,5 @@ public class PathComponent {
                 component.validate();
             }
         }
-    }
-
-    public String getPosixPath() {
-        return String.format("%s/%s", getParent().getPosixPath(), getName());
-    }
-
-    public PathComponent getParent() {
-        return parent;
-    }
-
-    public void setParent(PathComponent parent) {
-        this.parent = parent;
     }
 }
