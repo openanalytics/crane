@@ -86,8 +86,12 @@ public class PosixAccessControlService {
         }
 
         Set<PosixFilePermission> permissions = attributes.permissions();
-        boolean ownerAccess = attributes.owner().getName().equals(auth.getName()) && permissions.contains(PosixFilePermission.OWNER_READ);
-        boolean groupAccess = CraneAccessControlService.isMember(auth, attributes.group().getName()) && permissions.contains(PosixFilePermission.GROUP_READ);
-        return ownerAccess || groupAccess;
+        if (attributes.owner().getName().equals(auth.getName())) {
+            return permissions.contains(PosixFilePermission.OWNER_READ);
+        }
+        if (CraneAccessControlService.isMember(auth, attributes.group().getName())) {
+            return permissions.contains(PosixFilePermission.GROUP_READ);
+        }
+        return false;
     }
 }
