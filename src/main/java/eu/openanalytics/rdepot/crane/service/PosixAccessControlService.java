@@ -67,8 +67,8 @@ public class PosixAccessControlService {
         String storageLocation = repository.getStorageLocation();
         StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length()-1));
         while (subsequentPaths.hasNext()) {
-            String sub_directory = pathBuilder.append("/").toString();
-            if (!canAccess(auth, sub_directory)) {
+            String subDirectory = pathBuilder.append("/").toString();
+            if (!canAccess(auth, subDirectory)) {
                 return false;
             }
             pathBuilder.append(subsequentPaths.next());
