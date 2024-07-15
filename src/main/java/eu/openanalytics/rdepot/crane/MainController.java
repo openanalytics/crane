@@ -26,13 +26,14 @@ import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
 import eu.openanalytics.rdepot.crane.service.AccessControlService;
 import eu.openanalytics.rdepot.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
@@ -79,8 +80,30 @@ public class MainController extends BaseUIController {
         prepareMap(map);
         return "repositories";
     }
-    @GetMapping("favicon.ico")
+    private static class Repositories {
+        public List<String> getRepositories() {
+            return repositories;
+        }
+
+        public void setRepositories(List<String> repositories) {
+            this.repositories = repositories;
+        }
+
+        List<String> repositories;
+    }
     @ResponseBody
-    void returnNoFavicon() {
+    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Repositories getRepositoriesAsJson(HttpServletRequest request) {
+        Authentication user = SecurityContextHolder.getContext().getAuthentication();
+
+        Repositories repositories = new Repositories();
+
+        repositories.repositories = config.getRepositories().stream()
+            .filter(r -> accessControlService.canAccess(user, r))
+            .map(Repository::getName)
+            .toList();
+
+        auditingService.createListRepositoriesAuditEvent(request);
+        return repositories;
     }
 }

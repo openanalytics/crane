@@ -22,19 +22,26 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
+import eu.openanalytics.rdepot.crane.model.runtime.CraneFile;
 import eu.openanalytics.rdepot.crane.service.IndexPageService;
 import eu.openanalytics.rdepot.crane.service.UserService;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class IndexPageController extends BaseUIController {
@@ -46,7 +53,7 @@ public class IndexPageController extends BaseUIController {
         this.indexPageService = indexPageService;
     }
 
-    @GetMapping("/__index")
+    @GetMapping(value = "/__index", produces = MediaType.TEXT_HTML_VALUE)
     public String main(ModelMap map, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Path path = (Path) request.getAttribute("path");
         Repository repo = (Repository) request.getAttribute("repo");
@@ -65,4 +72,22 @@ public class IndexPageController extends BaseUIController {
         return indexPageService.getTemplateName(repo);
     }
 
+    @ResponseBody
+    @GetMapping(value = "/__index", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, List<String>> mainJson(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        Path path = (Path) request.getAttribute("path");
+        Repository repo = (Repository) request.getAttribute("repo");
+
+        if (path == null || repo == null) {
+            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
+            request.getRequestDispatcher("/error").forward(request, response);
+            return null;
+        }
+
+        Map<String, Object> variables = indexPageService.getTemplateVariables(repo, path);
+        Map<String, List<String>> filesAndDirectories = new HashMap<>();
+        filesAndDirectories.put("directories", ((List<CraneDirectory>) variables.get("directories")).stream().map(CraneDirectory::getName).toList());
+        filesAndDirectories.put("files", ((List<CraneFile>) variables.get("files")).stream().map(CraneFile::getName).toList());
+        return filesAndDirectories;
+    }
 }
