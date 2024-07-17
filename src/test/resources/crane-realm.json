@@ -15,8 +15,8 @@
           "value": "demo"
         }
       ],
-      "realmRoles" : [ "mathematicians", "scientists" ],
-      "groups" : [ "/mathematicians", "/scientists" ]
+      "realmRoles" : [ "crane_public", "mathematicians", "scientists" ],
+      "groups" : [ "/crane_public", "/mathematicians", "/scientists" ]
   },
     {
       "username": "test",
@@ -30,8 +30,8 @@
           "value": "test"
         }
       ],
-      "realmRoles" : [ "mathematicians" ],
-      "groups" : [ "/mathematicians" ]
+      "realmRoles" : [ "crane_public", "mathematicians" ],
+      "groups" : [ "crane_public", "/mathematicians" ]
   }
   ],
   "roles": {
@@ -43,6 +43,10 @@
       {
         "name": "mathematicians",
         "description": "Mathematicians doing math things"
+      },
+      {
+        "name": "crane_public",
+        "description": "Everyone is part of the crane_public group"
       }
     ]
   },
@@ -52,7 +56,10 @@
   }, {
     "name" : "scientists",
     "path" : "/scientists"
-  } ],
+  }, {
+    "name" : "crane_public",
+    "path" : "/crane_public"
+  }],
   "clients": [
     {
       "clientId": "crane_client",

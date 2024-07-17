@@ -21,6 +21,7 @@
 package eu.openanalytics.rdepot.crane.test.helpers;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
 
 import java.util.List;
@@ -28,21 +29,30 @@ import java.util.List;
 public class KeycloakInstance implements AutoCloseable {
 
     private static final String hostname = "localhost";
+    private static final Network network = Network.newNetwork();
     @Container
     public static final KeycloakContainer keycloak = new KeycloakContainer()
         .withRealmImportFiles("crane-realm.json")
         .withExposedPorts(8080)
+        .withNetwork(network)
+        .withNetworkAliases("keycloak")
         .withExtraHost(hostname, "127.0.0.1");
-    private final String exposedPort = "9189";
+
+    private final String internallyExposedPort = "8080";
     public static boolean isKeycloakRunning = false;
     public void start() {
         if (!isKeycloakRunning) {
-            keycloak.setPortBindings(List.of(String.format("%s:8080", exposedPort)));
+            String bindingPort = "9189";
+            keycloak.setPortBindings(List.of(String.format("%s:%s", bindingPort, internallyExposedPort)));
             System.setProperty("http.keycloak.host", hostname);
-            System.setProperty("http.keycloak.port", exposedPort);
+            System.setProperty("http.keycloak.port", bindingPort);
             keycloak.start();
             isKeycloakRunning = true;
         }
+    }
+
+    public Network getNetwork() {
+        return network;
     }
 
     @Override
@@ -51,5 +61,9 @@ public class KeycloakInstance implements AutoCloseable {
             keycloak.stop();
             keycloak.close();
         }
+    }
+
+    public String getURI() {
+        return String.format("http://keycloak:%s/realms/crane", internallyExposedPort);
     }
 }
