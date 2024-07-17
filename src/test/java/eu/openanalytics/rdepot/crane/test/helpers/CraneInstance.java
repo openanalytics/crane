@@ -63,12 +63,6 @@ public class CraneInstance implements AutoCloseable {
         try {
             this.port = port;
             int mgmtPort = port % 1000 + 9000;
-            String keycloakUri = String.format(
-                "http://%s:%s/realms/crane",
-                System.getProperty("http.keycloak.host"),
-                System.getProperty("http.keycloak.port")
-            );
-
 
             SpringApplication application = new SpringApplication(CraneApplication.class);
             application.addPrimarySources(Collections.singletonList(TestConfiguration.class));
@@ -78,8 +72,8 @@ public class CraneInstance implements AutoCloseable {
             allProperties.put("management.server.port", mgmtPort);
             allProperties.put("proxy.kubernetes.namespace", "test");
             if (setupKeycloak) {
-                allProperties.put("app.openid-issuer-uri", keycloakUri);
-                allProperties.put("spring.security.oauth2.client.provider.crane.issuer-uri", keycloakUri);
+                allProperties.put("app.openid-issuer-uri", KeycloakInstance.getURI());
+                allProperties.put("spring.security.oauth2.client.provider.crane.issuer-uri", KeycloakInstance.getURI());
             }
             allProperties.put("spring.security.oauth2.client.registration.crane.client-id", "crane_client");
             allProperties.put("spring.security.oauth2.client.registration.crane.client-secret", "secret");
