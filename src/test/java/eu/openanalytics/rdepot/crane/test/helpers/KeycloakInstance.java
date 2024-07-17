@@ -29,23 +29,21 @@ import java.util.List;
 public class KeycloakInstance implements AutoCloseable {
 
     private static final String hostname = "localhost";
+    private static final int exposedPort = 9189;
     private static final Network network = Network.newNetwork();
     @Container
     public static final KeycloakContainer keycloak = new KeycloakContainer()
+        .withEnv("KC_HTTP_PORT", String.valueOf(exposedPort))
         .withRealmImportFiles("crane-realm.json")
-        .withExposedPorts(8080)
+        .withExposedPorts(exposedPort)
         .withNetwork(network)
         .withNetworkAliases("keycloak")
         .withExtraHost(hostname, "127.0.0.1");
 
-    private final String internallyExposedPort = "8080";
     public static boolean isKeycloakRunning = false;
     public void start() {
         if (!isKeycloakRunning) {
-            String bindingPort = "9189";
-            keycloak.setPortBindings(List.of(String.format("%s:%s", bindingPort, internallyExposedPort)));
-            System.setProperty("http.keycloak.host", hostname);
-            System.setProperty("http.keycloak.port", bindingPort);
+            keycloak.setPortBindings(List.of(String.format("%d:%d", exposedPort, exposedPort)));
             keycloak.start();
             isKeycloakRunning = true;
         }
@@ -63,7 +61,7 @@ public class KeycloakInstance implements AutoCloseable {
         }
     }
 
-    public String getURI() {
-        return String.format("http://keycloak:%s/realms/crane", internallyExposedPort);
+    public static String getURI() {
+        return String.format("http://keycloak:%d/realms/crane", exposedPort);
     }
 }
