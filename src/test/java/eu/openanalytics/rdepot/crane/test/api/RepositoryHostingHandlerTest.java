@@ -54,7 +54,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToPublicRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/public_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -69,7 +69,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToPrivateRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/private_repo";
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
@@ -83,7 +83,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccess() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -97,7 +97,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToRepositoryRestrictedToMultipleUsers() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_to_users_repo";
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
@@ -111,7 +111,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupKeycloakRoles() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_to_group_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -125,7 +125,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakRoles() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_to_groups_repo";
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
@@ -139,7 +139,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupKeycloakGroups() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(groupsInst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(groupsInst);
         String repository = "/restricted_to_group_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -153,7 +153,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakGroups() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(groupsInst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(groupsInst);
         String repository = "/restricted_to_groups_repo";
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
@@ -167,7 +167,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToSimpleExpressionRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_simple_expression_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -181,7 +181,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToExpressionUsingAndRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_expression_using_and_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -195,7 +195,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToNonExistentRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/this-does-not-exist";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
@@ -209,7 +209,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToNonExistentFileOrRepositoryInRepositories() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String file = "/public_repo/undefined.file";
         String repository = "/public_repo/undefined/";
         String nestedRepository = "/public_repo/undefined/test";
@@ -225,7 +225,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToNestedPublicRepositories() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/public_repo/public_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -239,7 +239,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToNestedPrivateRepositories() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String privateRepo = "/public_repo/private_repo";
         String file = "/file.txt";
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
@@ -254,7 +254,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToNestedRestrictedRepositories() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String restrictedRepo = "/public_repo/restricted_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedRepo)).assertUnauthorizedRedirectToLogIn();
@@ -269,7 +269,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testAccessToNestedMultiUserRestrictedRepositories() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String restrictedToMultipleUsers = "/public_repo/restricted_to_users_repo";
         String file = "/file.txt";
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
@@ -283,7 +283,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testMimeTypes() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/mime_types";
         String text = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(text)).assertPlainSuccess();
@@ -300,7 +300,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testSingleCacheRule() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/cache_txt_repo";
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository))
@@ -329,7 +329,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testMultipleCacheRules() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/cache_txt_and_csv_repo";
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository))
@@ -358,7 +358,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     void testDefaultCache() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
         Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/public_repo/default_cached_file.html"));
         resp.assertMissingNoCachingHeader();
@@ -367,7 +367,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     void testPathTraversalAttack() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
         String attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
         Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
@@ -420,7 +420,7 @@ public class RepositoryHostingHandlerTest {
 
     @Test
     public void testPublicInPublicRepository() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/public_repo/public_in_public_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();

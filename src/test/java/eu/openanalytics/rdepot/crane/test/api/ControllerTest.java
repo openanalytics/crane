@@ -52,21 +52,21 @@ public class ControllerTest {
 
     @Test
     public void testWithoutAuth() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
     }
 
     @Test
     public void testWithAuth() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/";
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
     }
 
     @Test
     public void testCacheHeaders() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/private_repo";
         String file = repository + "/file.txt";
 
@@ -76,7 +76,7 @@ public class ControllerTest {
 
     @Test
     public void testLogout() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/logout"));
         resp.assertSuccess();
         resp.assertRedirectedTo("/logout-success");
@@ -89,7 +89,7 @@ public class ControllerTest {
 
     @Test
     public void testRedis() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(redisInst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(redisInst);
 
         Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/private_repo"));
         resp.assertSuccess();
@@ -100,7 +100,7 @@ public class ControllerTest {
 
     @Test
     public void indexPage() {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/"));
         String body = resp.body();

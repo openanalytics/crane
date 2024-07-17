@@ -32,8 +32,17 @@ public class ApiTestHelper {
     private final OkHttpClient clientTest;
     private final OkHttpClient clientWithoutAuth;
 
-    public ApiTestHelper(CraneInstance inst) {
-        this.baseUrl = inst.client.getBaseUrl();
+    public static ApiTestHelper from(CraneInstance inst) {
+        return new ApiTestHelper(inst.client.getBaseUrl());
+    }
+
+    public static ApiTestHelper from(String baseUrl) {
+        return new ApiTestHelper(baseUrl);
+    }
+
+    private ApiTestHelper(String baseUrl) {
+        assert baseUrl.startsWith("http://") || baseUrl.startsWith("https://");
+        this.baseUrl = baseUrl;
         clientWithoutAuth = new OkHttpClient.Builder()
             .callTimeout(Duration.ofSeconds(120))
             .readTimeout(Duration.ofSeconds(120))

@@ -68,7 +68,7 @@ public class AuditingServiceTest {
 
     @Test
     public void testAuditingEventIndexPage() throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/"));
         checkUnauthenticatedAuditLog("/", "LIST_REPOSITORIES");
@@ -93,7 +93,7 @@ public class AuditingServiceTest {
 
     @Test
     public void testAuditingUnauthorizedEventPage() throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/private_repo"));
         checkUnauthenticatedAuditLog("/private_repo", "AUTHORIZATION_FAILURE");
@@ -107,7 +107,7 @@ public class AuditingServiceTest {
 
     @Test
     public void testAuditingLogoutEventPage() throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/logout"));
         checkUnauthenticatedAuditLog("/logout", "LOGOUT");
@@ -126,7 +126,7 @@ public class AuditingServiceTest {
 
     @Test
     public void testAuditingErrorHandlerEventPage() throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = new ApiTestHelper(inst);
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/undefined_repository"));
         checkTwoAuditLogs(
