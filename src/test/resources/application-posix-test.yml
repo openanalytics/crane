@@ -9,20 +9,24 @@ app:
     - name: public_repo
       public: true
       paths:
-        - name: private_repo
+        - name: public_repo
+          public: true
         - name: only_owner_demo
           access-users: [ demo ]
-        - name: only_for_scientists
+        - name: only_group_scientists
           access-groups: [ scientists ]
+        - name: only_group_mathematicians
+          access-groups: [ mathematicians ]
         - name: no_posix_access
           public: true
         - name: no_path_access
           access-users: [ undefined users ]
-    - name: private_repo
     - name: only_owner_demo
       access-users: [ demo ]
-    - name: only_for_scientists
+    - name: only_group_scientists
       access-groups: [ scientists ]
+    - name: only_group_mathematicians
+      access-groups: [ mathematicians ]
     - name: no_posix_access
       public: true
     - name: no_path_access
