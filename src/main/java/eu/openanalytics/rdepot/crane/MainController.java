@@ -22,6 +22,7 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.model.dto.ApiResponse;
 import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
 import eu.openanalytics.rdepot.crane.service.AccessControlService;
 import eu.openanalytics.rdepot.crane.service.UserService;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -80,30 +82,19 @@ public class MainController extends BaseUIController {
         prepareMap(map);
         return "repositories";
     }
-    private static class Repositories {
-        public List<String> getRepositories() {
-            return repositories;
-        }
-
-        public void setRepositories(List<String> repositories) {
-            this.repositories = repositories;
-        }
-
-        List<String> repositories;
-    }
     @ResponseBody
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Repositories getRepositoriesAsJson(HttpServletRequest request) {
+    public Object getRepositoriesAsJson(HttpServletRequest request) {
         Authentication user = SecurityContextHolder.getContext().getAuthentication();
 
-        Repositories repositories = new Repositories();
-
-        repositories.repositories = config.getRepositories().stream()
-            .filter(r -> accessControlService.canAccess(user, r))
-            .map(Repository::getName)
-            .toList();
-
-        auditingService.createListRepositoriesAuditEvent(request);
-        return repositories;
+        return ApiResponse.success(
+            Map.of(
+                "directories",
+                config.getRepositories().stream()
+                    .filter(r -> accessControlService.canAccess(user, r))
+                    .map(Repository::getName)
+                    .toList()
+            )
+        );
     }
 }

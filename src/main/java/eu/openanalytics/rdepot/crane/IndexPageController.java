@@ -22,6 +22,7 @@ package eu.openanalytics.rdepot.crane;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.model.dto.ApiResponse;
 import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
 import eu.openanalytics.rdepot.crane.model.runtime.CraneFile;
 import eu.openanalytics.rdepot.crane.service.IndexPageService;
@@ -32,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -74,7 +76,7 @@ public class IndexPageController extends BaseUIController {
 
     @ResponseBody
     @GetMapping(value = "/__index", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, List<String>> mainJson(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public Object mainJson(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Path path = (Path) request.getAttribute("path");
         Repository repo = (Repository) request.getAttribute("repo");
 
@@ -83,11 +85,8 @@ public class IndexPageController extends BaseUIController {
             request.getRequestDispatcher("/error").forward(request, response);
             return null;
         }
-
         Map<String, Object> variables = indexPageService.getTemplateVariables(repo, path);
-        Map<String, List<String>> filesAndDirectories = new HashMap<>();
-        filesAndDirectories.put("directories", ((List<CraneDirectory>) variables.get("directories")).stream().map(CraneDirectory::getName).toList());
-        filesAndDirectories.put("files", ((List<CraneFile>) variables.get("files")).stream().map(CraneFile::getName).toList());
-        return filesAndDirectories;
+        variables.keySet().retainAll(List.of("directories", "files"));
+        return ApiResponse.success(variables);
     }
 }
