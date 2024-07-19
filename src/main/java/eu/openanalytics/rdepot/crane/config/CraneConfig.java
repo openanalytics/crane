@@ -82,6 +82,8 @@ public class CraneConfig {
     private StsClient stsClient;
     private String callerIdentityArn;
 
+    private boolean posixAccessControl;
+
     public boolean isPosixAccessControl() {
         return posixAccessControl;
     }
@@ -89,8 +91,6 @@ public class CraneConfig {
     public void setPosixAccessControl(boolean posixAccessControl) {
         this.posixAccessControl = posixAccessControl;
     }
-
-    private boolean posixAccessControl;
 
     public Path getRoot() {
         return root;
