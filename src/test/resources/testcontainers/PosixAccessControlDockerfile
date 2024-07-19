@@ -20,13 +20,15 @@ FROM public.ecr.aws/docker/library/eclipse-temurin:17-jammy
 LABEL maintainer="Tobia De Koninck <tdekoninck@openanalytics.eu>"
 
 COPY $CONFIGURATION /opt/crane/
+ENV CRANE_USER crane
 
 # CREATE USERS AND GROUPS
 RUN useradd demo && \
     useradd test && \
     groupadd scientists && \
     groupadd mathematicians && \
-    groupadd crane_public
+    groupadd crane_public && \
+    useradd -c 'crane user' -G scientists,mathematicians,crane_public -m -d /home/$CRAN_USER -s /bin/nologin $CRANE_USER
 
 COPY --from=builder /opt/crane /opt/crane
 
@@ -57,8 +59,14 @@ RUN mkdir /tmp/posix_repository && \
     mkdir /tmp/posix_repository/no_posix_access && \
     touch /tmp/posix_repository/no_posix_access/index.html
 
-# SET POSIX PERMISSIONS
-RUN chgrp -R crane_public /tmp/posix_repository && \
+# SET POSIX PERMISSIONS \
+RUN chgrp crane_public / && \
+    chmod g+r / && \
+    chgrp crane_public /tmp && \
+    chmod g+r /tmp && \
+    chgrp crane_public /tmp/posix_repository && \
+    chmod g+r /tmp/posix_repository && \
+    chgrp -R crane_public /tmp/posix_repository && \
     chmod -R u+r,g+r /tmp/posix_repository && \
     chown -R demo /tmp/posix_repository/public_repo/only_owner_demo /tmp/posix_repository/only_owner_demo && \
     chmod -R u+r /tmp/posix_repository/public_repo/only_owner_demo /tmp/posix_repository/only_owner_demo && \
@@ -68,5 +76,6 @@ RUN chgrp -R crane_public /tmp/posix_repository && \
     chmod -R u-r,g+r /tmp/posix_repository/public_repo/only_group_scientists /tmp/posix_repository/only_group_scientists
 
 WORKDIR /opt/crane
+USER $CRANE_USER
 
 CMD ["java", "-noverify", "-jar", "/opt/crane/crane.jar", "--spring.jmx.enabled=false", "--spring.config.location=/opt/crane/application.yml"]
