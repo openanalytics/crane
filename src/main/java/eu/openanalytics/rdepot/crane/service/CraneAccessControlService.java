@@ -89,11 +89,11 @@ public class CraneAccessControlService {
     /**
      * Whether the current user can access the provided directory.
      * @param repository the repository to which this directory belongs
-     * @param craneDirectory the directory to check
+     * @param path the path to check
      * @return whether the user can access
      */
-    public boolean canAccess(Repository repository, CraneDirectory craneDirectory) {
-        return canAccess(userService.getUser(), craneDirectory.getPath(), repository);
+    public boolean canAccess(Repository repository, String path) {
+        return canAccess(userService.getUser(), path, repository);
     }
 
     /**
@@ -124,7 +124,7 @@ public class CraneAccessControlService {
     }
 
     public boolean canAccessFile(Repository repository, CraneFile craneFile) {
-        return posixAccessControlService.canAccess(userService.getUser(), repository.getName() + "/" + craneFile.getName(), repository);
+        return posixAccessControlService.canAccess(userService.getUser(), repository.getStorageLocation() + "/" + craneFile.getName(), repository);
     }
 
     private boolean canAccess(Authentication auth, String fullPath, Repository repository) {

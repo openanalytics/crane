@@ -62,15 +62,14 @@ public class IndexPageService {
                     // TODO
                     return;
                 }
-                if (craneResource instanceof CraneFile craneFile) {
-                    if (craneAccessControlService.canAccessFile(repository, craneFile))
-                    craneFiles.add((CraneFile) craneResource);
-                } else if (craneResource instanceof CraneDirectory craneDirectory) {
-                    if (craneAccessControlService.canAccess(repository, craneDirectory)) {
+                if (craneAccessControlService.canAccess(repository, p.toString())) {
+                    if (craneResource instanceof CraneFile craneFile) {
+                        craneFiles.add(craneFile);
+                    } else if (craneResource instanceof CraneDirectory craneDirectory) {
                         craneDirectories.add(craneDirectory);
+                    } else {
+                        // TODO
                     }
-                } else {
-                    // TODO
                 }
             });
         }
