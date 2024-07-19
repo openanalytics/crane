@@ -286,6 +286,12 @@
 
     <profiles>
         <profile>
+            <id>tmpOutputDir</id>
+            <build>
+                <directory>/tmp/target</directory>
+            </build>
+        </profile>
+        <profile>
             <id>owasp-dependency-check</id>
             <build>
                 <plugins>

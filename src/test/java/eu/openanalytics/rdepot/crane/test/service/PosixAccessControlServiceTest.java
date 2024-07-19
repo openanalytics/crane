@@ -33,14 +33,19 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 
 @Testcontainers
 public class PosixAccessControlServiceTest {
     private static final int cranePort = 7127;
+    private static final String targetDirectory = "/tmp/target";
     private static final Logger logger = LoggerFactory.getLogger(PosixAccessControlServiceTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final GenericContainer craneApp = new GenericContainer(
@@ -48,7 +53,7 @@ public class PosixAccessControlServiceTest {
             .withBuildArg("CONFIGURATION", "application.yml")
             .withBuildArg("JAR_LOCATION", "crane.jar")
             .withFileFromPath("application.yml", Paths.get("src","test", "resources", "application-posix-test.yml"))
-            .withFileFromPath("crane.jar", Paths.get("target", "crane-0.2.0-SNAPSHOT-exec.jar"))
+            .withFileFromPath("crane.jar", Path.of( targetDirectory + "/crane-0.2.0-SNAPSHOT-exec.jar"))
             .withFileFromClasspath("Dockerfile", "testcontainers/PosixAccessControlDockerfile")
     )
         .withEnv("OPENID_URL", keycloakInstance.getURI())
@@ -56,14 +61,36 @@ public class PosixAccessControlServiceTest {
         .withNetwork(keycloakInstance.getNetwork())
         .withExposedPorts(cranePort);
 
-
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAll() throws IOException, InterruptedException {
+        buildJar();
         keycloakInstance.start();
         craneApp.setPortBindings(List.of(String.format("%s:%s", cranePort, cranePort)));
         craneApp.withLogConsumer(new Slf4jLogConsumer(logger));
         craneApp.start();
     }
+
+    private static void buildJar() throws IOException, InterruptedException {
+        File target = new File(targetDirectory);
+        if (!target.exists() && !target.mkdir()) {
+            throw new RuntimeException("Alternative target directory could not be created");
+        }
+
+        Process process = new ProcessBuilder()
+            .command("mvn", "-B", "-U", "clean", "package", "-DskipTests=true", "-Dlicense.skip", "-PtmpOutputDir")
+            .start();
+
+        List<String> info = IOUtils.readLines(process.getInputStream(), Charset.defaultCharset());
+        info.forEach(logger::info);
+
+        List<String> errors = IOUtils.readLines(process.getErrorStream(), Charset.defaultCharset());
+        errors.forEach(logger::error);
+
+        if (process.waitFor() != 0) {
+            throw new RuntimeException("Build of the project failed");
+        }
+    }
+
     @AfterAll
     public static void afterAll() {
         craneApp.stop();
