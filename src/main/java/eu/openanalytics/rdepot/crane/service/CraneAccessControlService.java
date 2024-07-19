@@ -75,10 +75,7 @@ public class CraneAccessControlService {
                 return false;
             }
 
-            Iterator<Path> iterator = path.iterator();
-            iterator.next();
-
-            return canAccess(auth, requestPath, repository, iterator);
+            return canAccess(auth, requestPath, repository);
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -86,7 +83,7 @@ public class CraneAccessControlService {
 
     public boolean canAccess(Authentication auth, Repository repository) {
         String fullUrlPath = "/" + repository.getName();
-        return canAccess(auth, fullUrlPath, repository, Path.of(fullUrlPath).iterator());
+        return canAccess(auth, fullUrlPath, repository);
     }
 
     /**
@@ -96,10 +93,7 @@ public class CraneAccessControlService {
      * @return whether the user can access
      */
     public boolean canAccess(Repository repository, CraneDirectory craneDirectory) {
-        Path path = Path.of(craneDirectory.getPath());
-        Iterator<Path> iterator = path.iterator();
-        iterator.next();
-        return canAccess(userService.getUser(), craneDirectory.getPath(), repository, iterator);
+        return canAccess(userService.getUser(), craneDirectory.getPath(), repository);
     }
 
     /**
@@ -133,8 +127,8 @@ public class CraneAccessControlService {
         return posixAccessControlService.canAccess(userService.getUser(), repository.getName() + "/" + craneFile.getName(), repository);
     }
 
-    private boolean canAccess(Authentication auth, String fullPath, Repository repository, Iterator<Path> path) {
-        return pathAccessControlService.canAccess(auth, fullPath, repository, path) && posixAccessControlService.canAccess(auth, fullPath, repository);
+    private boolean canAccess(Authentication auth, String fullPath, Repository repository) {
+        return pathAccessControlService.canAccess(auth, fullPath, repository) && posixAccessControlService.canAccess(auth, fullPath, repository);
     }
 
     public static boolean isMember(Authentication auth, String group) {

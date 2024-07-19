@@ -48,6 +48,11 @@ public class PathAccessControlService {
         this.specExpressionResolver = specExpressionResolver;
     }
 
+    public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent) {
+        Iterator<Path> path = Path.of(fullPath).iterator();
+        path.next();
+        return canAccess(auth, fullPath, pathComponent, path);
+    }
 
     public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
         if (!canAccess(auth, pathComponent)) {
