@@ -41,7 +41,9 @@ public class ApiTestHelper {
     }
 
     private ApiTestHelper(String baseUrl) {
-        assert baseUrl.startsWith("http://") || baseUrl.startsWith("https://");
+        if (baseUrl.startsWith("http://") || baseUrl.startsWith("https://")) {
+            throw new TestHelperException(String.format("The passed url '%s' does not start with 'http://' or 'https://'", baseUrl));
+        }
         this.baseUrl = baseUrl;
         clientWithoutAuth = new OkHttpClient.Builder()
             .callTimeout(Duration.ofSeconds(120))
