@@ -33,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -76,7 +77,7 @@ public class IndexPageController extends BaseUIController {
 
     @ResponseBody
     @GetMapping(value = "/__index", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object mainJson(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> mainJson(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Path path = (Path) request.getAttribute("path");
         Repository repo = (Repository) request.getAttribute("repo");
 

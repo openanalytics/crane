@@ -29,6 +29,7 @@ import eu.openanalytics.rdepot.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -84,7 +85,7 @@ public class MainController extends BaseUIController {
     }
     @ResponseBody
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object getRepositoriesAsJson(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRepositoriesAsJson(HttpServletRequest request) {
         Authentication user = SecurityContextHolder.getContext().getAuthentication();
 
         return ApiResponse.success(
