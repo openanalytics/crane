@@ -64,6 +64,7 @@ public class PosixAccessControlService {
         while (subsequentPaths.hasNext()) {
             String subDirectory = pathBuilder.append("/").toString();
             if (!canAccess(auth, subDirectory)) {
+                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, subDirectory);
                 return false;
             }
             pathBuilder.append(subsequentPaths.next());
