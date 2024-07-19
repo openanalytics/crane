@@ -69,8 +69,8 @@ public class PosixAccessControlService {
             }
             pathBuilder.append(subsequentPaths.next());
         }
-        String full_path = pathBuilder.toString();
-        return canAccess(auth, full_path);
+        String completePath = pathBuilder.toString();
+        return canAccess(auth, completePath);
     }
 
     private boolean pathSupportsPosix(Path storagePath) {
