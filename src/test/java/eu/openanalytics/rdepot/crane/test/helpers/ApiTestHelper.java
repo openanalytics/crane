@@ -41,7 +41,7 @@ public class ApiTestHelper {
     }
 
     private ApiTestHelper(String baseUrl) {
-        if (baseUrl.startsWith("http://") || baseUrl.startsWith("https://")) {
+        if (!(baseUrl.startsWith("http://") || baseUrl.startsWith("https://"))) {
             throw new TestHelperException(String.format("The passed url '%s' does not start with 'http://' or 'https://'", baseUrl));
         }
         this.baseUrl = baseUrl;
