@@ -91,7 +91,7 @@ public class MainController extends BaseUIController {
             Map.of(
                 "directories",
                 config.getRepositories().stream()
-                    .filter(r -> accessControlService.canAccess(user, r))
+                    .filter(r -> craneAccessControlService.canAccess(user, r))
                     .map(Repository::getName)
                     .toList()
             )
