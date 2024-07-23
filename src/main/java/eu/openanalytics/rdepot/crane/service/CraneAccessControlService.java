@@ -123,10 +123,6 @@ public class CraneAccessControlService {
         return true;
     }
 
-    public boolean canAccessFile(Repository repository, CraneFile craneFile) {
-        return posixAccessControlService.canAccess(userService.getUser(), repository.getStorageLocation() + "/" + craneFile.getName(), repository);
-    }
-
     private boolean canAccess(Authentication auth, String fullPath, Repository repository) {
         return pathAccessControlService.canAccess(auth, fullPath, repository) && posixAccessControlService.canAccess(auth, fullPath, repository);
     }
