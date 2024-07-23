@@ -34,30 +34,32 @@ COPY --from=builder /opt/crane /opt/crane
 
 # CREATE REPOSITORIES AND THEIR FILES
 RUN mkdir /tmp/posix_repository && \
+    mkdir /tmp/posix_repository/private && \
+    mkdir /tmp/posix_repository/private/file.txt && \
     mkdir /tmp/posix_repository/public_repo && \
-    touch /tmp/posix_repository/public_repo/index.html && \
+    touch /tmp/posix_repository/public_repo/file.txt && \
     mkdir /tmp/posix_repository/public_repo/public_repo && \
-    touch /tmp/posix_repository/public_repo/public_repo/index.html && \
+    touch /tmp/posix_repository/public_repo/public_repo/file.txt && \
     mkdir /tmp/posix_repository/public_repo/only_owner_demo && \
-    touch /tmp/posix_repository/public_repo/only_owner_demo/index.html && \
+    touch /tmp/posix_repository/public_repo/only_owner_demo/file.txt && \
     mkdir /tmp/posix_repository/public_repo/only_group_scientists && \
-    touch /tmp/posix_repository/public_repo/only_group_scientists/index.html && \
+    touch /tmp/posix_repository/public_repo/only_group_scientists/file.txt && \
     mkdir /tmp/posix_repository/public_repo/only_group_mathematicians && \
-    touch /tmp/posix_repository/public_repo/only_group_mathematicians/index.html && \
+    touch /tmp/posix_repository/public_repo/only_group_mathematicians/file.txt && \
     mkdir /tmp/posix_repository/public_repo/no_posix_access && \
-    touch /tmp/posix_repository/public_repo/no_posix_access/index.html && \
+    touch /tmp/posix_repository/public_repo/no_posix_access/file.txt && \
     mkdir /tmp/posix_repository/public_repo/no_path_access && \
-    touch /tmp/posix_repository/public_repo/no_path_access/index.html && \
+    touch /tmp/posix_repository/public_repo/no_path_access/file.txt && \
     mkdir /tmp/posix_repository/only_owner_demo && \
-    touch /tmp/posix_repository/only_owner_demo/index.html && \
+    touch /tmp/posix_repository/only_owner_demo/file.txt && \
     mkdir /tmp/posix_repository/only_group_scientists && \
-    touch /tmp/posix_repository/only_group_scientists/index.html && \
+    touch /tmp/posix_repository/only_group_scientists/file.txt && \
     mkdir /tmp/posix_repository/only_group_mathematicians && \
-    touch /tmp/posix_repository/only_group_mathematicians/index.html && \
+    touch /tmp/posix_repository/only_group_mathematicians/file.txt && \
     mkdir /tmp/posix_repository/no_path_access && \
-    touch /tmp/posix_repository/no_path_access/index.html && \
+    touch /tmp/posix_repository/no_path_access/file.txt && \
     mkdir /tmp/posix_repository/no_posix_access && \
-    touch /tmp/posix_repository/no_posix_access/index.html
+    touch /tmp/posix_repository/no_posix_access/file.txt
 
 # SET POSIX PERMISSIONS \
 RUN chgrp crane_public / && \

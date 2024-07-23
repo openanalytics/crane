@@ -54,7 +54,6 @@ public class IndexPageService {
     public Map<String, Object> getTemplateVariables(Repository repository, Path path) throws IOException {
         List<CraneFile> craneFiles = new ArrayList<>();
         List<CraneDirectory> craneDirectories = new ArrayList<>();
-
         try (Stream<Path> dirListing = Files.list(path)) {
             dirListing.forEach(p -> {
                 CraneResource craneResource = CraneResource.createFromPath(p, config);
@@ -62,7 +61,7 @@ public class IndexPageService {
                     // TODO
                     return;
                 }
-                if (craneAccessControlService.canAccess(repository, p.toString())) {
+                if (craneAccessControlService.canAccess(repository, p.toString().substring(repository.getStorageLocation().length()))) {
                     if (craneResource instanceof CraneFile craneFile) {
                         craneFiles.add(craneFile);
                     } else if (craneResource instanceof CraneDirectory craneDirectory) {

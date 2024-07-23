@@ -9,6 +9,7 @@ app:
     - name: public_repo
       public: true
       paths:
+        - name: private
         - name: public_repo
           public: true
         - name: only_owner_demo
@@ -21,6 +22,7 @@ app:
           public: true
         - name: no_path_access
           access-users: [ undefined users ]
+    - name: private
     - name: only_owner_demo
       access-users: [ demo ]
     - name: only_group_scientists
