@@ -70,7 +70,7 @@ public class Repository extends PathComponent {
 
         validateRepositoryName();
 
-        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
+        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess() || hasPosixAccessControl())) {
             throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
         }
     }
