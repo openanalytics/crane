@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
@@ -81,6 +82,8 @@ public class PosixAccessControlService {
         PosixFileAttributes attributes;
         try {
             attributes = Files.getFileAttributeView(Path.of(path), PosixFileAttributeView.class).readAttributes();
+        } catch (NoSuchFileException e) {
+            return false;
         } catch (IOException e) { // TODO: find a way to produce this warning
             logger.warn(String.format("Could not view POSIX file system permissions of %s", path), e);
             return false;
