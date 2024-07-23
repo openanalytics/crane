@@ -46,12 +46,12 @@ public class PosixAccessControlService {
     }
 
     public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
-        if (!config.isPosixAccessControl()) {
-            return true;
-        }
-
         if (auth == null || repository == null) {
             return false;
+        }
+
+        if (!repository.hasPosixAccessControl()) {
+            return true;
         }
 
         if (!pathSupportsPosix(repository.getStoragePath())) {

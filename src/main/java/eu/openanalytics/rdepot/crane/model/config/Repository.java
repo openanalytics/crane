@@ -30,6 +30,7 @@ public class Repository extends PathComponent {
     private List<CacheRule> cache;
     private String storageLocation;
     private Path storagePath;
+    private boolean posixAccessControl;
 
     public String getIndexFileName() {
         return indexFileName;
@@ -72,6 +73,14 @@ public class Repository extends PathComponent {
         if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
             throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
         }
+    }
+
+    public boolean hasPosixAccessControl() {
+        return posixAccessControl;
+    }
+
+    public void setPosixAccessControl(Boolean posixAccessControl) {
+        this.posixAccessControl = posixAccessControl;
     }
 
     public String getStorageLocation() {

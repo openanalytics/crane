@@ -1,12 +1,12 @@
 server:
   port: ${CRANE_PORT}
 app:
-  posix-access-control: true
   storage-location: /tmp/posix_repository/
   openid-issuer-uri: "${OPENID_URL}"
   openid-groups-claim: realm_roles
   repositories:
     - name: public_repo
+      posix-access-control: true
       public: true
       paths:
         - name: private
@@ -23,15 +23,21 @@ app:
         - name: no_path_access
           access-users: [ undefined users ]
     - name: private
+      posix-access-control: true
     - name: only_owner_demo
+      posix-access-control: true
       access-users: [ demo ]
     - name: only_group_scientists
+      posix-access-control: true
       access-groups: [ scientists ]
     - name: only_group_mathematicians
+      posix-access-control: true
       access-groups: [ mathematicians ]
     - name: no_posix_access
+      posix-access-control: true
       public: true
     - name: no_path_access
+      posix-access-control: true
       access-users: [ undefined users ]
 spring:
   security:
