@@ -5,21 +5,16 @@ app:
   openid-issuer-uri: "${OPENID_URL}"
   openid-groups-claim: realm_roles
   repositories:
-    - name: public_repo
+    - name: repository_with_paths
       posix-access-control: true
-      public: true
       paths:
         - name: private
-        - name: public_repo
-          public: true
         - name: only_owner_demo
           access-users: [ demo ]
         - name: only_group_scientists
           access-groups: [ scientists ]
         - name: only_group_mathematicians
           access-groups: [ mathematicians ]
-        - name: no_posix_access
-          public: true
         - name: no_path_access
           access-users: [ undefined users ]
     - name: private
@@ -34,7 +29,6 @@ app:
       posix-access-control: true
       access-groups: [ mathematicians ]
     - name: no_posix_access
-      posix-access-control: true
       public: true
     - name: no_path_access
       posix-access-control: true

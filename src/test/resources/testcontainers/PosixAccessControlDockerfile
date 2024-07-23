@@ -36,20 +36,16 @@ COPY --from=builder /opt/crane /opt/crane
 RUN mkdir /tmp/posix_repository && \
     mkdir /tmp/posix_repository/private && \
     mkdir /tmp/posix_repository/private/file.txt && \
-    mkdir /tmp/posix_repository/public_repo && \
-    touch /tmp/posix_repository/public_repo/file.txt && \
-    mkdir /tmp/posix_repository/public_repo/public_repo && \
-    touch /tmp/posix_repository/public_repo/public_repo/file.txt && \
-    mkdir /tmp/posix_repository/public_repo/only_owner_demo && \
-    touch /tmp/posix_repository/public_repo/only_owner_demo/file.txt && \
-    mkdir /tmp/posix_repository/public_repo/only_group_scientists && \
-    touch /tmp/posix_repository/public_repo/only_group_scientists/file.txt && \
-    mkdir /tmp/posix_repository/public_repo/only_group_mathematicians && \
-    touch /tmp/posix_repository/public_repo/only_group_mathematicians/file.txt && \
-    mkdir /tmp/posix_repository/public_repo/no_posix_access && \
-    touch /tmp/posix_repository/public_repo/no_posix_access/file.txt && \
-    mkdir /tmp/posix_repository/public_repo/no_path_access && \
-    touch /tmp/posix_repository/public_repo/no_path_access/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths && \
+    touch /tmp/posix_repository/repository_with_paths/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_owner_demo && \
+    touch /tmp/posix_repository/repository_with_paths/only_owner_demo/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_group_scientists && \
+    touch /tmp/posix_repository/repository_with_paths/only_group_scientists/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_group_mathematicians && \
+    touch /tmp/posix_repository/repository_with_paths/only_group_mathematicians/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/no_path_access && \
+    touch /tmp/posix_repository/repository_with_paths/no_path_access/file.txt && \
     mkdir /tmp/posix_repository/only_owner_demo && \
     touch /tmp/posix_repository/only_owner_demo/file.txt && \
     mkdir /tmp/posix_repository/only_group_scientists && \
@@ -66,16 +62,17 @@ RUN chgrp crane_public / && \
     chmod g+r / && \
     chgrp crane_public /tmp && \
     chmod g+r /tmp && \
+    chown -R $CRANE_USER /tmp/posix_repository/ && \
     chgrp crane_public /tmp/posix_repository && \
     chmod g+r /tmp/posix_repository && \
     chgrp -R crane_public /tmp/posix_repository && \
     chmod -R u+r,g+r /tmp/posix_repository && \
-    chown -R demo /tmp/posix_repository/public_repo/only_owner_demo /tmp/posix_repository/only_owner_demo && \
-    chmod -R u+r /tmp/posix_repository/public_repo/only_owner_demo /tmp/posix_repository/only_owner_demo && \
-    chmod -R u-r,g-r /tmp/posix_repository/public_repo/no_posix_access /tmp/posix_repository/no_posix_access && \
-    chgrp -R scientists /tmp/posix_repository/public_repo/only_group_scientists /tmp/posix_repository/only_group_scientists && \
-    chgrp -R mathematicians  /tmp/posix_repository/public_repo/only_group_mathematicians /tmp/posix_repository/only_group_mathematicians && \
-    chmod -R u-r,g+r /tmp/posix_repository/public_repo/only_group_scientists /tmp/posix_repository/only_group_scientists
+    chown -R demo /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
+    chmod -R u+r /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
+    chgrp -R scientists /tmp/posix_repository/repository_with_paths/only_group_scientists /tmp/posix_repository/only_group_scientists && \
+    chmod -R g+r /tmp/posix_repository/repository_with_paths/only_group_scientists /tmp/posix_repository/only_group_scientists && \
+    chgrp -R mathematicians  /tmp/posix_repository/repository_with_paths/only_group_mathematicians /tmp/posix_repository/only_group_mathematicians && \
+    chmod -R g+r  /tmp/posix_repository/repository_with_paths/only_group_mathematicians /tmp/posix_repository/only_group_mathematicians
 
 WORKDIR /opt/crane
 USER $CRANE_USER

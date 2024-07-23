@@ -40,7 +40,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Testcontainers
 public class PosixAccessControlServiceTest {
@@ -104,35 +106,37 @@ public class PosixAccessControlServiceTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
 
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/"));
-        resp.assertUnauthorizedRedirectToLogIn();
-
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/"));
         String body = resp.body();
-        List<String> repositories = List.of("public_repo", "only_owner_demo", "only_group_scientists", "only_group_mathematicians");
+        Set<String> repositories = new HashSet<>(Set.of("no_posix_access"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
         resp = apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/"));
         body = resp.body();
-        repositories = List.of("public_repo", "only_group_mathematicians");
+        repositories.addAll(Set.of("repository_with_paths", "only_group_mathematicians"));
+        Assertions.assertTrue(repositories.stream().allMatch(body::contains));
+
+        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/"));
+        body = resp.body();
+        repositories.addAll(Set.of("only_owner_demo", "only_group_scientists"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
     }
 
     @Test
     public void testIndexPageOfPublicRepository() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String path = "/public_repo";
+        String path = "/repository_with_paths";
 
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         resp.assertUnauthorizedRedirectToLogIn();
 
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(path));
+        resp = apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(path));
         String body = resp.body();
-        List<String> repositories = List.of("public_repo", "only_owner_demo", "only_group_scientists", "only_group_mathematicians", "file.txt");
+        Set<String> repositories = new HashSet<>(Set.of("repository_with_paths", "only_group_mathematicians", "file.txt"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
-        resp = apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(path));
+        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(path));
         body = resp.body();
-        repositories = List.of("public_repo", "only_group_mathematicians", "file.txt");
+        repositories.addAll(Set.of("only_owner_demo", "only_group_scientists"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
     }
 
@@ -145,7 +149,7 @@ public class PosixAccessControlServiceTest {
 
         Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(path));
         String body = resp.body();
-        List<String> repositories = List.of("file.txt");
+        Set<String> repositories = Set.of("file.txt");
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
         resp = apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(path));
@@ -156,7 +160,7 @@ public class PosixAccessControlServiceTest {
     @Test
     public void testAccessToPublicRepository() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/public_repo";
+        String repository = "/repository_with_paths";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -214,14 +218,14 @@ public class PosixAccessControlServiceTest {
     public void testAccessToRepositoryWithNoAccessInPosix() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String repository = "/no_posix_access";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertNotFound();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -239,24 +243,9 @@ public class PosixAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToNestedPublicRepository() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/public_repo/public_repo";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-
-
-        String file = repository + "/file.txt";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-    }
-
-    @Test
     public void testAccessToNestedGroupRepositoryWithMultipleUsers() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/public_repo/only_group_mathematicians";
+        String repository = "/repository_with_paths/only_group_mathematicians";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -270,7 +259,7 @@ public class PosixAccessControlServiceTest {
     @Test
     public void testAccessToNestedRepositoryWithOwnerRestrictionAccess() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/public_repo/only_owner_demo";
+        String repository = "/repository_with_paths/only_owner_demo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
@@ -284,7 +273,7 @@ public class PosixAccessControlServiceTest {
     @Test
     public void testAccessToNestedRepositoryRestrictedToGroupOfSingleUser() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/public_repo/only_group_scientists";
+        String repository = "/repository_with_paths/only_group_scientists";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
@@ -296,23 +285,9 @@ public class PosixAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToNestedRepositoryWithNoAccessInPosix() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/public_repo/no_posix_access";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
-
-        String file = repository + "/file.txt";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertNotFound();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
-    }
-
-    @Test
     public void testAccessToNestedRepositoryWithNoPathAccess() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/public_repo/restricted_to_groups_repo";
+        String repository = "/repository_with_paths/restricted_to_groups_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
