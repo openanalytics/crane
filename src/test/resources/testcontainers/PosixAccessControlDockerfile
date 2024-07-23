@@ -58,12 +58,7 @@ RUN mkdir /tmp/posix_repository && \
     touch /tmp/posix_repository/no_posix_access/file.txt
 
 # SET POSIX PERMISSIONS \
-RUN chgrp crane_public / && \
-    chmod g+r / && \
-    chgrp crane_public /tmp && \
-    chmod g+r /tmp && \
-    chown -R $CRANE_USER /tmp/posix_repository/ && \
-    chgrp crane_public /tmp/posix_repository && \
+RUN chown -R $CRANE_USER:crane_public /tmp/posix_repository/ && \
     chmod g+r /tmp/posix_repository && \
     chgrp -R crane_public /tmp/posix_repository && \
     chmod -R u+r,g+r /tmp/posix_repository && \
