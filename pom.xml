@@ -257,6 +257,7 @@
                         <exclude>**/*.sh</exclude>
                         <exclude>**/*.txt</exclude>
                         <exclude>**/*.xml</exclude>
+                        <exclude>data/**</exclude>
                         <exclude>LICENSE</exclude>
                         <exclude>LICENSE_HEADER</exclude>
                         <exclude>README.md</exclude>

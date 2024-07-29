@@ -24,6 +24,7 @@ import com.redis.testcontainers.RedisContainer;
 import eu.openanalytics.rdepot.crane.CraneApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -123,6 +124,10 @@ public class CraneInstance implements AutoCloseable {
             closeRedis();
             throw new TestHelperException("Error during startup of Crane", t);
         }
+    }
+
+    public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
+        return app.getBean(name, requiredType);
     }
 
     private void copyResourcesToTmp() {

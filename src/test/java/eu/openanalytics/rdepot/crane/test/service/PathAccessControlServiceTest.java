@@ -23,12 +23,12 @@ package eu.openanalytics.rdepot.crane.test.service;
 import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.PathAccessControlService;
+import eu.openanalytics.rdepot.crane.test.helpers.CraneInstance;
 import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -38,22 +38,25 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(properties = {
-    "app.openid-issuer-uri=http://localhost:9189/realms/crane",
-    "spring.security.oauth2.client.provider.crane.issuer-uri=http://localhost:9189/realms/crane"
-})
 public class PathAccessControlServiceTest {
+
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
+    private static CraneInstance inst;
 
     @BeforeAll
     public  static void beforeAll() {
         keycloakInstance.start();
+        inst = new CraneInstance("application-test-api.yml");
     }
-    @Autowired
-    private PathAccessControlService pathAccessControlService;
+
+    @AfterAll
+    public static void afterAll() {
+        inst.close();
+    }
 
     @Test
     public void testAccessToRestrictedNetworkRepository() {
+        PathAccessControlService pathAccessControlService = inst.getBean("pathAccessControlService", PathAccessControlService.class);
         String allowed_ip = "192.168.18.123";
         PathComponent repository = new Repository();
         repository.setName("network_restricted_repo");
@@ -77,6 +80,7 @@ public class PathAccessControlServiceTest {
 
     @Test
     public void testAccessToRestrictedNetworkAndUserRepository() {
+        PathAccessControlService pathAccessControlService = inst.getBean("pathAccessControlService", PathAccessControlService.class);
         String allowed_ip = "192.168.18.123";
 
         PathComponent repository = new Repository();
@@ -100,6 +104,7 @@ public class PathAccessControlServiceTest {
 
     @Test
     public void testAccessToRestrictedNetworkAndAnyAuthenticatedUserRepository() {
+        PathAccessControlService pathAccessControlService = inst.getBean("pathAccessControlService", PathAccessControlService.class);
         String allowed_ip = "192.168.18.123";
 
         PathComponent repository = new Repository();
