@@ -50,18 +50,18 @@ public class Repository extends PathComponent {
 
     public void validateRepositoryName() {
         List<String> invalidRepositoryNames = List.of(
-            // OIDC related urls
-            "logout", "login",
-            // RequestMappers
-            "logout-success", "error",
-            // other urls
-            "actuator", "favicon.ico", ".well-known"
+                // OIDC related urls
+                "logout", "login",
+                // RequestMappers
+                "logout-success", "error",
+                // other urls
+                "actuator", "favicon.ico", ".well-known"
         );
         if (invalidRepositoryNames.contains(getName()) || getName().startsWith("__")) {
             throw new IllegalArgumentException(
-                String.format(
-                    "Repository name %s is invalid, repository names should not start with '__' and should be different from: %s",
-                    getName(), invalidRepositoryNames.stream().map(name -> "'" + name + "'").collect(Collectors.joining(", "))));
+                    String.format(
+                            "Repository name %s is invalid, repository names should not start with '__' and should be different from: %s",
+                            getName(), invalidRepositoryNames.stream().map(name -> "'" + name + "'").collect(Collectors.joining(", "))));
         }
     }
 

@@ -66,8 +66,8 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
         if (repository.getCache() != null) {
             for (CacheRule cache : repository.getCache()) {
                 cacheRules.put(
-                    new AntPathRequestMatcher(cache.getPattern()),
-                    CacheControl.maxAge(cache.getMaxAge()).getHeaderValue()
+                        new AntPathRequestMatcher(cache.getPattern()),
+                        CacheControl.maxAge(cache.getMaxAge()).getHeaderValue()
                 );
             }
         }

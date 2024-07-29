@@ -1,6 +1,6 @@
 {
   "realm": "crane",
-  "accessTokenLifespan" : 18000,
+  "accessTokenLifespan": 18000,
   "enabled": true,
   "users": [
     {
@@ -15,9 +15,17 @@
           "value": "demo"
         }
       ],
-      "realmRoles" : [ "crane_public", "mathematicians", "scientists" ],
-      "groups" : [ "/crane_public", "/mathematicians", "/scientists" ]
-  },
+      "realmRoles": [
+        "crane_public",
+        "mathematicians",
+        "scientists"
+      ],
+      "groups": [
+        "/crane_public",
+        "/mathematicians",
+        "/scientists"
+      ]
+    },
     {
       "username": "test",
       "firstName": "Test",
@@ -30,9 +38,15 @@
           "value": "test"
         }
       ],
-      "realmRoles" : [ "crane_public", "mathematicians" ],
-      "groups" : [ "crane_public", "/mathematicians" ]
-  }
+      "realmRoles": [
+        "crane_public",
+        "mathematicians"
+      ],
+      "groups": [
+        "crane_public",
+        "/mathematicians"
+      ]
+    }
   ],
   "roles": {
     "realm": [
@@ -50,16 +64,20 @@
       }
     ]
   },
-  "groups" : [ {
-    "name" : "mathematicians",
-    "path" : "/mathematicians"
-  }, {
-    "name" : "scientists",
-    "path" : "/scientists"
-  }, {
-    "name" : "crane_public",
-    "path" : "/crane_public"
-  }],
+  "groups": [
+    {
+      "name": "mathematicians",
+      "path": "/mathematicians"
+    },
+    {
+      "name": "scientists",
+      "path": "/scientists"
+    },
+    {
+      "name": "crane_public",
+      "path": "/crane_public"
+    }
+  ],
   "clients": [
     {
       "clientId": "crane_client",
@@ -67,40 +85,45 @@
       "adminUrl": "",
       "baseUrl": "",
       "bearerOnly": false,
-      "redirectUris" : [ "http://localhost*" ],
+      "redirectUris": [
+        "http://localhost*"
+      ],
       "secret": "secret",
       "authorizationServicesEnabled": true,
       "directAccessGrantsEnabled": true,
-      "protocolMappers" : [ {
-        "name" : "realm_roles",
-        "protocol" : "openid-connect",
-        "protocolMapper" : "oidc-usermodel-realm-role-mapper",
-        "consentRequired" : false,
-        "config" : {
-          "introspection.token.claim" : "false",
-          "multivalued" : "true",
-          "userinfo.token.claim" : "true",
-          "id.token.claim" : "true",
-          "lightweight.claim" : "false",
-          "access.token.claim" : "true",
-          "claim.name" : "realm_roles",
-          "jsonType.label" : "String"
+      "protocolMappers": [
+        {
+          "name": "realm_roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "false",
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "realm_roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "groups"
+          }
         }
-      }, {
-        "name" : "groups",
-        "protocol" : "openid-connect",
-        "protocolMapper" : "oidc-group-membership-mapper",
-        "consentRequired" : false,
-        "config" : {
-          "full.path" : "false",
-          "introspection.token.claim" : "true",
-          "userinfo.token.claim" : "true",
-          "id.token.claim" : "true",
-          "lightweight.claim" : "false",
-          "access.token.claim" : "true",
-          "claim.name" : "groups"
-        }
-      } ]
+      ]
     }
   ]
 }

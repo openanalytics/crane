@@ -34,6 +34,7 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.annotation.PostConstruct;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +47,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.StsException;
 
@@ -219,7 +221,7 @@ public class CraneConfig {
     public String getJwksUri() {
         // Create a temporary clientRegistration (with bogus clientId) in order to fetch metadata
         ClientRegistration clientRegistration = ClientRegistrations
-            .fromIssuerLocation(getOpenidIssuerUri()).clientId("bogus").build();
+                .fromIssuerLocation(getOpenidIssuerUri()).clientId("bogus").build();
         return clientRegistration.getProviderDetails().getJwkSetUri();
     }
 
@@ -231,8 +233,8 @@ public class CraneConfig {
         URI issuer = URI.create(openidIssuerUri);
 
         return UriComponentsBuilder.fromUri(issuer)
-            .replacePath(issuer.getPath() + OIDC_METADATA_PATH)
-            .build(Collections.emptyMap()).toString();
+                .replacePath(issuer.getPath() + OIDC_METADATA_PATH)
+                .build(Collections.emptyMap()).toString();
     }
 
     public Collection<Repository> getRepositories() {
@@ -245,9 +247,9 @@ public class CraneConfig {
 
     public void setRepositories(List<Repository> repositories) {
         this.repositories = repositories.stream()
-            .collect(Collectors.toMap(
-                Repository::getName,
-                it -> it));
+                .collect(Collectors.toMap(
+                        Repository::getName,
+                        it -> it));
     }
 
     public boolean hasOpenidGroupsClaim() {
@@ -316,9 +318,13 @@ public class CraneConfig {
         this.defaultCache = defaultCache;
     }
 
-    public String getAuditLogging() { return auditLogging; }
+    public String getAuditLogging() {
+        return auditLogging;
+    }
 
-    public Path getAuditLoggingPath() { return auditLoggingPath; }
+    public Path getAuditLoggingPath() {
+        return auditLoggingPath;
+    }
 
     public void setAuditLogging(String auditLogging) {
         this.auditLogging = auditLogging;

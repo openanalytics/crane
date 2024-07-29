@@ -38,14 +38,14 @@ public class CraneClient {
     public boolean checkAlive() {
         // client without auth
         OkHttpClient client = new OkHttpClient.Builder()
-            .callTimeout(Duration.ofSeconds(120))
-            .readTimeout(Duration.ofSeconds(120))
-            .build();
+                .callTimeout(Duration.ofSeconds(120))
+                .readTimeout(Duration.ofSeconds(120))
+                .build();
 
         Request request = new Request.Builder()
-            .get()
-            .url(baseUrl + "/logout-success")
-            .build();
+                .get()
+                .url(baseUrl + "/logout-success")
+                .build();
 
         try (Response response = client.newCall(request).execute()) {
             return response.code() == 200;

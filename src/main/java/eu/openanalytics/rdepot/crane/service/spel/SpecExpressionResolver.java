@@ -48,61 +48,63 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class SpecExpressionResolver {
 
-	private final ApplicationContext appContext;
-	private final ExpressionParser expressionParser;
-	private final Map<SpecExpressionContext, StandardEvaluationContext> evaluationCache = new ConcurrentHashMap<>(8);
+    private final ApplicationContext appContext;
+    private final ExpressionParser expressionParser;
+    private final Map<SpecExpressionContext, StandardEvaluationContext> evaluationCache = new ConcurrentHashMap<>(8);
 
-	private final ParserContext beanExpressionParserContext = new ParserContext() {
-		@Override
-		public boolean isTemplate() {
-			return true;
-		}
-		@Override
-		public String getExpressionPrefix() {
-			return StandardBeanExpressionResolver.DEFAULT_EXPRESSION_PREFIX;
-		}
-		@Override
-		public String getExpressionSuffix() {
-			return StandardBeanExpressionResolver.DEFAULT_EXPRESSION_SUFFIX;
-		}
-	};
+    private final ParserContext beanExpressionParserContext = new ParserContext() {
+        @Override
+        public boolean isTemplate() {
+            return true;
+        }
 
-	public SpecExpressionResolver(ApplicationContext appContext) {
-		this.appContext = appContext;
-		this.expressionParser = new SpelExpressionParser();
-	}
+        @Override
+        public String getExpressionPrefix() {
+            return StandardBeanExpressionResolver.DEFAULT_EXPRESSION_PREFIX;
+        }
 
-	public Object evaluate(String expression, SpecExpressionContext context) {
-		if (expression == null) return null;
-		if (expression.isEmpty()) return "";
+        @Override
+        public String getExpressionSuffix() {
+            return StandardBeanExpressionResolver.DEFAULT_EXPRESSION_SUFFIX;
+        }
+    };
 
-		Expression expr = this.expressionParser.parseExpression(expression, this.beanExpressionParserContext);
+    public SpecExpressionResolver(ApplicationContext appContext) {
+        this.appContext = appContext;
+        this.expressionParser = new SpelExpressionParser();
+    }
 
-		ConfigurableBeanFactory beanFactory = ((ConfigurableApplicationContext) appContext).getBeanFactory();
+    public Object evaluate(String expression, SpecExpressionContext context) {
+        if (expression == null) return null;
+        if (expression.isEmpty()) return "";
 
-		StandardEvaluationContext sec = evaluationCache.get(context);
-		if (sec == null) {
-			sec = new StandardEvaluationContext();
-			sec.setRootObject(context);
-			sec.addPropertyAccessor(new BeanExpressionContextAccessor());
-			sec.addPropertyAccessor(new BeanFactoryAccessor());
-			sec.addPropertyAccessor(new MapAccessor());
-			sec.addPropertyAccessor(new EnvironmentAccessor());
-			sec.setBeanResolver(new BeanFactoryResolver(appContext));
-			sec.setTypeLocator(new StandardTypeLocator(beanFactory.getBeanClassLoader()));
-			ConversionService conversionService = beanFactory.getConversionService();
-			if (conversionService != null) sec.setTypeConverter(new StandardTypeConverter(conversionService));
-			evaluationCache.put(context, sec);
-		}
+        Expression expr = this.expressionParser.parseExpression(expression, this.beanExpressionParserContext);
 
-		return expr.getValue(sec);
-	}
+        ConfigurableBeanFactory beanFactory = ((ConfigurableApplicationContext) appContext).getBeanFactory();
 
-	public String evaluateToString(String expression, SpecExpressionContext context) {
-		return String.valueOf(evaluate(expression, context));
-	}
+        StandardEvaluationContext sec = evaluationCache.get(context);
+        if (sec == null) {
+            sec = new StandardEvaluationContext();
+            sec.setRootObject(context);
+            sec.addPropertyAccessor(new BeanExpressionContextAccessor());
+            sec.addPropertyAccessor(new BeanFactoryAccessor());
+            sec.addPropertyAccessor(new MapAccessor());
+            sec.addPropertyAccessor(new EnvironmentAccessor());
+            sec.setBeanResolver(new BeanFactoryResolver(appContext));
+            sec.setTypeLocator(new StandardTypeLocator(beanFactory.getBeanClassLoader()));
+            ConversionService conversionService = beanFactory.getConversionService();
+            if (conversionService != null) sec.setTypeConverter(new StandardTypeConverter(conversionService));
+            evaluationCache.put(context, sec);
+        }
 
-	public Boolean evaluateToBoolean(String expression, SpecExpressionContext context) {
-		return Boolean.valueOf(evaluateToString(expression, context));
-	}
+        return expr.getValue(sec);
+    }
+
+    public String evaluateToString(String expression, SpecExpressionContext context) {
+        return String.valueOf(evaluate(expression, context));
+    }
+
+    public Boolean evaluateToBoolean(String expression, SpecExpressionContext context) {
+        return Boolean.valueOf(evaluateToString(expression, context));
+    }
 }

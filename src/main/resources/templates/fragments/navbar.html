@@ -27,31 +27,31 @@
     <title>Title</title>
 </head>
 <body>
-    <header>
-        <a class="logo" th:href="@{'/'}">
-            <img class="logo" th:src="${logo}">
-            <pre class="crane"> ██████╗██████╗  █████╗ ███╗   ██╗███████╗
+<header>
+    <a class="logo" th:href="@{'/'}">
+        <img class="logo" th:src="${logo}">
+        <pre class="crane"> ██████╗██████╗  █████╗ ███╗   ██╗███████╗
 ██╔════╝██╔══██╗██╔══██╗████╗  ██║██╔════╝
 ██║     ██████╔╝███████║██╔██╗ ██║█████╗
 ██║     ██╔══██╗██╔══██║██║╚██╗██║██╔══╝
 ╚██████╗██║  ██║██║  ██║██║ ╚████║███████╗
  ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝
 </pre>
+    </a>
+    <div class="nav">
+        <a class="header-field header-button" th:href="@{'/'}">Home</a>
+        <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!authenticated}">
+            Login to see all repositories.
         </a>
-        <div class="nav">
-            <a class="header-field header-button" th:href="@{'/'}">Home</a>
-            <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!authenticated}">
-                Login to see all repositories.
+        <div style="display:flex;" th:if="${authenticated}">
+            <p class="header-field">
+                Logged in as <b th:text="${username}"></b>
+            </p>
+            <a class="header-field header-button" th:href="@{/logout}">
+                Logout
             </a>
-            <div style="display:flex;" th:if="${authenticated}">
-                <p class="header-field">
-                    Logged in as <b th:text="${username}"></b>
-                </p>
-                <a class="header-field header-button" th:href="@{/logout}">
-                    Logout
-                </a>
-            </div>
         </div>
-    </header>
+    </div>
+</header>
 </body>
 </html>

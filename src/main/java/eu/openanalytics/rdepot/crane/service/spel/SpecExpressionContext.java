@@ -89,8 +89,8 @@ public class SpecExpressionContext {
     }
 
     /**
-     *  Returns true when the provided value is in the list of allowed values.
-     *  Both the attribute and allowed values are trimmed.
+     * Returns true when the provided value is in the list of allowed values.
+     * Both the attribute and allowed values are trimmed.
      */
     public boolean isOneOf(String attribute, String... allowedValues) {
         if (attribute == null) {
@@ -100,8 +100,8 @@ public class SpecExpressionContext {
     }
 
     /**
-     *  Returns true when the provided value is in the list of allowed values.
-     *  Both the attribute and allowed values are trimmed and the comparison ignores casing of the values.
+     * Returns true when the provided value is in the list of allowed values.
+     * Both the attribute and allowed values are trimmed and the comparison ignores casing of the values.
      */
     public boolean isOneOfIgnoreCase(String attribute, String... allowedValues) {
         if (attribute == null) {

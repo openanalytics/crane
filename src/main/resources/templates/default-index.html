@@ -22,53 +22,56 @@
 -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head lang="en">
-        <title th:text="${title}"></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <link rel="stylesheet" media="screen"
-              th:href="@{'/__index/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
-        <link media="screen" rel="stylesheet" th:href="@{'/__index/css/default.css'}"/>
-    </head>
-    <body>
-        <div class="container">
-            <div th:insert="~{fragments/navbar.html}"> </div>
-            <h1>Directory <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block></code></h1>
+<head lang="en">
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" media="screen"
+          th:href="@{'/__index/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
+    <link media="screen" rel="stylesheet" th:href="@{'/__index/css/default.css'}"/>
+</head>
+<body>
+<div class="container">
+    <div th:insert="~{fragments/navbar.html}"></div>
+    <h1>Directory <code><span class="slash">/</span>
+        <th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span
+                class="slash">/</span></th:block>
+    </code></h1>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Filename</th>
-                        <th>Last Modified time</th>
-                        <th>Size</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="directory : ${directories}">
-                        <td><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+    <table>
+        <thead>
+        <tr>
+            <th>Filename</th>
+            <th>Last Modified time</th>
+            <th>Size</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="directory : ${directories}">
+            <td><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
+            <td></td>
+            <td></td>
+        </tr>
 
-                    <tr th:each="file : ${files}">
-                        <td><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
-                        <td th:text="${file.lastModifiedTime}"></td>
-                        <td th:text="${file.formattedSize}"></td>
-                    </tr>
-                </tbody>
+        <tr th:each="file : ${files}">
+            <td><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
+            <td th:text="${file.lastModifiedTime}"></td>
+            <td th:text="${file.formattedSize}"></td>
+        </tr>
+        </tbody>
 
-            </table>
-        </div>
-        <script th:src="@{/__index/webjars/jquery/3.7.1/jquery.min.js}"></script>
-        <script th:src="@{/__index/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
-        <script>
-            $(document).ready(function () {
-                $('table').DataTable({
-                    aaSorting: [], // apply no sort by default
-                    paging: false,
-                });
-                $('table').css("visibility", "visible");
-            });
-        </script>
-    </body>
+    </table>
+</div>
+<script th:src="@{/__index/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/__index/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
+<script>
+    $(document).ready(function () {
+        $('table').DataTable({
+            aaSorting: [], // apply no sort by default
+            paging: false,
+        });
+        $('table').css("visibility", "visible");
+    });
+</script>
+</body>
 
 </html>

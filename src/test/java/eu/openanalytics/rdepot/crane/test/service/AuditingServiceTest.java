@@ -43,9 +43,9 @@ public class AuditingServiceTest {
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
     private static BufferedReader bufferedReader;
     private final ObjectMapper objectMapper = new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
 
     @BeforeAll
     public static void beforeAll() {
@@ -75,13 +75,13 @@ public class AuditingServiceTest {
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/"));
         checkTwoAuditLogs(
-            "/", "AUTHENTICATION_SUCCESS", "demo",
-            "/", "LIST_REPOSITORIES", "demo");
+                "/", "AUTHENTICATION_SUCCESS", "demo",
+                "/", "LIST_REPOSITORIES", "demo");
 
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/"));
         checkTwoAuditLogs(
-            "/", "AUTHENTICATION_SUCCESS", "test",
-            "/", "LIST_REPOSITORIES", "test"
+                "/", "AUTHENTICATION_SUCCESS", "test",
+                "/", "LIST_REPOSITORIES", "test"
         );
     }
 
@@ -100,8 +100,8 @@ public class AuditingServiceTest {
 
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/restricted_repo"));
         checkTwoAuditLogs(
-            "/restricted_repo", "AUTHENTICATION_SUCCESS", "test",
-            "/restricted_repo", "AUTHORIZATION_FAILURE", "test"
+                "/restricted_repo", "AUTHENTICATION_SUCCESS", "test",
+                "/restricted_repo", "AUTHORIZATION_FAILURE", "test"
         );
     }
 
@@ -114,13 +114,13 @@ public class AuditingServiceTest {
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/logout"));
         checkTwoAuditLogs(
-            "/logout", "LOGOUT", ANONYMOUS_USER,
-            "/logout-success", "AUTHENTICATION_SUCCESS", "demo"
+                "/logout", "LOGOUT", ANONYMOUS_USER,
+                "/logout-success", "AUTHENTICATION_SUCCESS", "demo"
         );
 
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/logout"));
-        checkTwoAuditLogs( "/logout", "LOGOUT", ANONYMOUS_USER,
-        "/logout-success", "AUTHENTICATION_SUCCESS", "test"
+        checkTwoAuditLogs("/logout", "LOGOUT", ANONYMOUS_USER,
+                "/logout-success", "AUTHENTICATION_SUCCESS", "test"
         );
     }
 
@@ -130,10 +130,11 @@ public class AuditingServiceTest {
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/undefined_repository"));
         checkTwoAuditLogs(
-            "/undefined_repository", "AUTHENTICATION_SUCCESS", "demo",
-            "/undefined_repository", "AUTHORIZATION_FAILURE", "demo"
+                "/undefined_repository", "AUTHENTICATION_SUCCESS", "demo",
+                "/undefined_repository", "AUTHORIZATION_FAILURE", "demo"
         );
     }
+
     private void checkAuditLog(String path, String type, String username) throws IOException, InterruptedException {
         FileAuditEventRepository.AuditEventData auditEventData = readAuditEventData();
 
@@ -156,6 +157,7 @@ public class AuditingServiceTest {
         Assertions.assertEquals(path2, secondAuditEvent.getData().get("request_path"));
         Assertions.assertEquals(type2, secondAuditEvent.getType());
     }
+
     private void checkUnauthenticatedAuditLog(String path, String type) throws IOException, InterruptedException {
         checkAuditLog(path, type, ANONYMOUS_USER);
     }

@@ -51,17 +51,17 @@ public class PosixAccessControlServiceTest {
     private static final Logger logger = LoggerFactory.getLogger(PosixAccessControlServiceTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final GenericContainer craneApp = new GenericContainer(
-        new ImageFromDockerfile()
-            .withBuildArg("CONFIGURATION", "application.yml")
-            .withBuildArg("JAR_LOCATION", "crane.jar")
-            .withFileFromPath("application.yml", Paths.get("src","test", "resources", "application-posix-test.yml"))
-            .withFileFromPath("crane.jar", Path.of( targetDirectory + "/crane-0.2.0-SNAPSHOT-exec.jar"))
-            .withFileFromClasspath("Dockerfile", "testcontainers/PosixAccessControlDockerfile")
+            new ImageFromDockerfile()
+                    .withBuildArg("CONFIGURATION", "application.yml")
+                    .withBuildArg("JAR_LOCATION", "crane.jar")
+                    .withFileFromPath("application.yml", Paths.get("src", "test", "resources", "application-posix-test.yml"))
+                    .withFileFromPath("crane.jar", Path.of(targetDirectory + "/crane-0.2.0-SNAPSHOT-exec.jar"))
+                    .withFileFromClasspath("Dockerfile", "testcontainers/PosixAccessControlDockerfile")
     )
-        .withEnv("OPENID_URL", KeycloakInstance.getURI())
-        .withEnv("CRANE_PORT", String.valueOf(cranePort))
-        .withNetwork(keycloakInstance.getNetwork())
-        .withExposedPorts(cranePort);
+            .withEnv("OPENID_URL", KeycloakInstance.getURI())
+            .withEnv("CRANE_PORT", String.valueOf(cranePort))
+            .withNetwork(keycloakInstance.getNetwork())
+            .withExposedPorts(cranePort);
 
     @BeforeAll
     public static void beforeAll() throws IOException, InterruptedException {
@@ -79,8 +79,8 @@ public class PosixAccessControlServiceTest {
         }
 
         Process process = new ProcessBuilder()
-            .command("mvn", "-B", "-U", "clean", "package", "-DskipTests=true", "-Dlicense.skip", "-PtmpOutputDir")
-            .start();
+                .command("mvn", "-B", "-U", "clean", "package", "-DskipTests=true", "-Dlicense.skip", "-PtmpOutputDir")
+                .start();
 
         List<String> info = IOUtils.readLines(process.getInputStream(), Charset.defaultCharset());
         info.forEach(logger::info);

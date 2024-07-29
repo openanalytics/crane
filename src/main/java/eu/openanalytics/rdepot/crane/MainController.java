@@ -67,9 +67,9 @@ public class MainController extends BaseUIController {
         boolean authenticated = userService.isAuthenticated();
 
         List<String> repositories = config.getRepositories().stream()
-            .filter(r -> craneAccessControlService.canAccess(user, r))
-            .map(Repository::getName)
-            .collect(Collectors.toList());
+                .filter(r -> craneAccessControlService.canAccess(user, r))
+                .map(Repository::getName)
+                .collect(Collectors.toList());
 
         auditingService.createListRepositoriesAuditEvent(request);
 
@@ -82,19 +82,20 @@ public class MainController extends BaseUIController {
         prepareMap(map);
         return "repositories";
     }
+
     @ResponseBody
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRepositoriesAsJson(HttpServletRequest request) {
         Authentication user = SecurityContextHolder.getContext().getAuthentication();
 
         return ApiResponse.success(
-            Map.of(
-                "directories",
-                config.getRepositories().stream()
-                    .filter(r -> craneAccessControlService.canAccess(user, r))
-                    .map(Repository::getName)
-                    .toList()
-            )
+                Map.of(
+                        "directories",
+                        config.getRepositories().stream()
+                                .filter(r -> craneAccessControlService.canAccess(user, r))
+                                .map(Repository::getName)
+                                .toList()
+                )
         );
     }
 }

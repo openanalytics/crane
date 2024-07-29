@@ -83,27 +83,27 @@ public class AuditingService {
         ServletRequestAttributes attributes = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
         if (attributes == null) {
             return Map.of(
-                "request_method", "",
-                "request_path", "",
-                "response_status", 0,
-                "remote_address", ""
+                    "request_method", "",
+                    "request_path", "",
+                    "response_status", 0,
+                    "remote_address", ""
             );
         }
         HttpServletRequest request = attributes.getRequest();
         return Map.of(
-            "request_method", request.getMethod(),
-            "request_path", request.getRequestURI(),
-            "response_status", 0,
-            "remote_address", request.getRemoteAddr()
+                "request_method", request.getMethod(),
+                "request_path", request.getRequestURI(),
+                "response_status", 0,
+                "remote_address", request.getRemoteAddr()
         );
     }
 
     private Map<String, Object> createData(HttpServletRequest request, HttpStatus status) {
         return Map.of(
-            "request_method", request.getMethod(),
-            "request_path", request.getRequestURI(),
-            "response_status", status.value(),
-            "remote_address", request.getRemoteAddr()
+                "request_method", request.getMethod(),
+                "request_path", request.getRequestURI(),
+                "response_status", status.value(),
+                "remote_address", request.getRemoteAddr()
         );
     }
 

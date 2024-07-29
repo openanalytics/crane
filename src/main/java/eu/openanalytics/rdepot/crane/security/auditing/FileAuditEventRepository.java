@@ -44,9 +44,9 @@ import java.util.List;
 public class FileAuditEventRepository implements AuditEventRepository, AutoCloseable {
     private final Path auditLogFileName;
     private final ObjectMapper objectMapper = new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
     private final FileWriter writer;
 
     public FileAuditEventRepository(CraneConfig craneConfig) throws IOException {

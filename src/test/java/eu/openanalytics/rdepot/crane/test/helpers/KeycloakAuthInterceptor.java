@@ -48,35 +48,37 @@ public class KeycloakAuthInterceptor implements Interceptor {
         @JsonProperty("scope")
         public String scope;
 
-        public KeycloakToken() {}
+        public KeycloakToken() {
+        }
 
         public String getCredentials() {
             return "Bearer " + accessToken;
         }
     }
+
     private final String credentials;
     public static OkHttpClient client = new OkHttpClient.Builder()
-        .followRedirects(false)
-        .callTimeout(Duration.ofSeconds(120))
-        .readTimeout(Duration.ofSeconds(120))
-        .build();
+            .followRedirects(false)
+            .callTimeout(Duration.ofSeconds(120))
+            .readTimeout(Duration.ofSeconds(120))
+            .build();
 
     public KeycloakAuthInterceptor(String user, String password) {
         try {
             Response response = new Response(
-                client.newCall(
-                    new Request.Builder().post(
-                            RequestBody.create(
-                                "username=" + user +
-                                    "&password=" + password +
-                                    "&grant_type=password" +
-                                    "&client_id=crane_client" +
-                                    "&client_secret=secret",
-                                MediaType.parse("application/x-www-form-urlencoded")
-                            )
-                        ).url("http://localhost:9189/realms/crane/protocol/openid-connect/token")
-                        .build()
-                ).execute()
+                    client.newCall(
+                            new Request.Builder().post(
+                                            RequestBody.create(
+                                                    "username=" + user +
+                                                            "&password=" + password +
+                                                            "&grant_type=password" +
+                                                            "&client_id=crane_client" +
+                                                            "&client_secret=secret",
+                                                    MediaType.parse("application/x-www-form-urlencoded")
+                                            )
+                                    ).url("http://localhost:9189/realms/crane/protocol/openid-connect/token")
+                                    .build()
+                    ).execute()
             );
             ObjectMapper mapper = new ObjectMapper();
             KeycloakToken keycloakToken = mapper.readValue(response.body(), KeycloakToken.class);
@@ -90,7 +92,7 @@ public class KeycloakAuthInterceptor implements Interceptor {
     public okhttp3.Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Request authenticatedRequest = request.newBuilder()
-            .header("Authorization", credentials).build();
+                .header("Authorization", credentials).build();
         return chain.proceed(authenticatedRequest);
     }
 

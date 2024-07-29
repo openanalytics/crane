@@ -30,12 +30,15 @@ public class Response {
 
     private String body;
 
-    public Response(okhttp3.Response response) { this.response = response; }
+    public Response(okhttp3.Response response) {
+        this.response = response;
+    }
 
 
     public void assertSuccess() {
         Assertions.assertEquals(200, code());
     }
+
     public void assertPlainSuccess() {
         assertContentTypeWithCode(200, "text/plain");
     }
@@ -47,6 +50,7 @@ public class Response {
     public void assertJsonSuccess() {
         assertContentTypeWithCode(200, "application/json");
     }
+
     public void assertHtmlSuccess() {
         assertContentTypeWithCode(200, "text/html");
     }

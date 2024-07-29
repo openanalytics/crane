@@ -38,12 +38,13 @@ public class KeycloakInstance implements AutoCloseable {
     private static final Network network = Network.newNetwork();
     @Container
     public static final KeycloakContainer keycloak = new KeycloakContainer()
-        .withEnv("KC_HTTP_PORT", String.valueOf(exposedPort))
-        .withRealmImportFiles("crane-realm.json")
-        .withExposedPorts(exposedPort)
-        .withNetwork(network);
+            .withEnv("KC_HTTP_PORT", String.valueOf(exposedPort))
+            .withRealmImportFiles("crane-realm.json")
+            .withExposedPorts(exposedPort)
+            .withNetwork(network);
 
     public static boolean isKeycloakRunning = false;
+
     public void start() {
         if (!isKeycloakRunning) {
             keycloak.setPortBindings(List.of(String.format("%d:%d", exposedPort, exposedPort)));

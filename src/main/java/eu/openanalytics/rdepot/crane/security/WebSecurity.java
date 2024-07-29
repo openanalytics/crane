@@ -87,32 +87,32 @@ public class WebSecurity {
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setMatchingRequestParameterName(null);
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers(
-                    "/",
-                    "/.well-known/configured-openid-configuration",
-                    "/favicon.ico",
-                    "/__index",
-                    "/__index/css/**",
-                    "/__index/webjars/**",
-                    "/actuator/health",
-                    "/actuator/health/liveness",
-                    "/actuator/health/readiness",
-                    "/actuator/auditevents",
-                    "/error",
-                    "/logout-success"
-                ).permitAll()
-                .requestMatchers("/{repoName}/**")
-                .access((authentication, context) -> new AuthorizationDecision(craneAccessControlService.canAccess(authentication.get(), context.getRequest())))
-                .anyRequest().authenticated())
-            .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
-            .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(jwtAuthenticationConverter())))
-            .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(oidcUserService())))
-            .oauth2Client(withDefaults())
-            .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
-            .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
-            .requestCache((cache) -> cache.requestCache(requestCache));
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(
+                                "/",
+                                "/.well-known/configured-openid-configuration",
+                                "/favicon.ico",
+                                "/__index",
+                                "/__index/css/**",
+                                "/__index/webjars/**",
+                                "/actuator/health",
+                                "/actuator/health/liveness",
+                                "/actuator/health/readiness",
+                                "/actuator/auditevents",
+                                "/error",
+                                "/logout-success"
+                        ).permitAll()
+                        .requestMatchers("/{repoName}/**")
+                        .access((authentication, context) -> new AuthorizationDecision(craneAccessControlService.canAccess(authentication.get(), context.getRequest())))
+                        .anyRequest().authenticated())
+                .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
+                .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(oidcUserService())))
+                .oauth2Client(withDefaults())
+                .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
+                .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
+                .requestCache((cache) -> cache.requestCache(requestCache));
         return http.build();
     }
 

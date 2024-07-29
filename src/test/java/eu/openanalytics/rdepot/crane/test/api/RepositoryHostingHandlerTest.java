@@ -214,7 +214,7 @@ public class RepositoryHostingHandlerTest {
         String repository = "/public_repo/undefined/";
         String nestedRepository = "/public_repo/undefined/test";
         List<String> paths = Arrays.asList(file, repository, nestedRepository);
-        for (String path: paths) {
+        for (String path : paths) {
             apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
 
             apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(path)).assertNotFound();
@@ -304,7 +304,7 @@ public class RepositoryHostingHandlerTest {
         String repository = "/cache_txt_repo";
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository))
-            .assertHasNoCachingHeader();
+                .assertHasNoCachingHeader();
 
         String text = repository + "/file.txt";
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(text));
@@ -333,7 +333,7 @@ public class RepositoryHostingHandlerTest {
         String repository = "/cache_txt_and_csv_repo";
 
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository))
-            .assertHasNoCachingHeader();
+                .assertHasNoCachingHeader();
 
         String text = repository + "/file.txt";
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(text));

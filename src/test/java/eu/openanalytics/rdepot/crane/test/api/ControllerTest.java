@@ -38,7 +38,7 @@ public class ControllerTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
 
     @BeforeAll
-    public  static void beforeAll() {
+    public static void beforeAll() {
         keycloakInstance.start();
         inst = new CraneInstance("application-test-api.yml");
         redisInst = new CraneInstance("application-test-api.yml", 7071, new HashMap<>(), true);
@@ -110,18 +110,18 @@ public class ControllerTest {
         resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/"));
         body = resp.body();
         repositories = List.of(
-            "public_repo", "cache_txt_and_csv_repo", "cache_txt_repo", "mime_types",
-            "restricted_expression_using_and_repo", "restricted_simple_expression_repo",
-            "restricted_to_groups_repo", "restricted_to_group_repo", "restricted_repo",
-            "private_repo", "restricted_to_users_repo", "restricted_repo"
+                "public_repo", "cache_txt_and_csv_repo", "cache_txt_repo", "mime_types",
+                "restricted_expression_using_and_repo", "restricted_simple_expression_repo",
+                "restricted_to_groups_repo", "restricted_to_group_repo", "restricted_repo",
+                "private_repo", "restricted_to_users_repo", "restricted_repo"
         );
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
         resp = apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/"));
         body = resp.body();
         repositories = List.of(
-            "private_repo", "public_repo", "cache_txt_and_csv_repo", "cache_txt_repo", "mime_types",
-            "restricted_simple_expression_repo", "restricted_to_groups_repo", "restricted_to_users_repo"
+                "private_repo", "public_repo", "cache_txt_and_csv_repo", "cache_txt_repo", "mime_types",
+                "restricted_simple_expression_repo", "restricted_to_groups_repo", "restricted_to_users_repo"
         );
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
     }

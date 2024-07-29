@@ -41,6 +41,7 @@ import java.util.Set;
 public class PosixAccessControlService {
     private final CraneConfig config;
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
     public PosixAccessControlService(CraneConfig config) {
         this.config = config;
     }
@@ -61,7 +62,7 @@ public class PosixAccessControlService {
 
         Iterator<Path> subsequentPaths = Path.of(fullPath).iterator();
         String storageLocation = repository.getStorageLocation();
-        StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length()-1));
+        StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length() - 1));
         while (subsequentPaths.hasNext()) {
             String subDirectory = pathBuilder.append("/").toString();
             if (!canAccess(auth, subDirectory)) {

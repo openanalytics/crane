@@ -161,6 +161,7 @@ public class CraneInstance implements AutoCloseable {
             redis.close();
         }
     }
+
     @Override
     public void close() {
         app.stop();

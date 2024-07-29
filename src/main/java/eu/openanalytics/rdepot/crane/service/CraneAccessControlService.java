@@ -54,7 +54,8 @@ public class CraneAccessControlService {
     /**
      * Whether the provided user can access the path in the provided request.
      * Checks the request for path traversal.
-     * @param auth the user
+     *
+     * @param auth    the user
      * @param request the request to check
      * @return whether the user can access the path in the request
      */
@@ -88,8 +89,9 @@ public class CraneAccessControlService {
 
     /**
      * Whether the current user can access the provided directory.
+     *
      * @param repository the repository to which this directory belongs
-     * @param path the path to check
+     * @param path       the path to check
      * @return whether the user can access
      */
     public boolean canAccess(Repository repository, String path) {
@@ -98,6 +100,7 @@ public class CraneAccessControlService {
 
     /**
      * Checks the path for path traversal.
+     *
      * @param path the path to check
      * @return whether the path can be trusted
      */
@@ -128,7 +131,7 @@ public class CraneAccessControlService {
     }
 
     public static boolean isMember(Authentication auth, String group) {
-        for (GrantedAuthority grantedAuth: auth.getAuthorities()) {
+        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
             String groupName = grantedAuth.getAuthority().toUpperCase();
             if (groupName.startsWith("ROLE_")) {
                 groupName = groupName.substring(5);
@@ -143,7 +146,7 @@ public class CraneAccessControlService {
     public static List<String> getGroups(Authentication auth) {
         List<String> groups = new ArrayList<>();
         if (auth != null) {
-            for (GrantedAuthority grantedAuth: auth.getAuthorities()) {
+            for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
                 String authName = grantedAuth.getAuthority().toUpperCase();
                 if (authName.startsWith("ROLE_")) authName = authName.substring(5);
                 groups.add(authName);

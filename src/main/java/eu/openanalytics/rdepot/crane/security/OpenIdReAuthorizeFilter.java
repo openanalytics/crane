@@ -37,6 +37,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
@@ -82,9 +83,9 @@ public class OpenIdReAuthorizeFilter extends OncePerRequestFilter {
         } else {
             if (accessTokenExpired(authorizedClient)) {
                 OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-                    .withAuthorizedClient(authorizedClient)
-                    .principal(auth)
-                    .build();
+                        .withAuthorizedClient(authorizedClient)
+                        .principal(auth)
+                        .build();
 
                 try {
                     oAuth2AuthorizedClientManager.authorize(authorizeRequest);

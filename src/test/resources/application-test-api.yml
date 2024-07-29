@@ -14,12 +14,12 @@ app:
         - name: restricted_repo
           access-users: demo
         - name: restricted_to_users_repo
-          access-users: [demo, test]
+          access-users: [ demo, test ]
     - name: private_repo
     - name: restricted_repo
       access-users: demo
     - name: restricted_to_users_repo
-      access-users: [demo, test]
+      access-users: [ demo, test ]
     - name: restricted_to_group_repo
       access-groups: scientists
     - name: restricted_to_groups_repo

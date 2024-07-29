@@ -46,24 +46,24 @@ public class ApiTestHelper {
         }
         this.baseUrl = baseUrl;
         clientWithoutAuth = new OkHttpClient.Builder()
-            .callTimeout(Duration.ofSeconds(120))
-            .readTimeout(Duration.ofSeconds(120))
-            .build();
+                .callTimeout(Duration.ofSeconds(120))
+                .readTimeout(Duration.ofSeconds(120))
+                .build();
         clientDemo = new OkHttpClient.Builder()
-            .addInterceptor(new KeycloakAuthInterceptor("demo", "demo"))
-            .callTimeout(Duration.ofSeconds(120))
-            .readTimeout(Duration.ofSeconds(120))
-            .build();
+                .addInterceptor(new KeycloakAuthInterceptor("demo", "demo"))
+                .callTimeout(Duration.ofSeconds(120))
+                .readTimeout(Duration.ofSeconds(120))
+                .build();
         clientTest = new OkHttpClient.Builder()
-            .addInterceptor(new KeycloakAuthInterceptor("test", "test"))
-            .callTimeout(Duration.ofSeconds(120))
-            .readTimeout(Duration.ofSeconds(120))
-            .build();
+                .addInterceptor(new KeycloakAuthInterceptor("test", "test"))
+                .callTimeout(Duration.ofSeconds(120))
+                .readTimeout(Duration.ofSeconds(120))
+                .build();
     }
 
     public Request.Builder createHtmlRequest(String path) {
         return new Request.Builder()
-            .url(baseUrl + path).addHeader("Accept", "text/html").addHeader("remote-address", "11.11.11.11");
+                .url(baseUrl + path).addHeader("Accept", "text/html").addHeader("remote-address", "11.11.11.11");
     }
 
     public eu.openanalytics.rdepot.crane.test.helpers.Response callWithAuth(Request.Builder request) {

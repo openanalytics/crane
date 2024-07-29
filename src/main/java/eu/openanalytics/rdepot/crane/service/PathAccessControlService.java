@@ -78,6 +78,7 @@ public class PathAccessControlService {
 
         return canAccess(auth, fullPath, nextPathComponent.get(), path);
     }
+
     public boolean canAccess(Authentication auth, PathComponent pathComponent) {
         if (auth == null || pathComponent == null) {
             return false;

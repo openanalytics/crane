@@ -98,7 +98,7 @@ public class PathComponent {
     public void setAccessNetwork(List<String> accessIpRanges) {
         this.accessNetwork = accessIpRanges;
         this.accessNetworkMatchers = accessIpRanges.stream()
-            .map(IpAddressMatcher::new).collect(Collectors.toList());
+                .map(IpAddressMatcher::new).collect(Collectors.toList());
     }
 
     public List<IpAddressMatcher> getAccessNetworkMatchers() {
