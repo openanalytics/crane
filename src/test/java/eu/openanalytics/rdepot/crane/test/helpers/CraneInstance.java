@@ -21,9 +21,9 @@
 package eu.openanalytics.rdepot.crane.test.helpers;
 
 import com.redis.testcontainers.RedisContainer;
+import eu.openanalytics.rdepot.crane.CraneApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import eu.openanalytics.rdepot.crane.CraneApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;

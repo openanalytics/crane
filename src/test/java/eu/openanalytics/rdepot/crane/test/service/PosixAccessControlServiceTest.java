@@ -58,7 +58,7 @@ public class PosixAccessControlServiceTest {
             .withFileFromPath("crane.jar", Path.of( targetDirectory + "/crane-0.2.0-SNAPSHOT-exec.jar"))
             .withFileFromClasspath("Dockerfile", "testcontainers/PosixAccessControlDockerfile")
     )
-        .withEnv("OPENID_URL", keycloakInstance.getURI())
+        .withEnv("OPENID_URL", KeycloakInstance.getURI())
         .withEnv("CRANE_PORT", String.valueOf(cranePort))
         .withNetwork(keycloakInstance.getNetwork())
         .withExposedPorts(cranePort);
