@@ -30,11 +30,7 @@ import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
 import org.springframework.scheduling.annotation.Async;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -70,16 +66,6 @@ public class FileAuditEventRepository implements AuditEventRepository, AutoClose
         writer.close();
     }
 
-    public static class AuditEventData extends AuditEvent {
-        public AuditEventData() {
-            super("", "", new HashMap<>());
-        }
-
-        public AuditEvent auditEvent() {
-            return new AuditEvent(super.getTimestamp(), super.getPrincipal(), super.getType(), super.getData());
-        }
-    }
-
     @Override
     public List<AuditEvent> find(String principal, Instant after, String type) {
         if (!auditLogFileName.toFile().exists()) {
@@ -108,6 +94,16 @@ public class FileAuditEventRepository implements AuditEventRepository, AutoClose
             }).toList();
         } catch (FileNotFoundException e) {
             return new ArrayList<>();
+        }
+    }
+
+    public static class AuditEventData extends AuditEvent {
+        public AuditEventData() {
+            super("", "", new HashMap<>());
+        }
+
+        public AuditEvent auditEvent() {
+            return new AuditEvent(super.getTimestamp(), super.getPrincipal(), super.getType(), super.getData());
         }
     }
 }

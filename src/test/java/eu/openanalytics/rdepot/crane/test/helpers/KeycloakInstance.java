@@ -33,7 +33,6 @@ import java.util.List;
 
 public class KeycloakInstance implements AutoCloseable {
 
-    private static String containerIp;
     private static final int exposedPort = 9189;
     private static final Network network = Network.newNetwork();
     @Container
@@ -42,8 +41,23 @@ public class KeycloakInstance implements AutoCloseable {
             .withRealmImportFiles("crane-realm.json")
             .withExposedPorts(exposedPort)
             .withNetwork(network);
-
     public static boolean isKeycloakRunning = false;
+    private static String containerIp;
+
+    public static String getURI() {
+        return String.format("http://%s:%d/realms/crane", containerIp, exposedPort);
+    }
+
+    private static String getKeycloakIp() {
+        String networkId = network.getId();
+        DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+        DockerHttpClient httpClient = new OkDockerHttpClient.Builder().dockerHost(config.getDockerHost()).build();
+        DockerClient docker = DockerClientImpl.getInstance(config, httpClient);
+
+        com.github.dockerjava.api.model.Network network = docker.inspectNetworkCmd().withNetworkId(networkId).exec();
+        String keycloakIp = network.getContainers().get(KeycloakInstance.keycloak.getContainerId()).getIpv4Address();
+        return keycloakIp.substring(0, keycloakIp.indexOf('/'));
+    }
 
     public void start() {
         if (!isKeycloakRunning) {
@@ -64,20 +78,5 @@ public class KeycloakInstance implements AutoCloseable {
             keycloak.stop();
             keycloak.close();
         }
-    }
-
-    public static String getURI() {
-        return String.format("http://%s:%d/realms/crane", containerIp, exposedPort);
-    }
-
-    private static String getKeycloakIp() {
-        String networkId = network.getId();
-        DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-        DockerHttpClient httpClient = new OkDockerHttpClient.Builder().dockerHost(config.getDockerHost()).build();
-        DockerClient docker = DockerClientImpl.getInstance(config, httpClient);
-
-        com.github.dockerjava.api.model.Network network = docker.inspectNetworkCmd().withNetworkId(networkId).exec();
-        String keycloakIp = network.getContainers().get(KeycloakInstance.keycloak.getContainerId()).getIpv4Address();
-        return keycloakIp.substring(0, keycloakIp.indexOf('/'));
     }
 }

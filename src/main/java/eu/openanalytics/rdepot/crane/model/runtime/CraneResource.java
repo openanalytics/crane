@@ -29,8 +29,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public interface CraneResource {
 
-    public String getName();
-
     public static CraneResource createFromPath(Path path, CraneConfig config) {
         try {
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
@@ -44,5 +42,7 @@ public interface CraneResource {
             return null;
         }
     }
+
+    public String getName();
 
 }

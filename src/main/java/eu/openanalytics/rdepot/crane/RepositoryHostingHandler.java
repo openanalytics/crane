@@ -24,6 +24,10 @@ import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
 import eu.openanalytics.rdepot.crane.service.UserService;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.tika.Tika;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
@@ -35,11 +39,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.HandlerMapping;
-
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.nio.file.Files;

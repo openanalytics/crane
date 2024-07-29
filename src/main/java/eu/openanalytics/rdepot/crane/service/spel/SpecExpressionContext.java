@@ -41,6 +41,23 @@ public class SpecExpressionContext {
 
     private Map<String, Object> claims;
 
+    public static SpecExpressionContext create(Object... objects) {
+        SpecExpressionContext ctx = new SpecExpressionContext();
+        for (Object o : objects) {
+            if (o instanceof Repository) {
+                ctx.repository = (Repository) o;
+            } else if (o instanceof DefaultOidcUser) {
+                ctx.claims = ((DefaultOidcUser) o).getClaims();
+            } else if (o instanceof JwtAuthenticationToken) {
+                ctx.claims = ((JwtAuthenticationToken) o).getToken().getClaims();
+            }
+            if (o instanceof Authentication) {
+                ctx.groups = CraneAccessControlService.getGroups((Authentication) o);
+            }
+        }
+        return ctx;
+    }
+
     public List<String> getGroups() {
         return groups;
     }
@@ -108,22 +125,5 @@ public class SpecExpressionContext {
             return false;
         }
         return Arrays.stream(allowedValues).anyMatch(it -> it.trim().equalsIgnoreCase(attribute.trim()));
-    }
-
-    public static SpecExpressionContext create(Object... objects) {
-        SpecExpressionContext ctx = new SpecExpressionContext();
-        for (Object o : objects) {
-            if (o instanceof Repository) {
-                ctx.repository = (Repository) o;
-            } else if (o instanceof DefaultOidcUser) {
-                ctx.claims = ((DefaultOidcUser) o).getClaims();
-            } else if (o instanceof JwtAuthenticationToken) {
-                ctx.claims = ((JwtAuthenticationToken) o).getToken().getClaims();
-            }
-            if (o instanceof Authentication) {
-                ctx.groups = CraneAccessControlService.getGroups((Authentication) o);
-            }
-        }
-        return ctx;
     }
 }

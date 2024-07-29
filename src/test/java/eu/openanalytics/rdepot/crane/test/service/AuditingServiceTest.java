@@ -28,10 +28,16 @@ import eu.openanalytics.rdepot.crane.security.auditing.FileAuditEventRepository;
 import eu.openanalytics.rdepot.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.rdepot.crane.test.helpers.CraneInstance;
 import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,8 +45,8 @@ import java.util.Map;
 public class AuditingServiceTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final String ANONYMOUS_USER = "anonymousUser";
-    private static CraneInstance inst;
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
+    private static CraneInstance inst;
     private static BufferedReader bufferedReader;
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -64,6 +70,20 @@ public class AuditingServiceTest {
     @AfterAll
     public static void afterAll() {
         inst.close();
+    }
+
+    private static void clearAuditLoggingFile() {
+
+        if (auditLogsFile.exists() && !auditLogsFile.delete()) {
+            throw new RuntimeException("Could not delete auditing file!");
+        }
+        try {
+            if (!auditLogsFile.createNewFile()) {
+                throw new RuntimeException("Could not create auditing file!");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -160,19 +180,5 @@ public class AuditingServiceTest {
 
     private void checkUnauthenticatedAuditLog(String path, String type) throws IOException, InterruptedException {
         checkAuditLog(path, type, ANONYMOUS_USER);
-    }
-
-    private static void clearAuditLoggingFile() {
-
-        if (auditLogsFile.exists() && !auditLogsFile.delete()) {
-            throw new RuntimeException("Could not delete auditing file!");
-        }
-        try {
-            if (!auditLogsFile.createNewFile()) {
-                throw new RuntimeException("Could not create auditing file!");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

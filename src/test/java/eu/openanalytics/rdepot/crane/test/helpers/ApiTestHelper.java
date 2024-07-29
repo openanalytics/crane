@@ -20,7 +20,8 @@
  */
 package eu.openanalytics.rdepot.crane.test.helpers;
 
-import okhttp3.*;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -31,14 +32,6 @@ public class ApiTestHelper {
     private final OkHttpClient clientDemo;
     private final OkHttpClient clientTest;
     private final OkHttpClient clientWithoutAuth;
-
-    public static ApiTestHelper from(CraneInstance inst) {
-        return new ApiTestHelper(inst.client.getBaseUrl());
-    }
-
-    public static ApiTestHelper from(String baseUrl) {
-        return new ApiTestHelper(baseUrl);
-    }
 
     private ApiTestHelper(String baseUrl) {
         if (!(baseUrl.startsWith("http://") || baseUrl.startsWith("https://"))) {
@@ -59,6 +52,14 @@ public class ApiTestHelper {
                 .callTimeout(Duration.ofSeconds(120))
                 .readTimeout(Duration.ofSeconds(120))
                 .build();
+    }
+
+    public static ApiTestHelper from(CraneInstance inst) {
+        return new ApiTestHelper(inst.client.getBaseUrl());
+    }
+
+    public static ApiTestHelper from(String baseUrl) {
+        return new ApiTestHelper(baseUrl);
     }
 
     public Request.Builder createHtmlRequest(String path) {

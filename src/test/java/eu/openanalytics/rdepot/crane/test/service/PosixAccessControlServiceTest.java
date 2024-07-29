@@ -62,6 +62,7 @@ public class PosixAccessControlServiceTest {
             .withEnv("CRANE_PORT", String.valueOf(cranePort))
             .withNetwork(keycloakInstance.getNetwork())
             .withExposedPorts(cranePort);
+    private final String craneUrl = String.format("http://%s:%s", craneApp.getHost(), cranePort);
 
     @BeforeAll
     public static void beforeAll() throws IOException, InterruptedException {
@@ -98,8 +99,6 @@ public class PosixAccessControlServiceTest {
         craneApp.stop();
         craneApp.close();
     }
-
-    private final String craneUrl = String.format("http://%s:%s", craneApp.getHost(), cranePort);
 
     @Test
     public void testIndexPage() {

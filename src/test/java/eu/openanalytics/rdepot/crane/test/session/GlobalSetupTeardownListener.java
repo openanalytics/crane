@@ -20,14 +20,14 @@
  */
 package eu.openanalytics.rdepot.crane.test.session;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
 import org.junit.platform.launcher.LauncherSession;
 import org.junit.platform.launcher.LauncherSessionListener;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class GlobalSetupTeardownListener implements LauncherSessionListener {
 

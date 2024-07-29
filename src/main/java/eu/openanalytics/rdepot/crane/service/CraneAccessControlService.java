@@ -22,8 +22,6 @@ package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
-import eu.openanalytics.rdepot.crane.model.runtime.CraneFile;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -49,6 +46,31 @@ public class CraneAccessControlService {
         this.pathAccessControlService = pathAccessControlService;
         this.craneConfig = craneConfig;
         this.userService = userService;
+    }
+
+    public static boolean isMember(Authentication auth, String group) {
+        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
+            String groupName = grantedAuth.getAuthority().toUpperCase();
+            if (groupName.startsWith("ROLE_")) {
+                groupName = groupName.substring(5);
+            }
+            if (groupName.equalsIgnoreCase(group)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static List<String> getGroups(Authentication auth) {
+        List<String> groups = new ArrayList<>();
+        if (auth != null) {
+            for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
+                String authName = grantedAuth.getAuthority().toUpperCase();
+                if (authName.startsWith("ROLE_")) authName = authName.substring(5);
+                groups.add(authName);
+            }
+        }
+        return groups;
     }
 
     /**
@@ -128,31 +150,6 @@ public class CraneAccessControlService {
 
     private boolean canAccess(Authentication auth, String fullPath, Repository repository) {
         return pathAccessControlService.canAccess(auth, fullPath, repository) && posixAccessControlService.canAccess(auth, fullPath, repository);
-    }
-
-    public static boolean isMember(Authentication auth, String group) {
-        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
-            String groupName = grantedAuth.getAuthority().toUpperCase();
-            if (groupName.startsWith("ROLE_")) {
-                groupName = groupName.substring(5);
-            }
-            if (groupName.equalsIgnoreCase(group)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static List<String> getGroups(Authentication auth) {
-        List<String> groups = new ArrayList<>();
-        if (auth != null) {
-            for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
-                String authName = grantedAuth.getAuthority().toUpperCase();
-                if (authName.startsWith("ROLE_")) authName = authName.substring(5);
-                groups.add(authName);
-            }
-        }
-        return groups;
     }
 
 }

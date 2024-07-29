@@ -33,9 +33,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ControllerTest {
+    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static CraneInstance inst;
     private static CraneInstance redisInst;
-    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
 
     @BeforeAll
     public static void beforeAll() {

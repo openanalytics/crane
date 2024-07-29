@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.rdepot.crane.security;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.HashOperations;
@@ -27,8 +28,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-
-import jakarta.annotation.PostConstruct;
 
 public class RedisOAuth2AuthorizedClientService implements OAuth2AuthorizedClientService {
 

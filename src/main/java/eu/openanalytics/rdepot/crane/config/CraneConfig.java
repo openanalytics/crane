@@ -21,8 +21,8 @@
 package eu.openanalytics.rdepot.crane.config;
 
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
-import eu.openanalytics.rdepot.crane.model.config.PathComponent;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import jakarta.annotation.PostConstruct;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +32,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import jakarta.annotation.PostConstruct;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.model.StsException;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,36 +48,23 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import software.amazon.awssdk.services.sts.StsClient;
-import software.amazon.awssdk.services.sts.model.StsException;
-
 @Component
 @ConfigurationProperties(prefix = "app")
 public class CraneConfig {
 
+    private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private String storageLocation;
-
     private String auditLogging;
-
     private Path auditLoggingPath;
-
     private String openidIssuerUri;
-
     private String openidLogoutUrl;
-
     private String openidGroupsClaim;
-
     private String openidUsernameClaim = "preferred_username";
-
     private String templatePath;
-
     private String logoUrl = "https://www.openanalytics.eu/shinyproxy/logo.png";
     private URI s3Endpoint;
-
     private Map<String, Repository> repositories = new HashMap<>();
-
-    private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
     private Path root;
 
     private List<CacheRule> defaultCache;
@@ -241,10 +228,6 @@ public class CraneConfig {
         return repositories.values();
     }
 
-    public Repository getRepository(String name) {
-        return repositories.get(name);
-    }
-
     public void setRepositories(List<Repository> repositories) {
         this.repositories = repositories.stream()
                 .collect(Collectors.toMap(
@@ -252,16 +235,20 @@ public class CraneConfig {
                         it -> it));
     }
 
+    public Repository getRepository(String name) {
+        return repositories.get(name);
+    }
+
     public boolean hasOpenidGroupsClaim() {
         return openidGroupsClaim != null && !openidGroupsClaim.isEmpty();
     }
 
-    public void setOpenidGroupsClaim(String openidGroupsClaim) {
-        this.openidGroupsClaim = openidGroupsClaim;
-    }
-
     public String getOpenidGroupsClaim() {
         return openidGroupsClaim;
+    }
+
+    public void setOpenidGroupsClaim(String openidGroupsClaim) {
+        this.openidGroupsClaim = openidGroupsClaim;
     }
 
     public String getOpenidUsernameClaim() {
@@ -322,11 +309,11 @@ public class CraneConfig {
         return auditLogging;
     }
 
-    public Path getAuditLoggingPath() {
-        return auditLoggingPath;
-    }
-
     public void setAuditLogging(String auditLogging) {
         this.auditLogging = auditLogging;
+    }
+
+    public Path getAuditLoggingPath() {
+        return auditLoggingPath;
     }
 }

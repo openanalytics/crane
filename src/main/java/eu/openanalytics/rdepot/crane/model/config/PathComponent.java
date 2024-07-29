@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class PathComponent {
 
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
-
+    protected boolean isPublic = false;
     private String name;
     private List<String> accessGroups;
     private List<String> accessUsers;
@@ -46,7 +46,6 @@ public class PathComponent {
     private List<IpAddressMatcher> accessNetworkMatchers;
     private String accessExpression;
     private Map<String, PathComponent> components;
-    protected boolean isPublic = false;
 
     public String getName() {
         return name;
@@ -129,12 +128,12 @@ public class PathComponent {
         return accessExpression != null && accessExpression.length() > 0;
     }
 
-    public void setAccessAnyAuthenticatedUser(boolean accessAnyAuthenticatedUser) {
-        this.accessAnyAuthenticatedUser = accessAnyAuthenticatedUser;
-    }
-
     public boolean isAccessAnyAuthenticatedUser() {
         return accessAnyAuthenticatedUser;
+    }
+
+    public void setAccessAnyAuthenticatedUser(boolean accessAnyAuthenticatedUser) {
+        this.accessAnyAuthenticatedUser = accessAnyAuthenticatedUser;
     }
 
     public boolean getPublic() {

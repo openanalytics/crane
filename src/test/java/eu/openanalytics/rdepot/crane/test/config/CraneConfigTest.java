@@ -28,9 +28,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class CraneConfigTest {
 
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();

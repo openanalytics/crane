@@ -45,8 +45,8 @@ public class CraneInstance implements AutoCloseable {
     public final int port;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Thread thread;
-    private ConfigurableApplicationContext app;
     private final boolean isRunningRedis;
+    private ConfigurableApplicationContext app;
 
     public CraneInstance(String configFileName) {
         this(configFileName, 7271, new HashMap<>(), true);

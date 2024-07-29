@@ -29,40 +29,12 @@ import java.time.Duration;
 
 public class KeycloakAuthInterceptor implements Interceptor {
 
-    static class KeycloakToken {
-
-        @JsonProperty("access_token")
-        public String accessToken;
-        @JsonProperty("expires_in")
-        public int expiresIn;
-        @JsonProperty("refresh_expires_in")
-        public int refreshExpiresIn;
-        @JsonProperty("refresh_token")
-        public String refreshToken;
-        @JsonProperty("token_type")
-        public String tokenType;
-        @JsonProperty("not-before-policy")
-        public int notBeforePolicy;
-        @JsonProperty("session_state")
-        public String sessionState;
-        @JsonProperty("scope")
-        public String scope;
-
-        public KeycloakToken() {
-        }
-
-        public String getCredentials() {
-            return "Bearer " + accessToken;
-        }
-    }
-
-    private final String credentials;
     public static OkHttpClient client = new OkHttpClient.Builder()
             .followRedirects(false)
             .callTimeout(Duration.ofSeconds(120))
             .readTimeout(Duration.ofSeconds(120))
             .build();
-
+    private final String credentials;
     public KeycloakAuthInterceptor(String user, String password) {
         try {
             Response response = new Response(
@@ -94,6 +66,33 @@ public class KeycloakAuthInterceptor implements Interceptor {
         Request authenticatedRequest = request.newBuilder()
                 .header("Authorization", credentials).build();
         return chain.proceed(authenticatedRequest);
+    }
+
+    static class KeycloakToken {
+
+        @JsonProperty("access_token")
+        public String accessToken;
+        @JsonProperty("expires_in")
+        public int expiresIn;
+        @JsonProperty("refresh_expires_in")
+        public int refreshExpiresIn;
+        @JsonProperty("refresh_token")
+        public String refreshToken;
+        @JsonProperty("token_type")
+        public String tokenType;
+        @JsonProperty("not-before-policy")
+        public int notBeforePolicy;
+        @JsonProperty("session_state")
+        public String sessionState;
+        @JsonProperty("scope")
+        public String scope;
+
+        public KeycloakToken() {
+        }
+
+        public String getCredentials() {
+            return "Bearer " + accessToken;
+        }
     }
 
 }

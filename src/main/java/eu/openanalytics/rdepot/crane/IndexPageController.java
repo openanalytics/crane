@@ -23,8 +23,6 @@ package eu.openanalytics.rdepot.crane;
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.model.dto.ApiResponse;
-import eu.openanalytics.rdepot.crane.model.runtime.CraneDirectory;
-import eu.openanalytics.rdepot.crane.model.runtime.CraneFile;
 import eu.openanalytics.rdepot.crane.service.IndexPageService;
 import eu.openanalytics.rdepot.crane.service.UserService;
 import jakarta.servlet.RequestDispatcher;
@@ -34,7 +32,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,7 +39,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
