@@ -23,6 +23,7 @@ package eu.openanalytics.rdepot.crane;
 import eu.openanalytics.rdepot.crane.model.config.CacheRule;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
+import eu.openanalytics.rdepot.crane.service.CraneAccessControlService;
 import eu.openanalytics.rdepot.crane.service.UserService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -54,10 +55,12 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
     private final Map<AntPathRequestMatcher, String> cacheRules;
     private final UserService userService;
     private final AuditingService auditingService;
+    private final CraneAccessControlService craneAccessControlService;
 
-    public RepositoryHostingHandler(Repository repository, Path repositoryRoot, AuditingService auditingService, UserService userService) {
+    public RepositoryHostingHandler(Repository repository, Path repositoryRoot, AuditingService auditingService, UserService userService, CraneAccessControlService craneAccessControlService) {
         this.repository = repository;
         this.repositoryRoot = repositoryRoot;
+        this.craneAccessControlService = craneAccessControlService;
         this.cacheRules = new HashMap<>();
         this.auditingService = auditingService;
         this.userService = userService;
@@ -92,6 +95,9 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
             }
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND);
+            if (!craneAccessControlService.handleByOnErrorExpression(repository, request, response, HttpStatus.NOT_FOUND.value())) {
+                return;
+            }
             request.getRequestDispatcher("/error").forward(request, response);
             return;
         }

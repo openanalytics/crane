@@ -23,6 +23,8 @@ package eu.openanalytics.rdepot.crane.service.spel;
 
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.service.CraneAccessControlService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -34,6 +36,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SpecExpressionContext {
+
+    private HttpServletRequest request;
+
+    private HttpServletResponse response;
 
     private Repository repository;
 
@@ -53,6 +59,12 @@ public class SpecExpressionContext {
             }
             if (o instanceof Authentication) {
                 ctx.groups = CraneAccessControlService.getGroups((Authentication) o);
+            }
+            if (o instanceof HttpServletRequest) {
+                ctx.request = (HttpServletRequest) o;
+            }
+            if (o instanceof HttpServletResponse) {
+                ctx.response = (HttpServletResponse) o;
             }
         }
         return ctx;
@@ -125,5 +137,13 @@ public class SpecExpressionContext {
             return false;
         }
         return Arrays.stream(allowedValues).anyMatch(it -> it.trim().equalsIgnoreCase(attribute.trim()));
+    }
+
+    public HttpServletResponse getResponse() {
+        return response;
+    }
+
+    public HttpServletRequest getRequest() {
+        return request;
     }
 }
