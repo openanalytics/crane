@@ -95,7 +95,7 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
             }
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND);
-            if (!craneAccessControlService.handleByOnErrorExpression(repository, request, response, HttpStatus.NOT_FOUND.value())) {
+            if (craneAccessControlService.handleByOnErrorExpression(repository, request, response, HttpStatus.NOT_FOUND.value())) {
                 return;
             }
             request.getRequestDispatcher("/error").forward(request, response);

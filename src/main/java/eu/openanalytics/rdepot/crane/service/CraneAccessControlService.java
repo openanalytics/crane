@@ -158,7 +158,7 @@ public class CraneAccessControlService {
     }
 
     public boolean handleByOnErrorExpression(Repository repository, HttpServletRequest request, HttpServletResponse response, int errorStatus) {
-        if (repository.getOnErrorExpression().isEmpty()) {
+        if (repository.getOnErrorExpression() == null) {
             return false;
         }
         response.setStatus(errorStatus);

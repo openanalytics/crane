@@ -431,4 +431,23 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
     }
+
+    @Test
+    public void testOnErrorExpressionOption() {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+        String repository = "/on_error_expression";
+        String file = "/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+
+        file = "/public_repo/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
+        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
+        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
+    }
 }
