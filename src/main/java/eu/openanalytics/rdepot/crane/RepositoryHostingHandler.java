@@ -87,7 +87,7 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
                     return;
                 }
             }
-            if (request.getUserPrincipal() == null) {
+            if (request.getUserPrincipal() == null && !repository.getPublic()) {
                 response.sendRedirect(userService.getLoginPath());
             }
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());

@@ -215,7 +215,7 @@ public class RepositoryHostingHandlerTest {
         String nestedRepository = "/public_repo/undefined/test";
         List<String> paths = Arrays.asList(file, repository, nestedRepository);
         for (String path : paths) {
-            apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
+            apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertNotFound();
 
             apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(path)).assertNotFound();
 
