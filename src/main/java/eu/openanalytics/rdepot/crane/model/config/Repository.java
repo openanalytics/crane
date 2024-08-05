@@ -30,6 +30,7 @@ public class Repository extends PathComponent {
     private List<CacheRule> cache;
     private String storageLocation;
     private Path storagePath;
+    private String onErrorExpression;
     private boolean posixAccessControl;
 
     public String getIndexFileName() {
@@ -98,4 +99,13 @@ public class Repository extends PathComponent {
     public void setStoragePath(Path storagePath) {
         this.storagePath = storagePath;
     }
+
+    public String getOnErrorExpression() {
+        return onErrorExpression;
+    }
+
+    public void setOnErrorExpression(String onErrorExpression) {
+        this.onErrorExpression = onErrorExpression;
+    }
+
 }
