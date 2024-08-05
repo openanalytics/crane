@@ -22,10 +22,7 @@ package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
-import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
-import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -43,14 +40,12 @@ public class CraneAccessControlService {
     private final PathAccessControlService pathAccessControlService;
     private final CraneConfig craneConfig;
     private final UserService userService;
-    private final SpecExpressionResolver specExpressionResolver;
 
-    public CraneAccessControlService(PosixAccessControlService posixAccessControlService, PathAccessControlService pathAccessControlService, CraneConfig craneConfig, UserService userService, SpecExpressionResolver specExpressionResolver) {
+    public CraneAccessControlService(PosixAccessControlService posixAccessControlService, PathAccessControlService pathAccessControlService, CraneConfig craneConfig, UserService userService) {
         this.posixAccessControlService = posixAccessControlService;
         this.pathAccessControlService = pathAccessControlService;
         this.craneConfig = craneConfig;
         this.userService = userService;
-        this.specExpressionResolver = specExpressionResolver;
     }
 
     public static boolean isMember(Authentication auth, String group) {
@@ -157,13 +152,4 @@ public class CraneAccessControlService {
         return pathAccessControlService.canAccess(auth, fullPath, repository) && posixAccessControlService.canAccess(auth, fullPath, repository);
     }
 
-    public boolean handleByOnErrorExpression(Repository repository, HttpServletRequest request, HttpServletResponse response, int errorStatus) {
-        if (repository.getOnErrorExpression() == null) {
-            return false;
-        }
-        response.setStatus(errorStatus);
-        Authentication auth = userService.getUser();
-        SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), repository, request, response);
-        return specExpressionResolver.evaluateToBoolean(repository.getOnErrorExpression(), context);
-    }
 }

@@ -23,7 +23,7 @@ package eu.openanalytics.rdepot.crane.config;
 import eu.openanalytics.rdepot.crane.RepositoryHostingHandler;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
-import eu.openanalytics.rdepot.crane.service.CraneAccessControlService;
+import eu.openanalytics.rdepot.crane.service.HandelSpecExpressionService;
 import eu.openanalytics.rdepot.crane.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,13 +41,13 @@ public class RepositoryHostingConfig {
     private final UserService userService;
 
     private final AuditingService auditingService;
-    private final CraneAccessControlService craneAccessControlService;
+    private final HandelSpecExpressionService handelSpecExpressionsService;
 
-    public RepositoryHostingConfig(CraneConfig config, AuditingService auditingService, UserService userService, CraneAccessControlService craneAccessControlService) {
+    public RepositoryHostingConfig(CraneConfig config, AuditingService auditingService, UserService userService, HandelSpecExpressionService handelSpecExpressionsService) {
         this.config = config;
         this.auditingService = auditingService;
         this.userService = userService;
-        this.craneAccessControlService = craneAccessControlService;
+        this.handelSpecExpressionsService = handelSpecExpressionsService;
     }
 
     @Bean
@@ -56,7 +56,7 @@ public class RepositoryHostingConfig {
 
         for (Repository repository : config.getRepositories()) {
             Path repositoryRoot = repository.getStoragePath().resolve(repository.getName());
-            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot, auditingService, userService, craneAccessControlService);
+            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot, auditingService, userService, handelSpecExpressionsService);
             urlMap.put(String.format("/%s/**", repository.getName()), resourceHttpRequestHandler);
         }
 
