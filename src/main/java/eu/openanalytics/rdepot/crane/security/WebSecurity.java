@@ -25,6 +25,7 @@ import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
 import eu.openanalytics.rdepot.crane.service.CraneAccessControlService;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
+import net.minidev.json.JSONArray;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.slf4j.Logger;
@@ -42,6 +43,10 @@ import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -104,7 +109,7 @@ public class WebSecurity {
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
                 .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(oidcUserService())))
+                .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(createOidcUserService())))
                 .oauth2Client(withDefaults())
                 .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
                 .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
@@ -130,17 +135,59 @@ public class WebSecurity {
         };
     }
 
-    private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
-        // Use a custom UserService that respects our username attribute config and extract the authorities from the ID token
+    protected OidcUserService createOidcUserService() {
+        // Use a custom UserService that supports the 'emails' array attribute.
         return new OidcUserService() {
             @Override
             public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+                OidcUser user;
+                try {
+                    user = super.loadUser(userRequest);
+                } catch (IllegalArgumentException ex) {
+                    logger.warn("Error while loading user info: {}", ex.getMessage());
+                    throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST), "Error while loading user info", ex);
+                } catch (OAuth2AuthenticationException ex) {
+                    logger.warn("Error while loading user info: {}", ex.getMessage());
+                    throw ex;
+                }
+
+                String nameAttributeKey = config.getPosixUIDAttribute();
+
                 Object claimValue = userRequest.getIdToken().getClaims().get(config.getOpenidGroupsClaim());
                 Set<GrantedAuthority> mappedAuthorities = mapAuthorities(claimValue);
-
-                return new DefaultOidcUser(mappedAuthorities, userRequest.getIdToken(), config.getOpenidUsernameClaim());
+                return new CustomOidcUser(mappedAuthorities,
+                        user.getIdToken(),
+                        user.getUserInfo(),
+                        nameAttributeKey
+                );
             }
         };
+    }
+
+    public static class CustomOidcUser extends DefaultOidcUser {
+
+        private static final long serialVersionUID = 7563253562760236634L;
+
+        private final int posixUID;
+
+        public CustomOidcUser(Set<GrantedAuthority> authorities, OidcIdToken idToken, OidcUserInfo userInfo, String uidAttributeKey) {
+            super(authorities, idToken, userInfo, "preferred_username");
+            this.posixUID = parseUID(userInfo, uidAttributeKey);
+        }
+
+        private int parseUID(OidcUserInfo userInfo, String uidAttributeKey) {
+            Object uid = userInfo.getClaim(uidAttributeKey);
+            if (uid instanceof String) {
+                return Integer.parseInt((String) uid);
+            } else if (uid instanceof Integer) {
+                return (int) uid;
+            }
+            return -1;
+        }
+
+        public int getPosixUID() {
+            return posixUID;
+        }
     }
 
     /**

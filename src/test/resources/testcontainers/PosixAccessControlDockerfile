@@ -24,11 +24,11 @@ ENV CRANE_USER crane
 
 # CREATE USERS AND GROUPS
 RUN useradd demo && \
-    useradd test && \
+    useradd testTypo -u 1002 && \
     groupadd scientists && \
-    groupadd mathematicians && \
+    groupadd mathematiciansTypo -g 9998 && \
     groupadd crane_public && \
-    useradd -c 'crane user' -G scientists,mathematicians,crane_public -m -d /home/$CRAN_USER -s /bin/nologin $CRANE_USER
+    useradd -c 'crane user' -G scientists,mathematiciansTypo,crane_public -m -d /home/$CRAN_USER -s /bin/nologin $CRANE_USER
 
 COPY --from=builder /opt/crane /opt/crane
 
@@ -40,18 +40,22 @@ RUN mkdir /tmp/posix_repository && \
     touch /tmp/posix_repository/repository_with_paths/file.txt && \
     mkdir /tmp/posix_repository/repository_with_paths/only_owner_demo && \
     touch /tmp/posix_repository/repository_with_paths/only_owner_demo/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_owner_test_uid && \
+    touch /tmp/posix_repository/repository_with_paths/only_owner_test_uid/file.txt && \
     mkdir /tmp/posix_repository/repository_with_paths/only_group_scientists && \
     touch /tmp/posix_repository/repository_with_paths/only_group_scientists/file.txt && \
-    mkdir /tmp/posix_repository/repository_with_paths/only_group_mathematicians && \
-    touch /tmp/posix_repository/repository_with_paths/only_group_mathematicians/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_group_mathematicians_gid && \
+    touch /tmp/posix_repository/repository_with_paths/only_group_mathematicians_gid/file.txt && \
     mkdir /tmp/posix_repository/repository_with_paths/no_path_access && \
     touch /tmp/posix_repository/repository_with_paths/no_path_access/file.txt && \
     mkdir /tmp/posix_repository/only_owner_demo && \
     touch /tmp/posix_repository/only_owner_demo/file.txt && \
+    mkdir /tmp/posix_repository/only_owner_test_uid && \
+    touch /tmp/posix_repository/only_owner_test_uid/file.txt && \
     mkdir /tmp/posix_repository/only_group_scientists && \
     touch /tmp/posix_repository/only_group_scientists/file.txt && \
-    mkdir /tmp/posix_repository/only_group_mathematicians && \
-    touch /tmp/posix_repository/only_group_mathematicians/file.txt && \
+    mkdir /tmp/posix_repository/only_group_mathematicians_gid && \
+    touch /tmp/posix_repository/only_group_mathematicians_gid/file.txt && \
     mkdir /tmp/posix_repository/no_path_access && \
     touch /tmp/posix_repository/no_path_access/file.txt && \
     mkdir /tmp/posix_repository/no_posix_access && \
@@ -64,10 +68,12 @@ RUN chown -R $CRANE_USER:crane_public /tmp/posix_repository/ && \
     chmod -R u+r,g+r /tmp/posix_repository && \
     chown -R demo /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
     chmod -R u+r /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
+    chown -R testTypo /tmp/posix_repository/repository_with_paths/only_owner_test_uid /tmp/posix_repository/only_owner_test_uid && \
+    chmod -R u+r /tmp/posix_repository/repository_with_paths/only_owner_test_uid /tmp/posix_repository/only_owner_test_uid && \
     chgrp -R scientists /tmp/posix_repository/repository_with_paths/only_group_scientists /tmp/posix_repository/only_group_scientists && \
     chmod -R g+r /tmp/posix_repository/repository_with_paths/only_group_scientists /tmp/posix_repository/only_group_scientists && \
-    chgrp -R mathematicians  /tmp/posix_repository/repository_with_paths/only_group_mathematicians /tmp/posix_repository/only_group_mathematicians && \
-    chmod -R g+r  /tmp/posix_repository/repository_with_paths/only_group_mathematicians /tmp/posix_repository/only_group_mathematicians
+    chgrp -R mathematiciansTypo /tmp/posix_repository/repository_with_paths/only_group_mathematicians_gid /tmp/posix_repository/only_group_mathematicians_gid && \
+    chmod -R g+r  /tmp/posix_repository/repository_with_paths/only_group_mathematicians_gid /tmp/posix_repository/only_group_mathematicians_gid
 
 WORKDIR /opt/crane
 USER $CRANE_USER

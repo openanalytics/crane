@@ -20,8 +20,8 @@
  */
 package eu.openanalytics.rdepot.crane.service;
 
-import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.security.WebSecurity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -35,16 +35,12 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 @Service
 public class PosixAccessControlService {
-    private final CraneConfig config;
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    public PosixAccessControlService(CraneConfig config) {
-        this.config = config;
-    }
 
     public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
         if (auth == null || repository == null) {
@@ -79,24 +75,33 @@ public class PosixAccessControlService {
         return storagePath.getFileSystem().supportedFileAttributeViews().contains("posix");
     }
 
-    private boolean canAccess(Authentication auth, String path) {
+    private boolean canAccess(Authentication auth, String stringPath) {
         PosixFileAttributes attributes;
+        WebSecurity.CustomOidcUser userInfo = (WebSecurity.CustomOidcUser) auth.getPrincipal();
+        int pathUID, pathGID;
+        Path path = Path.of(stringPath);
         try {
-            attributes = Files.getFileAttributeView(Path.of(path), PosixFileAttributeView.class).readAttributes();
+            Map<String, Object> pathAttributes = Files.readAttributes(path, "unix:uid,gid");
+            pathUID = (int) pathAttributes.get("uid");
+            pathGID = (int) pathAttributes.get("gid");
+            attributes = Files.getFileAttributeView(path, PosixFileAttributeView.class).readAttributes();
         } catch (NoSuchFileException e) {
             return false;
-        } catch (IOException e) { // TODO: find a way to produce this warning
+        } catch (IOException e) {
             logger.warn(String.format("Could not view POSIX file system permissions of %s", path), e);
             return false;
         }
 
         Set<PosixFilePermission> permissions = attributes.permissions();
-        if (attributes.owner().getName().equalsIgnoreCase(auth.getName())) {
+        int userUID = userInfo.getPosixUID();
+        if (attributes.owner().getName().equalsIgnoreCase(auth.getName()) || pathUID == userUID) {
             return permissions.contains(PosixFilePermission.OWNER_READ);
         }
-        if (CraneAccessControlService.isMember(auth, attributes.group().getName())) {
+
+        if (CraneAccessControlService.isMember(auth, attributes.group().getName()) || CraneAccessControlService.isMember(auth, String.valueOf(pathGID))) {
             return permissions.contains(PosixFilePermission.GROUP_READ);
         }
         return false;
     }
+
 }

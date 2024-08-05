@@ -50,24 +50,25 @@ public class PosixAccessControlServiceTest {
     private static final String targetDirectory = "/tmp/target";
     private static final Logger logger = LoggerFactory.getLogger(PosixAccessControlServiceTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
-    private static final GenericContainer craneApp = new GenericContainer(
-            new ImageFromDockerfile()
-                    .withBuildArg("CONFIGURATION", "application.yml")
-                    .withBuildArg("JAR_LOCATION", "crane.jar")
-                    .withFileFromPath("application.yml", Paths.get("src", "test", "resources", "application-posix-test.yml"))
-                    .withFileFromPath("crane.jar", Path.of(targetDirectory + "/crane-0.2.0-SNAPSHOT-exec.jar"))
-                    .withFileFromClasspath("Dockerfile", "testcontainers/PosixAccessControlDockerfile")
-    )
-            .withEnv("OPENID_URL", KeycloakInstance.getURI())
-            .withEnv("CRANE_PORT", String.valueOf(cranePort))
-            .withNetwork(keycloakInstance.getNetwork())
-            .withExposedPorts(cranePort);
+    private static GenericContainer craneApp = new GenericContainer();
     private final String craneUrl = String.format("http://%s:%s", craneApp.getHost(), cranePort);
 
     @BeforeAll
     public static void beforeAll() throws IOException, InterruptedException {
         buildJar();
         keycloakInstance.start();
+
+        craneApp = new GenericContainer(new ImageFromDockerfile()
+                .withBuildArg("CONFIGURATION", "application.yml")
+                .withBuildArg("JAR_LOCATION", "crane.jar")
+                .withFileFromPath("application.yml", Paths.get("src", "test", "resources", "application-posix-test.yml"))
+                .withFileFromPath("crane.jar", Path.of(targetDirectory + "/crane-0.2.0-SNAPSHOT-exec.jar"))
+                .withFileFromClasspath("Dockerfile", "testcontainers/PosixAccessControlDockerfile")
+        )
+                .withEnv("OPENID_URL", KeycloakInstance.getURI())
+                .withEnv("CRANE_PORT", String.valueOf(cranePort))
+                .withNetwork(keycloakInstance.getNetwork())
+                .withExposedPorts(cranePort);
         craneApp.setPortBindings(List.of(String.format("%s:%s", cranePort, cranePort)));
         craneApp.withLogConsumer(new Slf4jLogConsumer(logger));
         craneApp.start();
@@ -130,7 +131,7 @@ public class PosixAccessControlServiceTest {
 
         resp = apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(path));
         String body = resp.body();
-        Set<String> repositories = new HashSet<>(Set.of("repository_with_paths", "only_group_mathematicians", "file.txt"));
+        Set<String> repositories = new HashSet<>(Set.of("repository_with_paths", "only_group_mathematicians_gid", "file.txt"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
         resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(path));
@@ -174,7 +175,7 @@ public class PosixAccessControlServiceTest {
     @Test
     public void testAccessToGroupRepositoryWithMultipleUsers() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/only_group_mathematicians";
+        String repository = "/only_group_mathematicians_gid";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();

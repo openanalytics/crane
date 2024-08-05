@@ -70,6 +70,7 @@ public class CraneConfig {
     private List<CacheRule> defaultCache;
     private StsClient stsClient;
     private String callerIdentityArn;
+    private String posixUIDAttribute;
 
     public Path getRoot() {
         return root;
@@ -322,5 +323,13 @@ public class CraneConfig {
 
     public Path getAuditLoggingPath() {
         return auditLoggingPath;
+    }
+
+    public String getPosixUIDAttribute() {
+        return posixUIDAttribute;
+    }
+
+    public void setPosixUIDAttribute(String posixUIDAttribute) {
+        this.posixUIDAttribute = posixUIDAttribute;
     }
 }
