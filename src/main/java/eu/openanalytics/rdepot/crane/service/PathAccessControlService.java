@@ -157,13 +157,13 @@ public class PathAccessControlService {
     }
 
 
-    public boolean allowedByExpression(Authentication auth, PathComponent PathComponent) {
-        if (!PathComponent.hasExpressionAccess()) {
+    public boolean allowedByExpression(Authentication auth, PathComponent pathComponent) {
+        if (!pathComponent.hasExpressionAccess()) {
             // no expression defined -> this user has no access based on the expression
             return false;
         }
-        SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), PathComponent);
-        return specExpressionResolver.evaluateToBoolean(PathComponent.getAccessExpression(), context);
+        SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), pathComponent);
+        return specExpressionResolver.evaluateToBoolean(pathComponent.getAccessExpression(), context);
     }
 
 }
