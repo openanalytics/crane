@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.rdepot.crane.service;
 
+import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
 import eu.openanalytics.rdepot.crane.security.WebSecurity;
 import org.slf4j.Logger;
@@ -41,6 +42,11 @@ import java.util.Set;
 @Service
 public class PosixAccessControlService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final CraneConfig craneConfig;
+
+    public PosixAccessControlService(CraneConfig craneConfig) {
+        this.craneConfig = craneConfig;
+    }
 
     public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
         if (auth == null || repository == null) {
@@ -77,7 +83,7 @@ public class PosixAccessControlService {
 
     private boolean canAccess(Authentication auth, String stringPath) {
         PosixFileAttributes attributes;
-        WebSecurity.CustomOidcUser userInfo = (WebSecurity.CustomOidcUser) auth.getPrincipal();
+        WebSecurity.CustomOidcUser userInfo = WebSecurity.CustomOidcUser.of(auth, craneConfig.getPosixUIDAttribute());
         int pathUID, pathGID;
         Path path = Path.of(stringPath);
         try {

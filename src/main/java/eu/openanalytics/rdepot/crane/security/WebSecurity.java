@@ -36,9 +36,11 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -49,7 +51,9 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -187,6 +191,29 @@ public class WebSecurity {
 
         public int getPosixUID() {
             return posixUID;
+        }
+
+        public static CustomOidcUser of(Authentication auth, String uidAttributeKey) {
+            if (auth instanceof JwtAuthenticationToken) {
+                return of((JwtAuthenticationToken) auth, uidAttributeKey);
+            }
+            if (auth instanceof OAuth2AuthenticationToken) {
+                return of((OAuth2AuthenticationToken) auth, uidAttributeKey);
+            }
+            throw new RuntimeException(String.format("Not implemented Authentication type %s", auth.getClass().toString()));
+        }
+
+        public static CustomOidcUser of(JwtAuthenticationToken token, String uidAttributeKey) {
+            Jwt jwt = token.getToken();
+            return new CustomOidcUser(
+                    new HashSet<>(token.getAuthorities()),
+                    new OidcIdToken(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getClaims()),
+                    new OidcUserInfo(jwt.getClaims()), uidAttributeKey
+            );
+        }
+
+        public static CustomOidcUser of(OAuth2AuthenticationToken token, String uidAttributeKey) {
+            return (CustomOidcUser) token.getPrincipal();
         }
     }
 
