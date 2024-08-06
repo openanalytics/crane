@@ -106,7 +106,7 @@ public class CraneConfig {
                 r.setStorageLocation(storageLocation);
                 r.setStoragePath(root);
             } else {
-                r.setStoragePath(storageLocationToPath(r.getStorageLocation()));
+                r.setStoragePath(storageLocationToPath(validateRepositoryStorageLocation(r.getStorageLocation(), r.getName())));
             }
         }
         close();
@@ -180,21 +180,28 @@ public class CraneConfig {
     }
 
     public void setStorageLocation(String storageLocation) {
+        this.storageLocation = validateStorageLocation(storageLocation, "app.storage-location");
+    }
+
+    public String validateRepositoryStorageLocation(String storageLocation, String repositoryName) {
+        return validateStorageLocation(storageLocation, String.format("app.repositories[%s].storage-location", repositoryName));
+    }
+
+    public String validateStorageLocation(String storageLocation, String option) {
         if (storageLocation.startsWith("s3://")) {
             if (!storageLocation.startsWith("s3://") || !storageLocation.endsWith("/")) {
-                throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location must either start and end with / OR start with s3:// and end with /");
+                throw new IllegalArgumentException(String.format("Incorrect configuration detected: %s must either start and end with / OR start with s3:// and end with /", option));
             }
-            this.storageLocation = storageLocation; // TODO
-            return;
+            return storageLocation;
         }
         if (!storageLocation.startsWith("/") || !storageLocation.endsWith("/")) {
-            throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location must either start and end with / OR start with s3:// and end with /");
+            throw new IllegalArgumentException(String.format("Incorrect configuration detected: %s must either start and end with / OR start with s3:// and end with /", option));
         }
         File path = new File(storageLocation);
         if (!path.exists() || !path.isDirectory()) {
-            throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location does not exists or is not a directory");
+            throw new IllegalArgumentException(String.format("Incorrect configuration detected: %s does not exists or is not a directory", option));
         }
-        this.storageLocation = storageLocation; // TODO
+        return storageLocation;
     }
 
     public String getOpenidIssuerUri() {
