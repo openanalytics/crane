@@ -245,7 +245,7 @@ public class PosixAccessControlServiceTest {
     @Test
     public void testAccessToNestedGroupRepositoryWithMultipleUsers() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/repository_with_paths/only_group_mathematicians";
+        String repository = "/repository_with_paths/only_group_mathematicians_gid";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();

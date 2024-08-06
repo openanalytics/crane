@@ -23,7 +23,7 @@ COPY $CONFIGURATION /opt/crane/
 ENV CRANE_USER crane
 
 # CREATE USERS AND GROUPS
-RUN useradd demo && \
+RUN useradd demo -u 1001 && \
     useradd testTypo -u 1002 && \
     groupadd scientists && \
     groupadd mathematiciansTypo -g 9998 && \

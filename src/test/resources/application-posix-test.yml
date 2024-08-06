@@ -4,6 +4,7 @@ app:
   storage-location: /tmp/posix_repository/
   openid-issuer-uri: "${OPENID_URL}"
   openid-groups-claim: realm_roles
+  posix-uid-attribute: "uid"
   repositories:
     - name: repository_with_paths
       posix-access-control: true
@@ -13,7 +14,7 @@ app:
           access-users: [ demo ]
         - name: only_group_scientists
           access-groups: [ scientists ]
-        - name: only_group_mathematicians
+        - name: only_group_mathematicians_gid
           access-groups: [ mathematicians ]
         - name: no_path_access
           access-users: [ undefined users ]
@@ -25,7 +26,7 @@ app:
     - name: only_group_scientists
       posix-access-control: true
       access-groups: [ scientists ]
-    - name: only_group_mathematicians
+    - name: only_group_mathematicians_gid
       posix-access-control: true
       access-groups: [ mathematicians ]
     - name: no_posix_access
