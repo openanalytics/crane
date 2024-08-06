@@ -4,7 +4,7 @@ app:
   storage-location: /tmp/posix_repository/
   openid-issuer-uri: "${OPENID_URL}"
   openid-groups-claim: realm_roles
-  posix-uid-attribute: "uid"
+  openid-posix-uid-claim: "uid"
   repositories:
     - name: repository_with_paths
       posix-access-control: true

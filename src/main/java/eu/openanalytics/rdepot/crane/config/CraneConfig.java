@@ -70,7 +70,7 @@ public class CraneConfig {
     private List<CacheRule> defaultCache;
     private StsClient stsClient;
     private String callerIdentityArn;
-    private String posixUIDAttribute;
+    private String openidPosixUIDClaim;
 
     public Path getRoot() {
         return root;
@@ -325,11 +325,11 @@ public class CraneConfig {
         return auditLoggingPath;
     }
 
-    public String getPosixUIDAttribute() {
-        return posixUIDAttribute;
+    public String getOpenidPosixUIDClaim() {
+        return openidPosixUIDClaim;
     }
 
-    public void setPosixUIDAttribute(String posixUIDAttribute) {
-        this.posixUIDAttribute = posixUIDAttribute;
+    public void setOpenidPosixUIDClaim(String openidPosixUIDClaim) {
+        this.openidPosixUIDClaim = openidPosixUIDClaim;
     }
 }
