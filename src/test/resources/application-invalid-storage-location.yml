@@ -1,0 +1,5 @@
+app:
+  openid-groups-claim: realm_roles
+  storage-location: invalid-location
+  repositories:
+    - name: public_repo

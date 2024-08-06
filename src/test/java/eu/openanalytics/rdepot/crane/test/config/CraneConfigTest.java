@@ -49,6 +49,28 @@ public class CraneConfigTest {
     }
 
     @Test
+    public void testConfigurationWithInvalidRootStorageLocation() {
+        TestHelperException exception = Assertions.assertThrows(
+                TestHelperException.class,
+                () -> new CraneInstance("application-invalid-storage-location.yml")
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
+        Assertions.assertEquals(rootCause.getMessage(), "Incorrect configuration detected: app.storage-location must either start and end with / OR start with s3:// and end with /");
+    }
+
+    @Test
+    public void testConfigurationWithInvalidRepositoryStorageLocation() {
+        TestHelperException exception = Assertions.assertThrows(
+                TestHelperException.class,
+                () -> new CraneInstance("application-invalid-repository-storage-location.yml")
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
+        Assertions.assertEquals(rootCause.getMessage(), "Incorrect configuration detected: app.repositories[repository_with_invalid_storage_location].storage-location must either start and end with / OR start with s3:// and end with /");
+    }
+
+    @Test
     public void testConfigurationWithoutOpenidIssuerUri() {
         TestHelperException exception = Assertions.assertThrows(
                 TestHelperException.class,
