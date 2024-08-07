@@ -5,6 +5,7 @@ app:
   openid-issuer-uri: "${OPENID_URL}"
   openid-groups-claim: realm_roles
   openid-posix-uid-claim: "uid"
+  openid-posix-gids-claim: "gids"
   repositories:
     - name: repository_with_paths
       posix-access-control: true

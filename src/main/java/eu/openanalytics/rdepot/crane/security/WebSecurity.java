@@ -170,9 +170,13 @@ public class WebSecurity {
 
         private final Logger logger = LoggerFactory.getLogger(getClass());
         private final int posixUID;
+        private final List<Integer> posixGIDs;
 
+        public CustomOidcUser(Set<GrantedAuthority> authorities, OidcIdToken idToken, OidcUserInfo userInfo, CraneConfig config) {
             super(authorities, idToken, userInfo, config.getOpenidUsernameClaim());
             this.posixUID = parseUID(userInfo, config.getOpenidPosixUIDClaim());
+            this.posixGIDs = parseGIDS(userInfo, config.getOpenidPosixGIDSClaim());
+        }
 
         private int parseUID(OidcUserInfo userInfo, String openidPosixUIDClaim) {
             if (openidPosixUIDClaim != null) {
@@ -190,6 +194,36 @@ public class WebSecurity {
             }
             return -1;
         }
+        private List<Integer> parseGIDS(OidcUserInfo userInfo, String openidPosixGIDSClaim) {
+            if (openidPosixGIDSClaim != null) {
+                Object GIDs = userInfo.getClaim(openidPosixGIDSClaim);
+                if (GIDs instanceof String gid) {
+                    try {
+                        return List.of(Integer.parseInt(gid));
+                    } catch (NumberFormatException ignored) {
+                        logger.warn("Group identifier could not be parsed as an integer {}", gid);
+                        return List.of();
+                    }
+                }
+                if (GIDs instanceof Integer gid) {
+                    return List.of(gid);
+                }
+                if (GIDs instanceof List<?> listGIDS) {
+                    if (!listGIDS.isEmpty() && listGIDS.get(0) instanceof String) {
+                            return ((List<String>) listGIDS).stream().map(gid -> {
+                                try {
+                                    return Integer.parseInt(gid);
+                                } catch (NumberFormatException ignored) {
+                                    logger.warn("Group identifier could not be parsed as an integer {}", gid);
+                                    return -1;
+                                }
+                            }).filter(gid -> gid != -1).toList();
+                    } else if (!listGIDS.isEmpty() && listGIDS.get(0) instanceof Integer) {
+                        return (List<Integer>) listGIDS;
+                    }
+                }
+            }
+            return List.of();
         }
 
         public static CustomOidcUser of(Authentication auth, CraneConfig config) {
@@ -213,6 +247,10 @@ public class WebSecurity {
 
         public static CustomOidcUser of(OAuth2AuthenticationToken token, CraneConfig config) {
             return (CustomOidcUser) token.getPrincipal();
+        }
+
+        public List<Integer> getPosixGIDs() {
+            return posixGIDs;
         }
 
         public int getPosixUID() {

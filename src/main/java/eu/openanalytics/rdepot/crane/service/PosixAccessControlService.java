@@ -104,7 +104,7 @@ public class PosixAccessControlService {
             return permissions.contains(PosixFilePermission.OWNER_READ);
         }
 
-        if (CraneAccessControlService.isMember(auth, attributes.group().getName()) || CraneAccessControlService.isMember(auth, String.valueOf(pathGID))) {
+        if (CraneAccessControlService.isMember(auth, attributes.group().getName()) || userInfo.getPosixGIDs().contains(pathGID)) {
             return permissions.contains(PosixFilePermission.GROUP_READ);
         }
         return false;

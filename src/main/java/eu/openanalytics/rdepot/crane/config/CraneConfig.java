@@ -71,6 +71,7 @@ public class CraneConfig {
     private StsClient stsClient;
     private String callerIdentityArn;
     private String openidPosixUIDClaim;
+    private String openidPosixGIDSClaim;
 
     public Path getRoot() {
         return root;
@@ -331,5 +332,13 @@ public class CraneConfig {
 
     public void setOpenidPosixUIDClaim(String openidPosixUIDClaim) {
         this.openidPosixUIDClaim = openidPosixUIDClaim;
+    }
+
+    public String getOpenidPosixGIDSClaim() {
+        return this.openidPosixGIDSClaim;
+    }
+
+    public void setOpenidPosixGIDSClaim(String openidPosixGIDSClaim) {
+        this.openidPosixGIDSClaim = openidPosixGIDSClaim;
     }
 }
