@@ -83,7 +83,7 @@ public class PosixAccessControlService {
 
     private boolean canAccess(Authentication auth, String stringPath) {
         PosixFileAttributes attributes;
-        WebSecurity.CustomOidcUser userInfo = WebSecurity.CustomOidcUser.of(auth, craneConfig.getPosixUIDAttribute());
+        WebSecurity.CustomOidcUser userInfo = WebSecurity.CustomOidcUser.of(auth, craneConfig);
         int pathUID, pathGID;
         Path path = Path.of(stringPath);
         try {
@@ -109,5 +109,4 @@ public class PosixAccessControlService {
         }
         return false;
     }
-
 }

@@ -25,7 +25,6 @@ import eu.openanalytics.rdepot.crane.security.auditing.AuditingService;
 import eu.openanalytics.rdepot.crane.service.CraneAccessControlService;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.rdepot.crane.service.spel.SpecExpressionResolver;
-import net.minidev.json.JSONArray;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.slf4j.Logger;
@@ -43,7 +42,6 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
@@ -155,14 +153,12 @@ public class WebSecurity {
                     throw ex;
                 }
 
-                String nameAttributeKey = config.getPosixUIDAttribute();
-
                 Object claimValue = userRequest.getIdToken().getClaims().get(config.getOpenidGroupsClaim());
                 Set<GrantedAuthority> mappedAuthorities = mapAuthorities(claimValue);
                 return new CustomOidcUser(mappedAuthorities,
                         user.getIdToken(),
                         user.getUserInfo(),
-                        nameAttributeKey
+                        config
                 );
             }
         };
@@ -172,48 +168,55 @@ public class WebSecurity {
 
         private static final long serialVersionUID = 7563253562760236634L;
 
+        private final Logger logger = LoggerFactory.getLogger(getClass());
         private final int posixUID;
 
-        public CustomOidcUser(Set<GrantedAuthority> authorities, OidcIdToken idToken, OidcUserInfo userInfo, String uidAttributeKey) {
-            super(authorities, idToken, userInfo, "preferred_username");
-            this.posixUID = parseUID(userInfo, uidAttributeKey);
-        }
+            super(authorities, idToken, userInfo, config.getOpenidUsernameClaim());
+            this.posixUID = parseUID(userInfo, config.getOpenidPosixUIDClaim());
 
-        private int parseUID(OidcUserInfo userInfo, String uidAttributeKey) {
-            Object uid = userInfo.getClaim(uidAttributeKey);
-            if (uid instanceof String) {
-                return Integer.parseInt((String) uid);
-            } else if (uid instanceof Integer) {
-                return (int) uid;
+        private int parseUID(OidcUserInfo userInfo, String openidPosixUIDClaim) {
+            if (openidPosixUIDClaim != null) {
+                Object UID = userInfo.getClaim(openidPosixUIDClaim);
+                if (UID instanceof String stringUID) {
+                    try {
+                        return Integer.parseInt(stringUID);
+                    } catch (NumberFormatException ignored) {
+                        logger.warn("User identifier could not be parsed as an integer {}", stringUID);
+                        return -1;
+                    }
+                } else if (UID instanceof Integer intUID) {
+                    return intUID;
+                }
             }
             return -1;
         }
-
-        public int getPosixUID() {
-            return posixUID;
         }
 
-        public static CustomOidcUser of(Authentication auth, String uidAttributeKey) {
+        public static CustomOidcUser of(Authentication auth, CraneConfig config) {
             if (auth instanceof JwtAuthenticationToken) {
-                return of((JwtAuthenticationToken) auth, uidAttributeKey);
+                return of((JwtAuthenticationToken) auth, config);
             }
             if (auth instanceof OAuth2AuthenticationToken) {
-                return of((OAuth2AuthenticationToken) auth, uidAttributeKey);
+                return of((OAuth2AuthenticationToken) auth, config);
             }
-            throw new RuntimeException(String.format("Not implemented Authentication type %s", auth.getClass().toString()));
+            throw new RuntimeException(String.format("Not implemented Authentication type %s", auth.getClass()));
         }
 
-        public static CustomOidcUser of(JwtAuthenticationToken token, String uidAttributeKey) {
+        public static CustomOidcUser of(JwtAuthenticationToken token, CraneConfig config) {
             Jwt jwt = token.getToken();
             return new CustomOidcUser(
                     new HashSet<>(token.getAuthorities()),
                     new OidcIdToken(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getClaims()),
-                    new OidcUserInfo(jwt.getClaims()), uidAttributeKey
+                    new OidcUserInfo(jwt.getClaims()), config
             );
         }
 
-        public static CustomOidcUser of(OAuth2AuthenticationToken token, String uidAttributeKey) {
+        public static CustomOidcUser of(OAuth2AuthenticationToken token, CraneConfig config) {
             return (CustomOidcUser) token.getPrincipal();
+        }
+
+        public int getPosixUID() {
+            return posixUID;
         }
     }
 
