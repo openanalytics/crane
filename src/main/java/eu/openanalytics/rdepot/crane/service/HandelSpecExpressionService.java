@@ -45,12 +45,6 @@ public class HandelSpecExpressionService {
         response.setStatus(errorStatus);
         Authentication auth = userService.getUser();
         SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), repository, request, response);
-        String fullExpression = repository.getOnErrorExpression();
-        String shouldHandelResponseExpression = fullExpression.substring(fullExpression.lastIndexOf("#"));
-        boolean shouldHandelResponse = specExpressionResolver.evaluateToBoolean(shouldHandelResponseExpression, context);
-        if (shouldHandelResponse) {
-            specExpressionResolver.evaluate(fullExpression, context);
-        }
-        return shouldHandelResponse;
+        return specExpressionResolver.evaluateToBoolean(repository.getOnErrorExpression(), context);
     }
 }
