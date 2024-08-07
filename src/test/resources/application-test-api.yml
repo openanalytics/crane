@@ -46,4 +46,4 @@ app:
           max-age: "PT50S"
     - name: on_error_expression
       public: true
-      on-error-expression: "#{response.status == 404 ? response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 3)[2]) : null}#{response.status == 404 ? false : true}"
+      on-error-expression: "#{response.status == 404 ? response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 3)[2]) : null}#{response.status == 404 ? true : false}"
