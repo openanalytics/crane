@@ -139,6 +139,14 @@ public class SpecExpressionContext {
         return Arrays.stream(allowedValues).anyMatch(it -> it.trim().equalsIgnoreCase(attribute.trim()));
     }
 
+    /**
+     * Helper method to call multiple functions in a single SpEL expression.
+     * Returns the provided result and ignores all other parameters.
+     */
+    public <T> T eval(T result, Object... objects) {
+        return result;
+    }
+
     public HttpServletResponse getResponse() {
         return response;
     }
