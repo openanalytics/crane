@@ -26,6 +26,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <finalName>${project.artifactId}-${project.version}</finalName>
     </properties>
 
     <distributionManagement>
@@ -205,6 +206,7 @@
     </dependencyManagement>
 
     <build>
+        <finalName>${finalName}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

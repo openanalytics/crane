@@ -62,7 +62,7 @@ public class PosixAccessControlServiceTest {
                 .withBuildArg("CONFIGURATION", "application.yml")
                 .withBuildArg("JAR_LOCATION", "crane.jar")
                 .withFileFromPath("application.yml", Paths.get("src", "test", "resources", "application-posix-test.yml"))
-                .withFileFromPath("crane.jar", Path.of(targetDirectory + "/crane-0.2.0-SNAPSHOT-exec.jar"))
+                .withFileFromPath("crane.jar", Path.of(targetDirectory + "/crane-exec.jar"))
                 .withFileFromClasspath("Dockerfile", "testcontainers/PosixAccessControlDockerfile")
         )
                 .withEnv("OPENID_URL", KeycloakInstance.getURI())
@@ -81,7 +81,7 @@ public class PosixAccessControlServiceTest {
         }
 
         Process process = new ProcessBuilder()
-                .command("mvn", "-B", "-U", "clean", "package", "-DskipTests=true", "-Dlicense.skip", "-PtmpOutputDir")
+                .command("mvn", "-B", "-U", "clean", "package", "-DskipTests=true", "-Dlicense.skip", "-PtmpOutputDir", "-DfinalName=crane")
                 .start();
 
         List<String> info = IOUtils.readLines(process.getInputStream(), Charset.defaultCharset());
