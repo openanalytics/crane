@@ -22,6 +22,7 @@ package eu.openanalytics.rdepot.crane.service;
 
 import eu.openanalytics.rdepot.crane.config.CraneConfig;
 import eu.openanalytics.rdepot.crane.model.config.Repository;
+import eu.openanalytics.rdepot.crane.security.CraneUser;
 import eu.openanalytics.rdepot.crane.security.WebSecurity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +83,8 @@ public class PosixAccessControlService {
     }
 
     private boolean canAccess(Authentication auth, String stringPath) {
+        CraneUser craneUser = (CraneUser) auth.getPrincipal();
         PosixFileAttributes attributes;
-        WebSecurity.CustomOidcUser userInfo = WebSecurity.CustomOidcUser.of(auth, craneConfig);
         int pathUID, pathGID;
         Path path = Path.of(stringPath);
         try {
@@ -99,12 +100,12 @@ public class PosixAccessControlService {
         }
 
         Set<PosixFilePermission> permissions = attributes.permissions();
-        int userUID = userInfo.getPosixUID();
+        int userUID = craneUser.getPosixUID();
         if (attributes.owner().getName().equalsIgnoreCase(auth.getName()) || pathUID == userUID) {
             return permissions.contains(PosixFilePermission.OWNER_READ);
         }
 
-        if (CraneAccessControlService.isMember(auth, attributes.group().getName()) || userInfo.getPosixGIDs().contains(pathGID)) {
+        if (CraneAccessControlService.isMember(auth, attributes.group().getName()) || craneUser.getPosixGIDs().contains(pathGID)) {
             return permissions.contains(PosixFilePermission.GROUP_READ);
         }
         return false;

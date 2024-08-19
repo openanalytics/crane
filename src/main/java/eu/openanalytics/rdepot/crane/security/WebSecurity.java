@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -76,6 +77,7 @@ public class WebSecurity {
 
     private final CraneAccessControlService craneAccessControlService;
     private final AuditingService auditingService;
+    private final TokenParser tokenParser;
 
     public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, CraneAccessControlService craneAccessControlService, AuditingService auditingService) {
         this.config = config;
@@ -83,6 +85,7 @@ public class WebSecurity {
         this.specExpressionResolver = specExpressionResolver;
         this.craneAccessControlService = craneAccessControlService;
         this.auditingService = auditingService;
+        this.tokenParser = new TokenParser(config);
     }
 
     @Bean
@@ -110,8 +113,8 @@ public class WebSecurity {
                         .access((authentication, context) -> new AuthorizationDecision(craneAccessControlService.canAccess(authentication.get(), context.getRequest())))
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
-                .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(createOidcUserService())))
+                .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, config))))
+                .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(new CraneOidcUserService(tokenParser, config))))
                 .oauth2Client(withDefaults())
                 .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
                 .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
@@ -135,200 +138,6 @@ public class WebSecurity {
             delegate.setDefaultTargetUrl(resolvedLogoutUrl);
             delegate.onLogoutSuccess(httpServletRequest, httpServletResponse, authentication);
         };
-    }
-
-    protected OidcUserService createOidcUserService() {
-        // Use a custom UserService that supports the 'emails' array attribute.
-        return new OidcUserService() {
-            @Override
-            public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
-                OidcUser user;
-                try {
-                    user = super.loadUser(userRequest);
-                } catch (IllegalArgumentException ex) {
-                    logger.warn("Error while loading user info: {}", ex.getMessage());
-                    throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST), "Error while loading user info", ex);
-                } catch (OAuth2AuthenticationException ex) {
-                    logger.warn("Error while loading user info: {}", ex.getMessage());
-                    throw ex;
-                }
-
-                Object claimValue = userRequest.getIdToken().getClaims().get(config.getOpenidGroupsClaim());
-                Set<GrantedAuthority> mappedAuthorities = mapAuthorities(claimValue);
-                return new CustomOidcUser(mappedAuthorities,
-                        user.getIdToken(),
-                        user.getUserInfo(),
-                        config
-                );
-            }
-        };
-    }
-
-    public static class CustomOidcUser extends DefaultOidcUser {
-
-        private static final long serialVersionUID = 7563253562760236634L;
-
-        private final Logger logger = LoggerFactory.getLogger(getClass());
-        private final int posixUID;
-        private final List<Integer> posixGIDs;
-
-        public CustomOidcUser(Set<GrantedAuthority> authorities, OidcIdToken idToken, OidcUserInfo userInfo, CraneConfig config) {
-            super(authorities, idToken, userInfo, config.getOpenidUsernameClaim());
-            this.posixUID = parseUID(userInfo, config.getOpenidPosixUIDClaim());
-            this.posixGIDs = parseGIDS(userInfo, config.getOpenidPosixGIDSClaim());
-        }
-
-        private int parseUID(OidcUserInfo userInfo, String openidPosixUIDClaim) {
-            if (openidPosixUIDClaim != null) {
-                Object UID = userInfo.getClaim(openidPosixUIDClaim);
-                if (UID instanceof String stringUID) {
-                    try {
-                        return Integer.parseInt(stringUID);
-                    } catch (NumberFormatException ignored) {
-                        logger.warn("User identifier could not be parsed as an integer {}", stringUID);
-                        return -1;
-                    }
-                } else if (UID instanceof Integer intUID) {
-                    return intUID;
-                }
-            }
-            return -1;
-        }
-        private List<Integer> parseGIDS(OidcUserInfo userInfo, String openidPosixGIDSClaim) {
-            if (openidPosixGIDSClaim != null) {
-                Object GIDs = userInfo.getClaim(openidPosixGIDSClaim);
-                if (GIDs instanceof String gid) {
-                    try {
-                        return List.of(Integer.parseInt(gid));
-                    } catch (NumberFormatException ignored) {
-                        logger.warn("Group identifier could not be parsed as an integer {}", gid);
-                        return List.of();
-                    }
-                }
-                if (GIDs instanceof Integer gid) {
-                    return List.of(gid);
-                }
-                if (GIDs instanceof List<?> listGIDS) {
-                    if (!listGIDS.isEmpty() && listGIDS.get(0) instanceof String) {
-                            return ((List<String>) listGIDS).stream().map(gid -> {
-                                try {
-                                    return Integer.parseInt(gid);
-                                } catch (NumberFormatException ignored) {
-                                    logger.warn("Group identifier could not be parsed as an integer {}", gid);
-                                    return -1;
-                                }
-                            }).filter(gid -> gid != -1).toList();
-                    } else if (!listGIDS.isEmpty() && listGIDS.get(0) instanceof Integer) {
-                        return (List<Integer>) listGIDS;
-                    }
-                }
-            }
-            return List.of();
-        }
-
-        public static CustomOidcUser of(Authentication auth, CraneConfig config) {
-            if (auth instanceof JwtAuthenticationToken) {
-                return of((JwtAuthenticationToken) auth, config);
-            }
-            if (auth instanceof OAuth2AuthenticationToken) {
-                return of((OAuth2AuthenticationToken) auth, config);
-            }
-            throw new RuntimeException(String.format("Not implemented Authentication type %s", auth.getClass()));
-        }
-
-        public static CustomOidcUser of(JwtAuthenticationToken token, CraneConfig config) {
-            Jwt jwt = token.getToken();
-            return new CustomOidcUser(
-                    new HashSet<>(token.getAuthorities()),
-                    new OidcIdToken(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getClaims()),
-                    new OidcUserInfo(jwt.getClaims()), config
-            );
-        }
-
-        public static CustomOidcUser of(OAuth2AuthenticationToken token, CraneConfig config) {
-            return (CustomOidcUser) token.getPrincipal();
-        }
-
-        public List<Integer> getPosixGIDs() {
-            return posixGIDs;
-        }
-
-        public int getPosixUID() {
-            return posixUID;
-        }
-    }
-
-    /**
-     * Authorities mapper when an Oauth2 JWT is used.
-     * I.e. when the user is authenticated by passing an OAuth2 Access token as Bearer token in the Authorization header.
-     */
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            if (!config.hasOpenidGroupsClaim()) {
-                return new ArrayList<>();
-            }
-            Object claimValue = jwt.getClaims().get(config.getOpenidGroupsClaim());
-            return mapAuthorities(claimValue);
-        });
-        converter.setPrincipalClaimName(config.getOpenidUsernameClaim());
-        return converter;
-    }
-
-    /**
-     * Maps the groups provided in the claimValue to {@link GrantedAuthority}.
-     *
-     * @return
-     */
-    private Set<GrantedAuthority> mapAuthorities(Object claimValue) {
-        Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-        for (String role : parseGroupsClaim(claimValue)) {
-            String mappedRole = role.toUpperCase().startsWith("ROLE_") ? role : "ROLE_" + role;
-            mappedAuthorities.add(new SimpleGrantedAuthority(mappedRole.toUpperCase()));
-        }
-        return mappedAuthorities;
-    }
-
-    /**
-     * Parses the claim containing the groups to a List of Strings.
-     */
-    private List<String> parseGroupsClaim(Object claimValue) {
-        String groupsClaimName = config.getOpenidGroupsClaim();
-        if (claimValue == null) {
-            logger.debug(String.format("No groups claim with name %s found", groupsClaimName));
-            return new ArrayList<>();
-        } else {
-            logger.debug(String.format("Matching claim found: %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
-        }
-
-        if (claimValue instanceof Collection) {
-            List<String> result = new ArrayList<>();
-            for (Object object : ((Collection<?>) claimValue)) {
-                if (object != null) {
-                    result.add(object.toString());
-                }
-            }
-            logger.debug(String.format("Parsed groups claim as Java Collection: %s -> %s (%s)", groupsClaimName, result, result.getClass()));
-            return result;
-        }
-
-        if (claimValue instanceof String) {
-            List<String> result = new ArrayList<>();
-            try {
-                Object value = new JSONParser(JSONParser.MODE_PERMISSIVE).parse((String) claimValue);
-                if (value instanceof List valueList) {
-                    valueList.forEach(o -> result.add(o.toString()));
-                }
-            } catch (ParseException e) {
-                // Unable to parse JSON
-                logger.debug(String.format("Unable to parse claim as JSON: %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
-            }
-            logger.debug(String.format("Parsed groups claim as JSON: %s -> %s (%s)", groupsClaimName, result, result.getClass()));
-            return result;
-        }
-
-        logger.debug(String.format("No parser found for groups claim (unsupported type): %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
-        return new ArrayList<>();
     }
 
 }

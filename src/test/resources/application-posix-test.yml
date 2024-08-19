@@ -47,3 +47,6 @@ spring:
         provider:
           crane:
             issuer-uri: "${OPENID_URL}"
+logging:
+  level:
+    eu: DEBUG
