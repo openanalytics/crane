@@ -120,6 +120,8 @@ public class CraneInstance implements AutoCloseable {
             } else {
                 logger.info("Crane available!");
             }
+            // Crane may not be ready when it starts serving requests
+            Thread.sleep(5_000);
         } catch (Throwable t) {
             closeRedis();
             throw new TestHelperException("Error during startup of Crane", t);

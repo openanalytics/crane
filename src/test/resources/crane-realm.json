@@ -38,7 +38,7 @@
       "enabled": true,
       "attributes": {
         "uid": ["1002"],
-        "gids": ["9998", "2000", "5000"]
+        "gids": ["9998", "2000", "5000", "invalid-id"]
       },
       "credentials": [
         {
@@ -160,7 +160,8 @@
             "lightweight.claim": "false",
             "access.token.claim": "true",
             "claim.name": "gids",
-            "jsonType.label": "String"
+            "jsonType.label": "String",
+            "multivalued": "true"
           }
         }
       ]

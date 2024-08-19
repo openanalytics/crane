@@ -96,19 +96,21 @@ public class TokenParser {
             return List.of(gid);
         }
         if (GIDs instanceof List<?> listGIDS) {
-            // TODO
-            if (!listGIDS.isEmpty() && listGIDS.get(0) instanceof String) {
-                return ((List<String>) listGIDS).stream().map(gid -> {
+            List<Integer> result = new ArrayList<>();
+            for (Object gid : listGIDS) {
+                if (gid instanceof String gidString) {
                     try {
-                        return Integer.parseInt(gid);
+                        result.add(Integer.parseInt(gidString));
                     } catch (NumberFormatException ignored) {
-                        logger.warn("Group identifier could not be parsed as an integer {}", gid);
-                        return -1;
+                        logger.warn("Group identifier (of list) could not be parsed as an integer {}", gid);
                     }
-                }).filter(gid -> gid != -1).toList();
-            } else if (!listGIDS.isEmpty() && listGIDS.get(0) instanceof Integer) {
-                return (List<Integer>) listGIDS;
+                } else if (gid instanceof Integer gidInteger) {
+                    result.add(gidInteger);
+                } else {
+                    logger.warn("Group identifier (of list) could is not an integer or string {}", gid);
+                }
             }
+            return result;
         }
         return List.of();
     }
