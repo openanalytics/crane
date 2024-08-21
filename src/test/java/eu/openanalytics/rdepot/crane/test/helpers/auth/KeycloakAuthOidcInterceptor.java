@@ -39,7 +39,7 @@ public class KeycloakAuthOidcInterceptor implements Interceptor {
         Response response = chain.proceed(chain.request());
         Request request = response.request();
         ResponseBody responseBody = response.body();
-        if (responseBody != null) {
+        if (responseBody != null && responseBody.contentLength() != -1) {
             String body = responseBody.string();
             int startOfAuthenticationUrl = body.indexOf("action=") + "action=".length() + 1;
             String authenticationUrl = body.substring(startOfAuthenticationUrl, body.indexOf('"', startOfAuthenticationUrl));
