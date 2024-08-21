@@ -93,12 +93,12 @@ public class AuditingServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/"));
         checkUnauthenticatedAuditLog("/", "LIST_REPOSITORIES");
 
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/"));
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/"));
         checkTwoAuditLogs(
                 "/", "AUTHENTICATION_SUCCESS", "demo",
                 "/", "LIST_REPOSITORIES", "demo");
 
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/"));
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest("/"));
         checkTwoAuditLogs(
                 "/", "AUTHENTICATION_SUCCESS", "test",
                 "/", "LIST_REPOSITORIES", "test"
@@ -118,7 +118,7 @@ public class AuditingServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/private_repo"));
         checkUnauthenticatedAuditLog("/private_repo", "AUTHORIZATION_FAILURE");
 
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/restricted_repo"));
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest("/restricted_repo"));
         checkTwoAuditLogs(
                 "/restricted_repo", "AUTHENTICATION_SUCCESS", "test",
                 "/restricted_repo", "AUTHORIZATION_FAILURE", "test"
@@ -132,13 +132,13 @@ public class AuditingServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/logout"));
         checkUnauthenticatedAuditLog("/logout", "LOGOUT");
 
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/logout"));
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
         checkTwoAuditLogs(
                 "/logout", "LOGOUT", ANONYMOUS_USER,
                 "/logout-success", "AUTHENTICATION_SUCCESS", "demo"
         );
 
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/logout"));
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest("/logout"));
         checkTwoAuditLogs("/logout", "LOGOUT", ANONYMOUS_USER,
                 "/logout-success", "AUTHENTICATION_SUCCESS", "test"
         );
@@ -148,7 +148,7 @@ public class AuditingServiceTest {
     public void testAuditingErrorHandlerEventPage() throws IOException, InterruptedException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/undefined_repository"));
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/undefined_repository"));
         checkTwoAuditLogs(
                 "/undefined_repository", "AUTHENTICATION_SUCCESS", "demo",
                 "/undefined_repository", "AUTHORIZATION_FAILURE", "demo"

@@ -61,7 +61,7 @@ public class ControllerTest {
     public void testWithAuth() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
     }
 
     @Test
@@ -70,14 +70,14 @@ public class ControllerTest {
         String repository = "/private_repo";
         String file = repository + "/file.txt";
 
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertHasNoCachingHeader();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertHasNoCachingHeader();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertHasNoCachingHeader();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertHasNoCachingHeader();
     }
 
     @Test
     public void testLogout() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
-        Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/logout"));
+        Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
         resp.assertSuccess();
         resp.assertRedirectedTo("/logout-success");
 
@@ -91,9 +91,9 @@ public class ControllerTest {
     public void testRedis() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(redisInst);
 
-        Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/private_repo"));
+        Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/private_repo"));
         resp.assertSuccess();
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/logout"));
+        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
         resp.assertSuccess();
         resp.assertRedirectedTo("/logout-success");
     }
@@ -107,7 +107,7 @@ public class ControllerTest {
         List<String> repositories = List.of("cache_txt_repo", "public_repo", "cache_txt_and_csv_repo", "mime_types");
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/"));
+        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/"));
         body = resp.body();
         repositories = List.of(
                 "public_repo", "cache_txt_and_csv_repo", "cache_txt_repo", "mime_types",
@@ -117,7 +117,7 @@ public class ControllerTest {
         );
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
-        resp = apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest("/"));
+        resp = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest("/"));
         body = resp.body();
         repositories = List.of(
                 "private_repo", "public_repo", "cache_txt_and_csv_repo", "cache_txt_repo", "mime_types",

@@ -57,28 +57,28 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/public_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
     public void testAccessToPrivateRepository() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/private_repo";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -86,27 +86,27 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
     public void testAccessToRepositoryRestrictedToMultipleUsers() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_to_users_repo";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -114,27 +114,27 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_to_group_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakRoles() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_to_groups_repo";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -142,27 +142,27 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(groupsInst);
         String repository = "/restricted_to_group_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakGroups() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(groupsInst);
         String repository = "/restricted_to_groups_repo";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -170,13 +170,13 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_simple_expression_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -184,13 +184,13 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/restricted_expression_using_and_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
@@ -198,13 +198,13 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/this-does-not-exist";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(file)).assertNotFound();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
@@ -217,9 +217,9 @@ public class RepositoryHostingHandlerTest {
         for (String path : paths) {
             apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertNotFound();
 
-            apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(path)).assertNotFound();
+            apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path)).assertNotFound();
 
-            apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(path)).assertNotFound();
+            apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path)).assertNotFound();
         }
     }
 
@@ -229,12 +229,12 @@ public class RepositoryHostingHandlerTest {
         String repository = "/public_repo/public_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
     }
 
     @Test
@@ -242,13 +242,13 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String privateRepo = "/public_repo/private_repo";
         String file = "/file.txt";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(privateRepo)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
 
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(privateRepo + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo + file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(privateRepo + file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo + file)).assertSuccess();
 
     }
 
@@ -258,12 +258,12 @@ public class RepositoryHostingHandlerTest {
         String restrictedRepo = "/public_repo/restricted_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedRepo)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(restrictedRepo)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(restrictedRepo)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedRepo)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(restrictedRepo)).assertNotFound();
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedRepo + file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(restrictedRepo + file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(restrictedRepo + file)).assertNotFound();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedRepo + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(restrictedRepo + file)).assertNotFound();
 
     }
 
@@ -272,13 +272,13 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String restrictedToMultipleUsers = "/public_repo/restricted_to_users_repo";
         String file = "/file.txt";
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
 
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertUnauthorizedRedirectToLogIn();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertSuccess();
     }
 
     @Test
@@ -303,7 +303,7 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/cache_txt_repo";
 
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository))
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository))
                 .assertHasNoCachingHeader();
 
         String text = repository + "/file.txt";
@@ -332,7 +332,7 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
         String repository = "/cache_txt_and_csv_repo";
 
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository))
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository))
                 .assertHasNoCachingHeader();
 
         String text = repository + "/file.txt";
@@ -360,7 +360,7 @@ public class RepositoryHostingHandlerTest {
     void testDefaultCache() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
-        Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest("/public_repo/default_cached_file.html"));
+        Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/public_repo/default_cached_file.html"));
         resp.assertMissingNoCachingHeader();
         resp.assertMaxAgeInSeconds(3960);
     }
@@ -370,7 +370,7 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
 
         String attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
-        Response resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
         resp.assertBadRequest();
 
         attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
@@ -378,7 +378,7 @@ public class RepositoryHostingHandlerTest {
         resp.assertBadRequest();
 
         attack_path = "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd";
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
         resp.assertBadRequest();
 
         attack_path = "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd";
@@ -386,7 +386,7 @@ public class RepositoryHostingHandlerTest {
         resp.assertBadRequest();
 
         attack_path = "/%2e%2e/%2e%2e/etc/passwd";
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
         resp.assertNotFound();
 
         attack_path = "/%2e%2e/%2e%2e/etc/passwd";
@@ -394,7 +394,7 @@ public class RepositoryHostingHandlerTest {
         resp.assertUnauthorizedRedirectToLogIn();
 
         attack_path = "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd";
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
         resp.assertNotFound();
 
         attack_path = "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd";
@@ -402,7 +402,7 @@ public class RepositoryHostingHandlerTest {
         resp.assertUnauthorizedRedirectToLogIn();
 
         attack_path = "/..%2f..%2fetc/passwd";
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
         resp.assertBadRequest();
 
         attack_path = "/..%2f..%2fetc/passwd";
@@ -410,7 +410,7 @@ public class RepositoryHostingHandlerTest {
         resp.assertBadRequest();
 
         attack_path = "/public_repo/..%2f..%2f..%2f/etc/passwd";
-        resp = apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(attack_path));
+        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
         resp.assertBadRequest();
 
         attack_path = "/public_repo/..%2f..%2f..%2f/etc/passwd";
@@ -424,12 +424,12 @@ public class RepositoryHostingHandlerTest {
         String repository = "/public_repo/public_in_public_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
     }
 
     @Test
@@ -438,17 +438,17 @@ public class RepositoryHostingHandlerTest {
         String repository = "/on_error_expression";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
 
         file = "/public_repo/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
-        apiTestHelper.callWithAuth(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
-        apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
     }
 
     @Test

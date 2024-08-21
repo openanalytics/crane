@@ -18,7 +18,7 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.rdepot.crane.test.helpers;
+package eu.openanalytics.rdepot.crane.test.helpers.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import okhttp3.*;
@@ -27,7 +27,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.Duration;
 
-public class KeycloakAuthInterceptor implements Interceptor {
+public class KeycloakAuthTokenInterceptor implements Interceptor {
 
     public static OkHttpClient client = new OkHttpClient.Builder()
             .followRedirects(false)
@@ -35,9 +35,9 @@ public class KeycloakAuthInterceptor implements Interceptor {
             .readTimeout(Duration.ofSeconds(120))
             .build();
     private final String credentials;
-    public KeycloakAuthInterceptor(String user, String password) {
+    public KeycloakAuthTokenInterceptor(String user, String password) {
         try {
-            Response response = new Response(
+            eu.openanalytics.rdepot.crane.test.helpers.Response response = new eu.openanalytics.rdepot.crane.test.helpers.Response(
                     client.newCall(
                             new Request.Builder().post(
                                             RequestBody.create(

@@ -20,17 +20,24 @@
  */
 package eu.openanalytics.rdepot.crane.test.helpers;
 
+import eu.openanalytics.rdepot.crane.test.helpers.auth.KeycloakAuthOidcInterceptor;
+import eu.openanalytics.rdepot.crane.test.helpers.auth.KeycloakAuthTokenInterceptor;
+import okhttp3.CookieJar;
+import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 import java.io.IOException;
+import java.net.CookieManager;
 import java.time.Duration;
 
 public class ApiTestHelper {
 
     private final String baseUrl;
-    private final OkHttpClient clientDemo;
-    private final OkHttpClient clientTest;
+    private final OkHttpClient clientTokenDemo;
+    private final OkHttpClient clientTokenTest;
+    private final OkHttpClient clientOidcDemo;
+    private final OkHttpClient clientOidcTest;
     private final OkHttpClient clientWithoutAuth;
 
     private ApiTestHelper(String baseUrl) {
@@ -42,13 +49,27 @@ public class ApiTestHelper {
                 .callTimeout(Duration.ofSeconds(120))
                 .readTimeout(Duration.ofSeconds(120))
                 .build();
-        clientDemo = new OkHttpClient.Builder()
-                .addInterceptor(new KeycloakAuthInterceptor("demo", "demo"))
+        clientTokenDemo = new OkHttpClient.Builder()
+                .addInterceptor(new KeycloakAuthTokenInterceptor("demo", "demo"))
                 .callTimeout(Duration.ofSeconds(120))
                 .readTimeout(Duration.ofSeconds(120))
                 .build();
-        clientTest = new OkHttpClient.Builder()
-                .addInterceptor(new KeycloakAuthInterceptor("test", "test"))
+        clientTokenTest = new OkHttpClient.Builder()
+                .addInterceptor(new KeycloakAuthTokenInterceptor("test", "test"))
+                .callTimeout(Duration.ofSeconds(120))
+                .readTimeout(Duration.ofSeconds(120))
+                .build();
+        CookieJar demoCookieJar = new JavaNetCookieJar(new CookieManager());
+        clientOidcDemo = new OkHttpClient.Builder()
+                .cookieJar(demoCookieJar)
+                .addInterceptor(new KeycloakAuthOidcInterceptor("demo", "demo"))
+                .callTimeout(Duration.ofSeconds(120))
+                .readTimeout(Duration.ofSeconds(120))
+                .build();
+        CookieJar testCookieJar = new JavaNetCookieJar(new CookieManager());
+        clientOidcTest = new OkHttpClient.Builder()
+                .cookieJar(testCookieJar)
+                .addInterceptor(new KeycloakAuthOidcInterceptor("test", "test"))
                 .callTimeout(Duration.ofSeconds(120))
                 .readTimeout(Duration.ofSeconds(120))
                 .build();
@@ -64,26 +85,42 @@ public class ApiTestHelper {
 
     public Request.Builder createHtmlRequest(String path) {
         return new Request.Builder()
-                .url(baseUrl + path).addHeader("Accept", "text/html").addHeader("remote-address", "11.11.11.11");
+                .url(baseUrl + path).addHeader("Accept", "text/html");
     }
 
-    public eu.openanalytics.rdepot.crane.test.helpers.Response callWithAuth(Request.Builder request) {
+    public Response callWithTokenAuthDemoUser(Request.Builder request) {
         try {
-            return new eu.openanalytics.rdepot.crane.test.helpers.Response(clientDemo.newCall(request.build()).execute());
+            return new Response(clientTokenDemo.newCall(request.build()).execute());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public eu.openanalytics.rdepot.crane.test.helpers.Response callWithAuthTestUser(Request.Builder request) {
+    public Response callWithTokenAuthTestUser(Request.Builder request) {
         try {
-            return new eu.openanalytics.rdepot.crane.test.helpers.Response(clientTest.newCall(request.build()).execute());
+            return new Response(clientTokenTest.newCall(request.build()).execute());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public eu.openanalytics.rdepot.crane.test.helpers.Response callWithoutAuth(Request.Builder request) {
+    public Response callWithOidcAuthDemoUser(Request.Builder request) {
+        try {
+            return new Response(clientOidcDemo.newCall(request.build()).execute());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Response callWithOidcAuthTestUser(Request.Builder request) {
+        try {
+            return new Response(clientOidcTest.newCall(request.build()).execute());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Response callWithoutAuth(Request.Builder request) {
         try {
             return new Response(clientWithoutAuth.newCall(request.build()).execute());
         } catch (IOException e) {
