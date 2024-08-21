@@ -138,6 +138,16 @@ public class PosixAccessControlServiceTest {
         body = resp.body();
         repositories.addAll(Set.of("only_owner_demo", "only_group_scientists"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
+
+        resp = apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(path));
+        body = resp.body();
+        repositories = new HashSet<>(Set.of("repository_with_paths", "only_group_mathematicians_gid", "file.txt"));
+        Assertions.assertTrue(repositories.stream().allMatch(body::contains));
+
+        resp = apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(path));
+        body = resp.body();
+        repositories.addAll(Set.of("only_owner_demo", "only_group_scientists"));
+        Assertions.assertTrue(repositories.stream().allMatch(body::contains));
     }
 
     @Test
@@ -152,7 +162,16 @@ public class PosixAccessControlServiceTest {
         Set<String> repositories = Set.of("file.txt");
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
-        resp = apiTestHelper.callWithAuthTestUser(apiTestHelper.createHtmlRequest(path));
+        resp = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
+        body = resp.body();
+        Assertions.assertTrue(repositories.stream().allMatch(body::contains));
+
+        resp = apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(path));
+        body = resp.body();
+        repositories = Set.of("file.txt");
+        Assertions.assertTrue(repositories.stream().allMatch(body::contains));
+
+        resp = apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(path));
         body = resp.body();
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
     }
@@ -164,12 +183,16 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -179,11 +202,15 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -193,11 +220,15 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
@@ -207,11 +238,15 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
@@ -221,11 +256,15 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -235,11 +274,15 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
@@ -249,11 +292,15 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
     @Test
@@ -263,11 +310,15 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
@@ -277,11 +328,15 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
     @Test
@@ -291,10 +346,14 @@ public class PosixAccessControlServiceTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 }
