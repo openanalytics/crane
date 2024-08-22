@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.rdepot.crane.test.helpers;
 
+import eu.openanalytics.rdepot.crane.test.helpers.Response;
 import eu.openanalytics.rdepot.crane.test.helpers.auth.KeycloakAuthOidcInterceptor;
 import eu.openanalytics.rdepot.crane.test.helpers.auth.KeycloakAuthTokenInterceptor;
 import okhttp3.CookieJar;
