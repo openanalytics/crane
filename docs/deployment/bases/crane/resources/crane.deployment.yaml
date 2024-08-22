@@ -7,12 +7,16 @@ spec:
     matchLabels:
       app: crane
   replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   template:
     metadata:
       labels:
         app: crane
     spec:
       serviceAccountName: crane-sa
+      terminationGracePeriodSeconds: 80
       containers:
         - name: crane
           ports:
@@ -29,6 +33,44 @@ spec:
           envFrom:
             - secretRef:
                 name: crane-client-creds
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/readiness
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 1
+            successThreshold: 1
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 1
+            successThreshold: 1
+            timeoutSeconds: 3
+          startupProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9090
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: [ "sh", "-c", "sleep 10" ]
       volumes:
         - name: crane-config
           configMap:
