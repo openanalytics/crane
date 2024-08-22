@@ -32,7 +32,7 @@ public class TemplateConfig {
         FileTemplateResolver resolver = new FileTemplateResolver();
         resolver.setPrefix(craneConfig.getTemplatePath());
         resolver.setSuffix(".html");
-        resolver.setTemplateMode("HTML5");
+        resolver.setTemplateMode("HTML");
         resolver.setCacheable(false);
         resolver.setCheckExistence(true);
         resolver.setOrder(1);
