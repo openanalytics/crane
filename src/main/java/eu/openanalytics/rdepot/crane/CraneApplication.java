@@ -61,6 +61,9 @@ public class CraneApplication {
         // hide "Started CraneApplication in ..." since we already log the version number
         properties.put("spring.main.log-startup-info", "false");
 
+        // https://docs.spring.io/spring-boot/reference/web/graceful-shutdown.html
+        properties.put("server.shutdown", "graceful");
+        properties.put("spring.lifecycle.timeout-per-shutdown-phase", "60s");
         // ====================
 
         return properties;
