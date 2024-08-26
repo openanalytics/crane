@@ -32,8 +32,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class ControllerTest {
@@ -47,7 +47,7 @@ public class ControllerTest {
         keycloakInstance.start();
         inst = new CraneInstance("application-test-api.yml");
         s3Inst = new CraneInstance("application-test-api-with-s3.yml", 7275);
-        redisInst = new CraneInstance("application-test-api.yml", 7071, new HashMap<>(), true);
+        redisInst = new CraneInstance("application-test-api.yml", 7071, Map.of("spring.session.store-type", "redis"), true);
     }
 
     static Stream<Arguments> instances() {
