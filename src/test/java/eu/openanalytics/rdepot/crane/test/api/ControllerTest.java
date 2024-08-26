@@ -29,38 +29,44 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.services.sts.StsClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class ControllerTest {
+    private static final Logger logger = LoggerFactory.getLogger(ControllerTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static CraneInstance inst;
     private static CraneInstance s3Inst;
     private static CraneInstance redisInst;
+    static List<CraneInstance> instances = new ArrayList<>();
 
     @BeforeAll
     public static void beforeAll() {
         keycloakInstance.start();
-        inst = new CraneInstance("application-test-api.yml");
-        s3Inst = new CraneInstance("application-test-api-with-s3.yml", 7275);
+        instances.add(new CraneInstance("application-test-api.yml"));
+        try (StsClient client = StsClient.create()) {
+            client.getCallerIdentity();
+            instances.add(new CraneInstance("application-test-api-with-s3.yml", 7275));
+        } catch (SdkClientException ex) {
+            logger.warn("No AWS credentials - skipping s3 tests");
+        }
         redisInst = new CraneInstance("application-test-api.yml", 7071, Map.of("spring.session.store-type", "redis"), true);
     }
 
-    static Stream<Arguments> instances() {
-        return Stream.of(
-                Arguments.of(inst),
-                Arguments.of(s3Inst)
-        );
+    static List<CraneInstance> instances() {
+        return instances;
     }
 
     @AfterAll
     public static void afterAll() {
-        inst.close();
-        s3Inst.close();
+        instances.forEach(CraneInstance::close);
         redisInst.close();
     }
 

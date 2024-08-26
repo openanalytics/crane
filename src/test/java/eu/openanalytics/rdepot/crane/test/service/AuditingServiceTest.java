@@ -25,38 +25,42 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.openanalytics.rdepot.crane.security.auditing.FileAuditEventRepository;
+import eu.openanalytics.rdepot.crane.test.api.RepositoryHostingHandlerTest;
 import eu.openanalytics.rdepot.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.rdepot.crane.test.helpers.CraneInstance;
 import eu.openanalytics.rdepot.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.services.sts.StsClient;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 @Testcontainers
 public class AuditingServiceTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final String ANONYMOUS_USER = "anonymousUser";
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
-    private static CraneInstance inst;
-    private static CraneInstance s3Inst;
+    private static final Logger logger = LoggerFactory.getLogger(RepositoryHostingHandlerTest.class);
     private static BufferedReader bufferedReader;
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
+    static List<CraneInstance> instances = new ArrayList<>();
 
     @BeforeAll
     public static void beforeAll() {
@@ -69,21 +73,22 @@ public class AuditingServiceTest {
         keycloakInstance.start();
         Map<String, String> properties = new HashMap<>();
         properties.put("app.audit-logging", auditLogsFile.getAbsolutePath());
-        inst = new CraneInstance("application-test-api.yml", properties);
-        s3Inst = new CraneInstance("application-test-api-with-s3.yml", 7275, properties, true);
+        instances.add(new CraneInstance("application-test-api.yml", properties));
+        try (StsClient client = StsClient.create()) {
+            client.getCallerIdentity();
+            instances.add(new CraneInstance("application-test-api-with-s3.yml", 7275, properties, true));
+        } catch (SdkClientException ex) {
+            logger.warn("No AWS credentials - skipping s3 tests");
+        }
     }
 
-    static Stream<Arguments> instances() {
-        return Stream.of(
-                Arguments.of(inst),
-                Arguments.of(s3Inst)
-        );
+    static List<CraneInstance> instances() {
+        return instances;
     }
 
     @AfterAll
     public static void afterAll() {
-        inst.close();
-        s3Inst.close();
+        instances.forEach(CraneInstance::close);
     }
 
     private static void clearAuditLoggingFile() {
