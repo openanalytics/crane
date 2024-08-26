@@ -28,45 +28,62 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class ControllerTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static CraneInstance inst;
+    private static CraneInstance s3Inst;
     private static CraneInstance redisInst;
 
     @BeforeAll
     public static void beforeAll() {
         keycloakInstance.start();
         inst = new CraneInstance("application-test-api.yml");
+        s3Inst = new CraneInstance("application-test-api-with-s3.yml", 7275);
         redisInst = new CraneInstance("application-test-api.yml", 7071, new HashMap<>(), true);
+    }
+
+    static Stream<Arguments> instances() {
+        return Stream.of(
+                Arguments.of(inst),
+                Arguments.of(s3Inst)
+        );
     }
 
     @AfterAll
     public static void afterAll() {
         inst.close();
+        s3Inst.close();
         redisInst.close();
     }
 
-    @Test
-    public void testWithoutAuth() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testWithoutAuth(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
     }
 
-    @Test
-    public void testWithAuth() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testWithAuth(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
     }
 
-    @Test
-    public void testCacheHeaders() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testCacheHeaders(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/private_repo";
         String file = repository + "/file.txt";
 
@@ -74,9 +91,10 @@ public class ControllerTest {
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertHasNoCachingHeader();
     }
 
-    @Test
-    public void testLogout() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testLogout(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
         resp.assertSuccess();
         resp.assertRedirectedTo("/logout-success");
@@ -98,9 +116,10 @@ public class ControllerTest {
         resp.assertRedirectedTo("/logout-success");
     }
 
-    @Test
-    public void indexPage() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void indexPage(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/"));
         String body = resp.body();
