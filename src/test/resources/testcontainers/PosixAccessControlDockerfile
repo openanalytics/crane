@@ -5,7 +5,7 @@ FROM public.ecr.aws/docker/library/debian:buster as builder
 
 # can be snapshots or releases
 ARG NEXUS_REPOSITORY=releases
-ARG JAR_LOCATION=https://nexus.openanalytics.eu/service/rest/v1/search/assets/download?sort=version&repository=$NEXUS_REPOSITORY&maven.groupId=eu.openanalytics.rdepot&maven.artifactId=crane&maven.extension=jar
+ARG JAR_LOCATION=https://nexus.openanalytics.eu/service/rest/v1/search/assets/download?sort=version&repository=$NEXUS_REPOSITORY&maven.groupId=eu.openanalytics&maven.artifactId=crane&maven.extension=jar
 
 RUN mkdir /opt/crane
 ADD $JAR_LOCATION /opt/crane/crane.jar
