@@ -32,6 +32,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.BufferedReader;
@@ -40,6 +43,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Testcontainers
 public class AuditingServiceTest {
@@ -47,6 +51,7 @@ public class AuditingServiceTest {
     private static final String ANONYMOUS_USER = "anonymousUser";
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
     private static CraneInstance inst;
+    private static CraneInstance s3Inst;
     private static BufferedReader bufferedReader;
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -65,15 +70,23 @@ public class AuditingServiceTest {
         Map<String, String> properties = new HashMap<>();
         properties.put("app.audit-logging", auditLogsFile.getAbsolutePath());
         inst = new CraneInstance("application-test-api.yml", properties);
+        s3Inst = new CraneInstance("application-test-api-with-s3.yml", 7275, properties, true);
+    }
+
+    static Stream<Arguments> instances() {
+        return Stream.of(
+                Arguments.of(inst),
+                Arguments.of(s3Inst)
+        );
     }
 
     @AfterAll
     public static void afterAll() {
         inst.close();
+        s3Inst.close();
     }
 
     private static void clearAuditLoggingFile() {
-
         if (auditLogsFile.exists() && !auditLogsFile.delete()) {
             throw new RuntimeException("Could not delete auditing file!");
         }
@@ -86,9 +99,10 @@ public class AuditingServiceTest {
         }
     }
 
-    @Test
-    public void testAuditingEventIndexPage() throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAuditingEventIndexPage(CraneInstance instance) throws IOException, InterruptedException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/"));
         checkUnauthenticatedAuditLog("/", "LIST_REPOSITORIES");
@@ -111,9 +125,10 @@ public class AuditingServiceTest {
         return objectMapper.readValue(line, FileAuditEventRepository.AuditEventData.class);
     }
 
-    @Test
-    public void testAuditingUnauthorizedEventPage() throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAuditingUnauthorizedEventPage(CraneInstance instance) throws IOException, InterruptedException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/private_repo"));
         checkUnauthenticatedAuditLog("/private_repo", "AUTHORIZATION_FAILURE");
@@ -125,9 +140,10 @@ public class AuditingServiceTest {
         );
     }
 
-    @Test
-    public void testAuditingLogoutEventPage() throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAuditingLogoutEventPage(CraneInstance instance) throws IOException, InterruptedException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/logout"));
         checkUnauthenticatedAuditLog("/logout", "LOGOUT");
@@ -144,9 +160,10 @@ public class AuditingServiceTest {
         );
     }
 
-    @Test
-    public void testAuditingErrorHandlerEventPage() throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAuditingErrorHandlerEventPage(CraneInstance instance) throws IOException, InterruptedException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/undefined_repository"));
         checkTwoAuditLogs(
