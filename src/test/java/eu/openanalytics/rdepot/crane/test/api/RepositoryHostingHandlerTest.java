@@ -27,34 +27,48 @@ import eu.openanalytics.rdepot.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Testcontainers
 public class RepositoryHostingHandlerTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static CraneInstance inst;
+    private static CraneInstance s3Inst;
     private static CraneInstance groupsInst;
 
     @BeforeAll
     public static void beforeAll() {
         keycloakInstance.start();
         inst = new CraneInstance("application-test-api.yml");
-        groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7273, new HashMap<>(), true);
+        s3Inst = new CraneInstance("application-test-api-with-s3.yml", 7275);
+        groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7273);
+    }
+
+    static Stream<Arguments> instances() {
+        return Stream.of(
+                Arguments.of(inst),
+                Arguments.of(s3Inst)
+        );
     }
 
     @AfterAll
     public static void afterAll() {
         inst.close();
+        s3Inst.close();
         groupsInst.close();
     }
 
-    @Test
-    public void testAccessToPublicRepository() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToPublicRepository(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/public_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -67,9 +81,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
-    @Test
-    public void testAccessToPrivateRepository() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToPrivateRepository(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/private_repo";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
@@ -81,9 +96,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
-    @Test
-    public void testAccessToPrivateRepositoryWithRestrictedAccess() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToPrivateRepositoryWithRestrictedAccess(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/restricted_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -95,9 +111,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
-    @Test
-    public void testAccessToRepositoryRestrictedToMultipleUsers() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToRepositoryRestrictedToMultipleUsers(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/restricted_to_users_repo";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
@@ -109,9 +126,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
-    @Test
-    public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupKeycloakRoles() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupKeycloakRoles(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/restricted_to_group_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -123,9 +141,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
-    @Test
-    public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakRoles() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakRoles(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/restricted_to_groups_repo";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
@@ -165,9 +184,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
-    @Test
-    public void testAccessToSimpleExpressionRepository() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToSimpleExpressionRepository(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/restricted_simple_expression_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -179,9 +199,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
     }
 
-    @Test
-    public void testAccessToExpressionUsingAndRepository() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToExpressionUsingAndRepository(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/restricted_expression_using_and_repo";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -193,9 +214,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
-    @Test
-    public void testAccessToNonExistentRepository() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToNonExistentRepository(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/this-does-not-exist";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
@@ -207,9 +229,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
     }
 
-    @Test
-    public void testAccessToNonExistentFileOrRepositoryInRepositories() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToNonExistentFileOrRepositoryInRepositories(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String file = "/public_repo/undefined.file";
         String repository = "/public_repo/undefined/";
         String nestedRepository = "/public_repo/undefined/test";
@@ -223,9 +246,10 @@ public class RepositoryHostingHandlerTest {
         }
     }
 
-    @Test
-    public void testAccessToNestedPublicRepositories() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToNestedPublicRepositories(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/public_repo/public_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -237,9 +261,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
     }
 
-    @Test
-    public void testAccessToNestedPrivateRepositories() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToNestedPrivateRepositories(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String privateRepo = "/public_repo/private_repo";
         String file = "/file.txt";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
@@ -252,9 +277,10 @@ public class RepositoryHostingHandlerTest {
 
     }
 
-    @Test
-    public void testAccessToNestedRestrictedRepositories() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToNestedRestrictedRepositories(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String restrictedRepo = "/public_repo/restricted_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedRepo)).assertUnauthorizedRedirectToLogIn();
@@ -267,9 +293,10 @@ public class RepositoryHostingHandlerTest {
 
     }
 
-    @Test
-    public void testAccessToNestedMultiUserRestrictedRepositories() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testAccessToNestedMultiUserRestrictedRepositories(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String restrictedToMultipleUsers = "/public_repo/restricted_to_users_repo";
         String file = "/file.txt";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
@@ -281,9 +308,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertSuccess();
     }
 
-    @Test
-    public void testMimeTypes() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testMimeTypes(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/mime_types";
         String text = repository + "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(text)).assertPlainSuccess();
@@ -298,9 +326,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(json)).assertJsonSuccess();
     }
 
-    @Test
-    public void testSingleCacheRule() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testSingleCacheRule(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/cache_txt_repo";
 
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository))
@@ -327,9 +356,10 @@ public class RepositoryHostingHandlerTest {
         resp.assertMaxAgeInSeconds(0);
     }
 
-    @Test
-    public void testMultipleCacheRules() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testMultipleCacheRules(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/cache_txt_and_csv_repo";
 
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository))
@@ -356,18 +386,20 @@ public class RepositoryHostingHandlerTest {
         resp.assertMaxAgeInSeconds(0);
     }
 
-    @Test
-    void testDefaultCache() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    void testDefaultCache(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
         Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/public_repo/default_cached_file.html"));
         resp.assertMissingNoCachingHeader();
         resp.assertMaxAgeInSeconds(3960);
     }
 
-    @Test
-    void testPathTraversalAttack() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    void testPathTraversalAttack(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
         String attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
         Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
@@ -418,9 +450,10 @@ public class RepositoryHostingHandlerTest {
         resp.assertBadRequest();
     }
 
-    @Test
-    public void testPublicInPublicRepository() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testPublicInPublicRepository(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/public_repo/public_in_public_repo";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -432,9 +465,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
     }
 
-    @Test
-    public void testOnErrorExpressionOption() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testOnErrorExpressionOption(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/on_error_expression";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -451,9 +485,10 @@ public class RepositoryHostingHandlerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
     }
 
-    @Test
-    public void testOnErrorExpressionOptionReturnFalse() {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(inst);
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testOnErrorExpressionOptionReturnFalse(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/on_error_expression_return_false";
         String file = "/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();

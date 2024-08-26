@@ -1,0 +1,52 @@
+app:
+  default-cache:
+    - pattern: "/**/default_cached_file.html"
+      max-age: "PT66M"
+  storage-location: s3://oa-test-crane-bucket/repository/
+  openid-groups-claim: realm_roles
+  repositories:
+    - name: public_repo
+      public: true
+      paths:
+        - name: public_in_public_repo
+          public: true
+        - name: private_repo
+        - name: restricted_repo
+          access-users: demo
+        - name: restricted_to_users_repo
+          access-users: [ demo, test ]
+    - name: private_repo
+    - name: restricted_repo
+      access-users: demo
+    - name: restricted_to_users_repo
+      access-users: [ demo, test ]
+    - name: restricted_to_group_repo
+      access-groups: scientists
+    - name: restricted_to_groups_repo
+      access-groups:
+        - scientists
+        - mathematicians
+    - name: restricted_simple_expression_repo
+      access-expression: "#{groups.contains('MATHEMATICIANS')}"
+    - name: restricted_expression_using_and_repo
+      access-expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
+    - name: mime_types
+      public: true
+    - name: cache_txt_repo
+      public: true
+      cache:
+        - pattern: "/**/*.txt"
+          max-age: "P1D"
+    - name: cache_txt_and_csv_repo
+      public: true
+      cache:
+        - pattern: "/**/*.txt"
+          max-age: "PT1M"
+        - pattern: "/**/*.csv"
+          max-age: "PT50S"
+    - name: on_error_expression
+      public: true
+      on-error-expression: "#{response.status == 404 ? eval(true, request.getAttributeNames(), request.setAttribute('test-attribute', 'test-value'), response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 3)[2])) : false}"
+    - name: on_error_expression_return_false
+      public: true
+      on-error-expression: "#{response.status != 404 ? eval(true, response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 3)[2])) : false}"

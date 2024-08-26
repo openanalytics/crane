@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class CraneInstance implements AutoCloseable {
+public class CraneInstance {
 
     public final CraneClient client;
     @Container
@@ -47,9 +47,14 @@ public class CraneInstance implements AutoCloseable {
     private final Thread thread;
     private final boolean isRunningRedis;
     private ConfigurableApplicationContext app;
+    private final String configName;
 
     public CraneInstance(String configFileName) {
         this(configFileName, 7271, new HashMap<>(), true);
+    }
+
+    public CraneInstance(String configFileName, int port) {
+        this(configFileName, port, new HashMap<>(), true);
     }
 
     public CraneInstance(String configFileName, boolean setupKeycloak) {
@@ -61,6 +66,7 @@ public class CraneInstance implements AutoCloseable {
     }
 
     public CraneInstance(String configFileName, int port, Map<String, String> properties, boolean setupKeycloak) {
+        this.configName = configFileName;
         try {
             this.port = port;
             int mgmtPort = port % 1000 + 9000;
@@ -164,7 +170,7 @@ public class CraneInstance implements AutoCloseable {
         }
     }
 
-    @Override
+//    @Override
     public void close() {
         app.stop();
         app.close();
@@ -174,5 +180,10 @@ public class CraneInstance implements AutoCloseable {
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.configName;
     }
 }
