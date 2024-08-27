@@ -189,6 +189,11 @@
             <version>1.19.8</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.16.0</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

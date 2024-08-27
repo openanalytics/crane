@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,6 +28,10 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 @EnableAsync
@@ -34,10 +39,16 @@ import java.util.Properties;
 @SpringBootApplication(exclude = {RedisAutoConfiguration.class, AuditAutoConfiguration.class})
 public class CraneApplication {
 
+    private static final Path TERMINATION_LOG_FILE = Path.of("/dev/termination-log");
+
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(CraneApplication.class);
         app.setDefaultProperties(getDefaultProperties());
-        app.run(args);
+        try {
+            app.run(args);
+        } catch (Throwable t) {
+            handleError(t);
+        }
     }
 
     public static Properties getDefaultProperties() {
@@ -67,6 +78,31 @@ public class CraneApplication {
         // ====================
 
         return properties;
+    }
+
+    private static void handleError(Throwable t) {
+        Throwable cause = ExceptionUtils.getRootCause(t);
+        if (cause == null) {
+            cause = t;
+        }
+        String message = "Crane crashed! Exception: '" + cause.getClass().getName() + "', message: '" + cause.getMessage() + "'";
+        if (Files.exists(TERMINATION_LOG_FILE) && Files.isRegularFile(TERMINATION_LOG_FILE)) {
+            try {
+                FileWriter fileWriter = new FileWriter(TERMINATION_LOG_FILE.toString());
+                PrintWriter printWriter = new PrintWriter(fileWriter);
+
+                printWriter.print(message);
+                printWriter.close();
+            } catch (Throwable ioException) {
+                System.out.println("Error while writing termination log");
+                ioException.printStackTrace();
+            }
+        }
+        System.out.println();
+        System.out.println(message);
+        System.out.println();
+
+        System.exit(1);
     }
 
 }
