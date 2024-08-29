@@ -74,12 +74,7 @@ public class AuditingServiceTest {
         Map<String, String> properties = new HashMap<>();
         properties.put("app.audit-logging", auditLogsFile.getAbsolutePath());
         instances.add(new CraneInstance("application-test-api.yml", properties));
-        try (StsClient client = StsClient.create()) {
-            client.getCallerIdentity();
-            instances.add(new CraneInstance("application-test-api-with-s3.yml", 7275, properties, true));
-        } catch (SdkClientException ex) {
-            logger.warn("No AWS credentials - skipping s3 tests");
-        }
+        CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
     }
 
     static List<CraneInstance> instances() {

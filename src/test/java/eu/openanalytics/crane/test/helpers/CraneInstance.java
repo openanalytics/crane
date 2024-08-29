@@ -31,6 +31,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.services.sts.StsClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,6 +133,17 @@ public class CraneInstance {
             closeRedis();
             throw new TestHelperException("Error during startup of Crane", t);
         }
+    }
+
+    public static void addInstanceWithAwsAccess(List<CraneInstance> instances, String configName, int port, Logger logger) {
+        String awsProfile = System.getenv("AWS_PROFILE");
+        if (awsProfile != null && awsProfile.equals("oa-poc")) {
+            try (StsClient stsClient = StsClient.create()) {
+                stsClient.getCallerIdentity();
+                instances.add(new CraneInstance(configName, port));
+            }
+        }
+        logger.warn("No AWS credentials - skipping s3 tests");
     }
 
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {

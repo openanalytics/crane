@@ -51,12 +51,7 @@ public class ControllerTest {
     public static void beforeAll() {
         keycloakInstance.start();
         instances.add(new CraneInstance("application-test-api.yml"));
-        try (StsClient client = StsClient.create()) {
-            client.getCallerIdentity();
-            instances.add(new CraneInstance("application-test-api-with-s3.yml", 7275));
-        } catch (SdkClientException ex) {
-            logger.warn("No AWS credentials - skipping s3 tests");
-        }
+        CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
         redisInst = new CraneInstance("application-test-api.yml", 7071, Map.of("spring.session.store-type", "redis"), true);
     }
 

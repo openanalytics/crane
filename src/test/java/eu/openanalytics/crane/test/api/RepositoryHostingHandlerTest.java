@@ -20,10 +20,7 @@
  */
 package eu.openanalytics.crane.test.api;
 
-import eu.openanalytics.crane.test.helpers.ApiTestHelper;
-import eu.openanalytics.crane.test.helpers.CraneInstance;
-import eu.openanalytics.crane.test.helpers.KeycloakInstance;
-import eu.openanalytics.crane.test.helpers.Response;
+import eu.openanalytics.crane.test.helpers.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,8 +29,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.services.sts.StsClient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,12 +45,7 @@ public class RepositoryHostingHandlerTest {
     public static void beforeAll() {
         keycloakInstance.start();
         instances.add(new CraneInstance("application-test-api.yml"));
-        try (StsClient client = StsClient.create()) {
-            client.getCallerIdentity();
-            instances.add(new CraneInstance("application-test-api-with-s3.yml", 7275));
-        } catch (SdkClientException ex) {
-            logger.warn("No AWS credentials - skipping s3 tests");
-        }
+        CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
         groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7273);
     }
 
