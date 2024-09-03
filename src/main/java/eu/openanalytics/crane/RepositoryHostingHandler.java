@@ -90,6 +90,13 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
                     return;
                 }
             }
+
+            if (request.getMethod().equalsIgnoreCase("POST")) {
+                request.setAttribute("path", path);
+                request.getRequestDispatcher("/__upload").forward(request, response);
+                return;
+            }
+
             if (request.getUserPrincipal() == null && !repository.getPublic()) {
                 response.sendRedirect(userService.getLoginPath());
             }

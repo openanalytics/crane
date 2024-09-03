@@ -79,6 +79,7 @@ public class WebSecurity {
                                 "/.well-known/configured-openid-configuration",
                                 "/favicon.ico",
                                 "/__index",
+                                "/__upload",
                                 "/__index/css/**",
                                 "/__index/webjars/**",
                                 "/actuator/health",

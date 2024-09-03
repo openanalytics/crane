@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 @Controller
 public class MainController extends BaseUIController {
 
-
     private final CraneAccessControlService craneAccessControlService;
 
     private final AuditingService auditingService;
