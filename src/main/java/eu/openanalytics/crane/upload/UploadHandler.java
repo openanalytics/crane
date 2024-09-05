@@ -40,11 +40,15 @@ public class UploadHandler {
 
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
 
+        Path path = (Path) request.getAttribute("path");
+        if (Files.exists(path)) {
+            return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(path)));
+        }
+
         try {
-            Path path = (Path) request.getAttribute("path");
             if (path.toString().startsWith("s3://")) {
                 writeFileToS3(upload, request);
-            } else if (path.toString().startsWith("file://")) {
+            } else if (path.toString().startsWith("/")) {
                 writeFileToLocalFileSystem(upload, request);
             } else {
                 throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
