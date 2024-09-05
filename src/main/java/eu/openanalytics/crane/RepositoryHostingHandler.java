@@ -79,6 +79,12 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Path path = getPath(request);
 
+        if (request.getMethod().equalsIgnoreCase("POST")) {
+            request.setAttribute("path", path);
+            request.getRequestDispatcher("/__upload").forward(request, response);
+            return;
+        }
+
         if (!Files.exists(path)) {
             if (path.endsWith(repository.getIndexFileName())) {
                 Path directory = path.getParent();
@@ -91,11 +97,6 @@ public class RepositoryHostingHandler implements HttpRequestHandler {
                 }
             }
 
-            if (request.getMethod().equalsIgnoreCase("POST")) {
-                request.setAttribute("path", path);
-                request.getRequestDispatcher("/__upload").forward(request, response);
-                return;
-            }
 
             if (request.getUserPrincipal() == null && !repository.getPublic()) {
                 response.sendRedirect(userService.getLoginPath());
