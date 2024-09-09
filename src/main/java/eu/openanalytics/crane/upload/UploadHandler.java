@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
+import org.apache.commons.io.FileUtils;
 import org.carlspring.cloud.storage.s3fs.S3Path;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,6 @@ import software.amazon.awssdk.transfer.s3.model.Upload;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
 @Controller
@@ -85,8 +85,7 @@ public class UploadHandler {
         if (fileItemInputIterator.hasNext()) {
             Path path = (Path) request.getAttribute("path");
             while (fileItemInputIterator.hasNext()) {
-                FileItemInput fileItemInput = fileItemInputIterator.next();
-                Files.write(path, fileItemInput.getInputStream().readAllBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+                FileUtils.copyInputStreamToFile(fileItemInputIterator.next().getInputStream(), path.toFile());
             }
         }
     }
