@@ -22,13 +22,12 @@ package eu.openanalytics.crane.test.helpers;
 
 import eu.openanalytics.crane.test.helpers.auth.KeycloakAuthOidcInterceptor;
 import eu.openanalytics.crane.test.helpers.auth.KeycloakAuthTokenInterceptor;
-import okhttp3.CookieJar;
-import okhttp3.JavaNetCookieJar;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import okhttp3.*;
 
 import java.io.IOException;
 import java.net.CookieManager;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 
 public class ApiTestHelper {
@@ -86,6 +85,16 @@ public class ApiTestHelper {
     public Request.Builder createHtmlRequest(String path) {
         return new Request.Builder()
                 .url(baseUrl + path).addHeader("Accept", "text/html");
+    }
+
+    public Request.Builder createMultiPartRequest(String path, Path fileToUpload) throws IOException {
+        MultipartBody body = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file", "file.txt", RequestBody.create(Files.readAllBytes(fileToUpload)))
+                .build();
+        return new Request.Builder()
+                .url(baseUrl + path).addHeader("Accept", "*/*")
+                .post(body);
     }
 
     public Response callWithTokenAuthDemoUser(Request.Builder request) {

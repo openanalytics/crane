@@ -86,6 +86,7 @@ public class CraneInstance {
             allProperties.put("spring.security.oauth2.client.registration.crane.client-id", "crane_client");
             allProperties.put("spring.security.oauth2.client.registration.crane.client-secret", "secret");
             allProperties.put("spring.security.oauth2.client.registration.crane.scope", "openid");
+            allProperties.put("spring.servlet.multipart.enabled", false);
             allProperties.putAll(properties);
             isRunningRedis = allProperties.get("spring.session.store-type").equals("redis");
             if (isRunningRedis) {
