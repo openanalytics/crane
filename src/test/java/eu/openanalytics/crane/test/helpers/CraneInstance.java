@@ -155,6 +155,7 @@ public class CraneInstance {
         String source = "src/test/resources/repository";
         String destination = "/tmp/repository/";
         try {
+            FileUtils.cleanDirectory(new File(destination));
             FileUtils.copyDirectory(new File(source), new File(destination));
         } catch (IOException e) {
             throw new RuntimeException(e);
