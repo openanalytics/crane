@@ -65,9 +65,21 @@ public class UploadHandlerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testAccessToPublicRepository(CraneInstance instance) throws IOException {
+    public void testUploadToPublicRepository(CraneInstance instance) throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String path = "/public_repo/testUpload.txt";
+        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testUploadToNestedPublicRepository(CraneInstance instance) throws IOException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String path = "/public_repo/public_in_public_repo/testUpload.txt";
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
