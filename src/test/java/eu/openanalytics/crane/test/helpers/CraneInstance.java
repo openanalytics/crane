@@ -35,6 +35,8 @@ import software.amazon.awssdk.services.sts.StsClient;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -155,7 +157,9 @@ public class CraneInstance {
         String source = "src/test/resources/repository";
         String destination = "/tmp/repository/";
         try {
-            FileUtils.cleanDirectory(new File(destination));
+            if (Files.isDirectory(Path.of(destination))) {
+                FileUtils.cleanDirectory(new File(destination));
+            }
             FileUtils.copyDirectory(new File(source), new File(destination));
         } catch (IOException e) {
             throw new RuntimeException(e);
