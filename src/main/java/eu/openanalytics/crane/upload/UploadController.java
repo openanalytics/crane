@@ -70,9 +70,9 @@ public class UploadController {
 
         try {
             if (path.toString().startsWith("s3://")) {
-                writeFileToS3(upload, request);
+                writeFileToS3(upload.getItemIterator(request), path);
             } else if (path.toString().startsWith("/")) {
-                writeFileToLocalFileSystem(upload, request);
+                writeFileToLocalFileSystem(upload.getItemIterator(request), path);
             } else {
                 throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
             }
@@ -84,13 +84,11 @@ public class UploadController {
         }
     }
 
-    private void writeFileToLocalFileSystem(JakartaServletFileUpload upload, HttpServletRequest request) throws IOException, IllegalArgumentException {
-        FileItemInputIterator fileItemInputIterator = upload.getItemIterator(request);
+    private void writeFileToLocalFileSystem(FileItemInputIterator fileItemInputIterator, Path path) throws IOException, IllegalArgumentException {
         if (fileItemInputIterator.hasNext()) {
-            Path path = (Path) request.getAttribute("path");
             while (fileItemInputIterator.hasNext()) {
                 FileItemInput fileItemInput = fileItemInputIterator.next();
-                if (fileItemInput.getName().equals("file")) {
+                if (fileItemInput.getFieldName().equals("file")) {
                     FileUtils.copyInputStreamToFile(fileItemInput.getInputStream(), path.toFile());
                 }
             }
@@ -99,13 +97,12 @@ public class UploadController {
         }
     }
 
-    private void writeFileToS3(JakartaServletFileUpload upload, HttpServletRequest request) throws IOException, IllegalArgumentException {
-        FileItemInputIterator fileItemInputIterator = upload.getItemIterator(request);
+    private void writeFileToS3(FileItemInputIterator fileItemInputIterator, Path path) throws IOException, IllegalArgumentException {
         if (fileItemInputIterator.hasNext()) {
             BlockingInputStreamAsyncRequestBody body =
-                    AsyncRequestBody.forBlockingInputStream(null); // 'null' indicates a stream will be provided later.
+                    AsyncRequestBody.forBlockingInputStream(null);
 
-            S3Path s3Path = (S3Path) request.getAttribute("path");
+            S3Path s3Path = (S3Path) path;
             Upload s3UploadRequest = getTransferManager().upload(builder -> builder
                     .requestBody(body)
                     .putObjectRequest(req -> req.bucket(s3Path.getBucketName()).key(s3Path.getKey()))
@@ -113,7 +110,7 @@ public class UploadController {
 
             while (fileItemInputIterator.hasNext()) {
                 FileItemInput fileItemInput = fileItemInputIterator.next();
-                if (!fileItemInput.isFormField() && fileItemInput.getName().equals("file")) {
+                if (!fileItemInput.isFormField() && fileItemInput.getFieldName().equals("file")) {
                     body.writeInputStream(fileItemInput.getInputStream());
                 }
             }
