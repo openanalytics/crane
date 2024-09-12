@@ -34,18 +34,17 @@ import java.util.stream.Collectors;
  * E.g. in /my/path/filename, `my`, `path` and `filename` are all a component represented by this class.
  * In order to represent a filesystem tree with access-control, this class contains sub-components.
  */
-public class PathComponent {
+public class PathComponent extends AccessControl{
 
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
     protected boolean isPublic = false;
     private String name;
-    private List<String> accessGroups;
-    private List<String> accessUsers;
     private boolean accessAnyAuthenticatedUser;
     private List<String> accessNetwork;
     private List<IpAddressMatcher> accessNetworkMatchers;
     private String accessExpression;
     private Map<String, PathComponent> components;
+    private AccessControl write;
 
     public String getName() {
         return name;
@@ -74,22 +73,6 @@ public class PathComponent {
         return Optional.ofNullable(components.get(name));
     }
 
-    public List<String> getAccessGroups() {
-        return accessGroups;
-    }
-
-    public void setAccessGroups(List<String> accessGroups) {
-        this.accessGroups = accessGroups;
-    }
-
-    public List<String> getAccessUsers() {
-        return accessUsers;
-    }
-
-    public void setAccessUsers(List<String> accessUsers) {
-        this.accessUsers = accessUsers;
-    }
-
     public List<String> getAccessNetwork() {
         return accessNetwork;
     }
@@ -110,14 +93,6 @@ public class PathComponent {
 
     public void setAccessExpression(String accessExpression) {
         this.accessExpression = accessExpression;
-    }
-
-    public boolean hasGroupAccess() {
-        return accessGroups != null && accessGroups.size() > 0;
-    }
-
-    public boolean hasUserAccess() {
-        return accessUsers != null && accessUsers.size() > 0;
     }
 
     public boolean hasNetworkAccess() {
@@ -175,5 +150,13 @@ public class PathComponent {
                 component.validate();
             }
         }
+    }
+
+    public AccessControl getWrite() {
+        return write;
+    }
+
+    public void setWrite(AccessControl write) {
+        this.write = write;
     }
 }

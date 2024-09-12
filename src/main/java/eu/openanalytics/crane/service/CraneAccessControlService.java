@@ -22,6 +22,8 @@ package eu.openanalytics.crane.service;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.upload.PathWriteAccessControlService;
+import eu.openanalytics.crane.upload.PosixWriteAccessControlService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,12 +42,16 @@ public class CraneAccessControlService {
     private final PathAccessControlService pathAccessControlService;
     private final CraneConfig craneConfig;
     private final UserService userService;
+    private final PathWriteAccessControlService pathWriteAccessControlService;
+    private final PosixWriteAccessControlService posixWriteAccessControlService;
 
-    public CraneAccessControlService(PosixAccessControlService posixAccessControlService, PathAccessControlService pathAccessControlService, CraneConfig craneConfig, UserService userService) {
+    public CraneAccessControlService(PosixAccessControlService posixAccessControlService, PathAccessControlService pathAccessControlService, CraneConfig craneConfig, UserService userService, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
         this.posixAccessControlService = posixAccessControlService;
         this.pathAccessControlService = pathAccessControlService;
         this.craneConfig = craneConfig;
         this.userService = userService;
+        this.pathWriteAccessControlService = pathWriteAccessControlService;
+        this.posixWriteAccessControlService = posixWriteAccessControlService;
     }
 
     public static boolean isMember(Authentication auth, String group) {
@@ -97,12 +103,16 @@ public class CraneAccessControlService {
             if (repository == null) {
                 return false;
             }
-
-            return canAccess(auth, requestPath, repository);
+            if (request.getMethod().equalsIgnoreCase("POST")) {
+                return canWrite(auth, requestPath, repository);
+            } else {
+                return canAccess(auth, requestPath, repository);
+            }
         } catch (IllegalArgumentException e) {
             return false;
         }
     }
+
 
     public boolean canAccess(Authentication auth, Repository repository) {
         String fullUrlPath = "/" + repository.getName();
@@ -148,6 +158,10 @@ public class CraneAccessControlService {
         return true;
     }
 
+    private boolean canWrite(Authentication auth, String fullPath, Repository repository) {
+        return pathWriteAccessControlService.canAccess(auth, fullPath, repository) && posixWriteAccessControlService.canAccess(auth, fullPath, repository);
+    }
+    
     private boolean canAccess(Authentication auth, String fullPath, Repository repository) {
         return pathAccessControlService.canAccess(auth, fullPath, repository) && posixAccessControlService.canAccess(auth, fullPath, repository);
     }
