@@ -75,6 +75,9 @@ public class CraneApplication {
         // https://docs.spring.io/spring-boot/reference/web/graceful-shutdown.html
         properties.put("server.shutdown", "graceful");
         properties.put("spring.lifecycle.timeout-per-shutdown-phase", "60s");
+
+        // disable spring multipart parsing
+        properties.put("spring.servlet.multipart.enabled", false);
         // ====================
 
         return properties;

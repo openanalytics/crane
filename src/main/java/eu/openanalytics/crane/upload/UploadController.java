@@ -45,7 +45,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 @Controller
-public class UploadHandler {
+public class UploadController {
     private S3TransferManager transferManager;
     private S3AsyncClient s3AsyncClient;
 
@@ -61,6 +61,9 @@ public class UploadHandler {
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
 
         Path path = (Path) request.getAttribute("path");
+        if (path == null) {
+            return ApiResponse.failNotFound();
+        }
         if (Files.exists(path)) {
             return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(path)));
         }
@@ -73,24 +76,30 @@ public class UploadHandler {
             } else {
                 throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
             }
-            return ApiResponse.success(Map.of("message", "File upload was successful"));
+            return ApiResponse.success(Map.of("message", "File upload succeeded"));
         } catch (IOException e) {
-            // TODO
+            return ApiResponse.fail(Map.of("message", "File upload failed"));
+        } catch (IllegalArgumentException e) {
             return ApiResponse.fail(Map.of("message", e.getMessage()));
         }
     }
 
-    private void writeFileToLocalFileSystem(JakartaServletFileUpload upload, HttpServletRequest request) throws IOException {
+    private void writeFileToLocalFileSystem(JakartaServletFileUpload upload, HttpServletRequest request) throws IOException, IllegalArgumentException {
         FileItemInputIterator fileItemInputIterator = upload.getItemIterator(request);
         if (fileItemInputIterator.hasNext()) {
             Path path = (Path) request.getAttribute("path");
             while (fileItemInputIterator.hasNext()) {
-                FileUtils.copyInputStreamToFile(fileItemInputIterator.next().getInputStream(), path.toFile());
+                FileItemInput fileItemInput = fileItemInputIterator.next();
+                if (fileItemInput.getName().equals("file")) {
+                    FileUtils.copyInputStreamToFile(fileItemInput.getInputStream(), path.toFile());
+                }
             }
+        } else {
+            throw new IllegalArgumentException("Upload failed. No parameter named `file` found");
         }
     }
 
-    private void writeFileToS3(JakartaServletFileUpload upload, HttpServletRequest request) throws IOException {
+    private void writeFileToS3(JakartaServletFileUpload upload, HttpServletRequest request) throws IOException, IllegalArgumentException {
         FileItemInputIterator fileItemInputIterator = upload.getItemIterator(request);
         if (fileItemInputIterator.hasNext()) {
             BlockingInputStreamAsyncRequestBody body =
@@ -104,11 +113,13 @@ public class UploadHandler {
 
             while (fileItemInputIterator.hasNext()) {
                 FileItemInput fileItemInput = fileItemInputIterator.next();
-                if (!fileItemInput.isFormField()) {
+                if (!fileItemInput.isFormField() && fileItemInput.getName().equals("file")) {
                     body.writeInputStream(fileItemInput.getInputStream());
                 }
             }
             s3UploadRequest.completionFuture().join();
+        } else {
+            throw new IllegalArgumentException("Upload failed. No parameter named `file` found");
         }
     }
 

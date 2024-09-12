@@ -50,10 +50,3 @@ app:
     - name: on_error_expression_return_false
       public: true
       on-error-expression: "#{response.status != 404 ? eval(true, response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 3)[2])) : false}"
-spring:
-  servlet:
-    multipart:
-      enabled: false
-  http:
-    multipart:
-      enabled: false
