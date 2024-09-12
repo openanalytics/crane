@@ -137,15 +137,17 @@ public class CraneInstance {
         }
     }
 
-    public static void addInstanceWithAwsAccess(List<CraneInstance> instances, String configName, int port, Logger logger) {
+    public static boolean addInstanceWithAwsAccess(List<CraneInstance> instances, String configName, int port, Logger logger) {
         String awsProfile = System.getenv("AWS_PROFILE");
         if (awsProfile != null && awsProfile.equals("oa-poc")) {
             try (StsClient stsClient = StsClient.create()) {
                 stsClient.getCallerIdentity();
                 instances.add(new CraneInstance(configName, port));
+                return true;
             }
         }
         logger.warn("No AWS credentials - skipping s3 tests");
+        return false;
     }
 
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {

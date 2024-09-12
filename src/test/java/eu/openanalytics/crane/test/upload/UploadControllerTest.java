@@ -70,20 +70,21 @@ public class UploadControllerTest {
     public static void beforeAll() throws URISyntaxException, IOException {
         keycloakInstance.start();
         instances.add(new CraneInstance("application-test-api.yml"));
-        CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
-        ListObjectsV2Request initialRequest = ListObjectsV2Request.builder()
-                .bucket(bucket)
-                .build();
+        if (CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger)) {
+            ListObjectsV2Request initialRequest = ListObjectsV2Request.builder()
+                    .bucket(bucket)
+                    .build();
 
-        ListObjectsV2Iterable pagination = getClient().listObjectsV2Paginator(initialRequest);
-        List<String> filesToDelete = List.of("repository/public_repo/testUpload.txt", "repository/public_repo/public_in_public_repo/testUpload.txt");
-        pagination.forEach(listObjectsV2Response -> {
-            listObjectsV2Response.contents().forEach(s3Object -> {
-                if (filesToDelete.contains(s3Object.key())) {
-                    deleteS3Object(s3Object);
-                }
+            ListObjectsV2Iterable pagination = getClient().listObjectsV2Paginator(initialRequest);
+            List<String> filesToDelete = List.of("repository/public_repo/testUpload.txt", "repository/public_repo/public_in_public_repo/testUpload.txt");
+            pagination.forEach(listObjectsV2Response -> {
+                listObjectsV2Response.contents().forEach(s3Object -> {
+                    if (filesToDelete.contains(s3Object.key())) {
+                        deleteS3Object(s3Object);
+                    }
+                });
             });
-        });
+        }
     }
 
 
