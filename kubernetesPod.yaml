@@ -5,8 +5,6 @@ metadata:
   labels:
     ci: crane-build
 spec:
-  imagePullSecrets:
-    - name: registry-robot
   containers:
     - name: builder
       image: registry.openanalytics.eu/proxy/library/maven:3-openjdk-17
