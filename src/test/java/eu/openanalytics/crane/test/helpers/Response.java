@@ -70,6 +70,10 @@ public class Response {
         assertContentTypeWithCode(404, "text/html");
     }
 
+    public void assertUnauthorized() {
+        Assertions.assertEquals(401, code());
+    }
+
     private void assertContentTypeWithCode(int expected, String contentType) {
         Assertions.assertEquals(expected, code());
         Assertions.assertTrue(response.header("Content-Type", "").startsWith(contentType));

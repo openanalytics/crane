@@ -26,7 +26,6 @@ import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.crane.test.helpers.Response;
-import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,22 +40,13 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
-import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Publisher;
-import software.amazon.awssdk.services.sts.StsClient;
-import software.amazon.awssdk.services.sts.model.StsException;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Testcontainers
 public class UploadControllerTest {
@@ -119,6 +109,28 @@ public class UploadControllerTest {
         Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testUploadInvalidPath(CraneInstance instance) throws IOException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String path = "/invalid/path";
+        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testUploadNoFileParameter(CraneInstance instance) throws IOException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String path = "/public_repo/public_in_public_repo/testUpload.txt";
+        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+        Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload, "NotFile", "file.txt"));
+        response.assertBadRequest();
+        Assertions.assertTrue(response.body().contains("\"message\":"), response.body());
+        Assertions.assertTrue(response.body().contains("\"status\":"), response.body());
+        Assertions.assertTrue(response.body().contains("\"fail\""), response.body());
     }
 
     private static void deleteS3Object(S3Object s3Object) {

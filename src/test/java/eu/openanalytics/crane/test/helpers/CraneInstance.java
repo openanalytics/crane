@@ -31,6 +31,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.sts.StsClient;
 
 import java.io.File;
@@ -144,6 +145,9 @@ public class CraneInstance {
                 stsClient.getCallerIdentity();
                 instances.add(new CraneInstance(configName, port));
                 return true;
+            } catch (SdkClientException e) {
+                logger.warn("Could not connect to AWS - %s".formatted(e.getMessage()));
+                return false;
             }
         }
         logger.warn("No AWS credentials - skipping s3 tests");

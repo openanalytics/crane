@@ -88,9 +88,13 @@ public class ApiTestHelper {
     }
 
     public Request.Builder createMultiPartRequest(String path, Path fileToUpload) throws IOException {
+        return createMultiPartRequest(path, fileToUpload, "file", "file.txt");
+    }
+
+    public Request.Builder createMultiPartRequest(String path, Path fileToUpload, String parameterName, String fileName) throws IOException {
         MultipartBody body = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("file", "file.txt", RequestBody.create(Files.readAllBytes(fileToUpload)))
+                .addFormDataPart(parameterName, fileName, RequestBody.create(Files.readAllBytes(fileToUpload)))
                 .build();
         return new Request.Builder()
                 .url(baseUrl + path).addHeader("Accept", "*/*")
