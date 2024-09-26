@@ -20,7 +20,9 @@
  */
 package eu.openanalytics.crane.upload;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.dto.ApiResponse;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload2.core.FileItemInput;
@@ -47,7 +49,19 @@ import java.util.Map;
 @Controller
 public class UploadController {
     private S3TransferManager transferManager;
-    private S3AsyncClient s3AsyncClient;
+    private final CraneConfig config;
+
+    public UploadController(CraneConfig config) {
+        this.config = config;
+    }
+
+    @PostConstruct
+    private void init() {
+        if (config.usesS3()) {
+            S3AsyncClient s3AsyncClient = S3AsyncClient.builder().multipartEnabled(true).build();
+            transferManager = S3TransferManager.builder().s3Client(s3AsyncClient).build();
+        }
+    }
 
     @ResponseBody
     @PostMapping(value="/__upload", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -341,4 +341,16 @@ public class CraneConfig {
     public void setOpenidPosixGIDSClaim(String openidPosixGIDSClaim) {
         this.openidPosixGIDSClaim = openidPosixGIDSClaim;
     }
+
+    public boolean usesS3() {
+        if (storageLocation.startsWith("s3://")) {
+            return true;
+        }
+        for (Repository repository : repositories.values()) {
+            if (repository.getStorageLocation().startsWith("s3://")) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
