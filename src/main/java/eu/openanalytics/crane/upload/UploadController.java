@@ -30,6 +30,7 @@ import org.apache.commons.fileupload2.core.FileItemInputIterator;
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.carlspring.cloud.storage.s3fs.S3Path;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -83,68 +84,44 @@ public class UploadController {
         }
 
         try {
+            FileItemInput fileItemInput = getFileItemInput(upload.getItemIterator(request));
+            if (fileItemInput == null) {
+                return ApiResponse.fail(Map.of("message", "Upload failed. No parameter named `file` found"));
+            }
             if (path.toString().startsWith("s3://")) {
-                writeFileToS3(upload.getItemIterator(request), path);
+                writeFileToS3(fileItemInput, path);
             } else if (path.toString().startsWith("/")) {
-                writeFileToLocalFileSystem(upload.getItemIterator(request), path);
+                FileUtils.copyInputStreamToFile(fileItemInput.getInputStream(), path.toFile());
             } else {
                 throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
             }
             return ApiResponse.success(Map.of("message", "File upload succeeded"));
         } catch (IOException e) {
             return ApiResponse.fail(Map.of("message", "File upload failed"));
-        } catch (IllegalArgumentException e) {
-            return ApiResponse.fail(Map.of("message", e.getMessage()));
         }
     }
 
-    private void writeFileToLocalFileSystem(FileItemInputIterator fileItemInputIterator, Path path) throws IOException, IllegalArgumentException {
-        if (fileItemInputIterator.hasNext()) {
-            while (fileItemInputIterator.hasNext()) {
-                FileItemInput fileItemInput = fileItemInputIterator.next();
-                if (fileItemInput.getFieldName().equals("file")) {
-                    FileUtils.copyInputStreamToFile(fileItemInput.getInputStream(), path.toFile());
-                }
+    private @Nullable FileItemInput getFileItemInput(FileItemInputIterator itemInputIterator) throws IOException {
+        while (itemInputIterator.hasNext()) {
+            FileItemInput temporaryFileItemInput = itemInputIterator.next();
+            if (temporaryFileItemInput.getFieldName().equals("file")) {
+                return temporaryFileItemInput;
             }
-        } else {
-            throw new IllegalArgumentException("Upload failed. No parameter named `file` found");
         }
+        return null;
     }
 
-    private void writeFileToS3(FileItemInputIterator fileItemInputIterator, Path path) throws IOException, IllegalArgumentException {
-        if (fileItemInputIterator.hasNext()) {
-            BlockingInputStreamAsyncRequestBody body =
-                    AsyncRequestBody.forBlockingInputStream(null);
+    private void writeFileToS3(FileItemInput fileItemInput, Path path) throws IOException {
+        BlockingInputStreamAsyncRequestBody body =
+                AsyncRequestBody.forBlockingInputStream(null);
 
-            S3Path s3Path = (S3Path) path;
-            Upload s3UploadRequest = getTransferManager().upload(builder -> builder
-                    .requestBody(body)
-                    .putObjectRequest(req -> req.bucket(s3Path.getBucketName()).key(s3Path.getKey()))
-                    .build());
+        S3Path s3Path = (S3Path) path;
+        Upload s3UploadRequest = transferManager.upload(builder -> builder
+                .requestBody(body)
+                .putObjectRequest(req -> req.bucket(s3Path.getBucketName()).key(s3Path.getKey()))
+                .build());
 
-            while (fileItemInputIterator.hasNext()) {
-                FileItemInput fileItemInput = fileItemInputIterator.next();
-                if (!fileItemInput.isFormField() && fileItemInput.getFieldName().equals("file")) {
-                    body.writeInputStream(fileItemInput.getInputStream());
-                }
-            }
-            s3UploadRequest.completionFuture().join();
-        } else {
-            throw new IllegalArgumentException("Upload failed. No parameter named `file` found");
-        }
-    }
-
-    private S3TransferManager getTransferManager() {
-        if (transferManager == null) {
-            transferManager = S3TransferManager.builder().s3Client(getAsyncClient()).build();
-        }
-        return transferManager;
-    }
-
-    private S3AsyncClient getAsyncClient() {
-        if (s3AsyncClient == null) {
-            s3AsyncClient = S3AsyncClient.builder().multipartEnabled(true).build();
-        }
-        return s3AsyncClient;
+        body.writeInputStream(fileItemInput.getInputStream());
+        s3UploadRequest.completionFuture().join();
     }
 }
