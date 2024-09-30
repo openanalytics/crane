@@ -20,93 +20,19 @@
  */
 package eu.openanalytics.crane.service;
 
-import eu.openanalytics.crane.config.CraneConfig;
-import eu.openanalytics.crane.model.config.Repository;
-import eu.openanalytics.crane.security.CraneUser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFileAttributeView;
-import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 @Service
-public class PosixAccessControlService {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final CraneConfig craneConfig;
-
-    public PosixAccessControlService(CraneConfig craneConfig) {
-        this.craneConfig = craneConfig;
+public class PosixAccessControlService extends AbstractPosixAccessControlService{
+    @Override
+    protected PosixFilePermission getOwnerAccess() {
+        return PosixFilePermission.OWNER_READ;
     }
 
-    public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
-        if (auth == null || repository == null) {
-            return false;
-        }
-
-        if (!repository.hasPosixAccessControl()) {
-            return true;
-        }
-
-        if (!pathSupportsPosix(repository.getStoragePath())) {
-            logger.warn("File system is not posix compliant");
-            return true;
-        }
-
-        Iterator<Path> subsequentPaths = Path.of(fullPath).iterator();
-        String storageLocation = repository.getStorageLocation();
-        StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length() - 1));
-        while (subsequentPaths.hasNext()) {
-            String subDirectory = pathBuilder.append("/").toString();
-            if (!canAccess(auth, subDirectory)) {
-                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, subDirectory);
-                return false;
-            }
-            pathBuilder.append(subsequentPaths.next());
-        }
-        String completePath = pathBuilder.toString();
-        return canAccess(auth, completePath);
-    }
-
-    private boolean pathSupportsPosix(Path storagePath) {
-        return storagePath.getFileSystem().supportedFileAttributeViews().contains("posix");
-    }
-
-    private boolean canAccess(Authentication auth, String stringPath) {
-        CraneUser craneUser = (CraneUser) auth.getPrincipal();
-        PosixFileAttributes attributes;
-        int pathUID, pathGID;
-        Path path = Path.of(stringPath);
-        try {
-            Map<String, Object> pathAttributes = Files.readAttributes(path, "unix:uid,gid");
-            pathUID = (int) pathAttributes.get("uid");
-            pathGID = (int) pathAttributes.get("gid");
-            attributes = Files.getFileAttributeView(path, PosixFileAttributeView.class).readAttributes();
-        } catch (NoSuchFileException e) {
-            return false;
-        } catch (IOException e) {
-            logger.warn("Could not view POSIX file system permissions of {}", path, e);
-            return false;
-        }
-
-        Set<PosixFilePermission> permissions = attributes.permissions();
-        int userUID = craneUser.getPosixUID();
-        if (attributes.owner().getName().equalsIgnoreCase(auth.getName()) || pathUID == userUID) {
-            return permissions.contains(PosixFilePermission.OWNER_READ);
-        }
-
-        if (CraneAccessControlService.isMember(auth, attributes.group().getName()) || craneUser.getPosixGIDs().contains(pathGID)) {
-            return permissions.contains(PosixFilePermission.GROUP_READ);
-        }
-        return false;
+    @Override
+    protected  PosixFilePermission getGroupAccess() {
+        return PosixFilePermission.GROUP_READ;
     }
 }

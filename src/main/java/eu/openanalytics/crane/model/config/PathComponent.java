@@ -20,8 +20,6 @@
  */
 package eu.openanalytics.crane.model.config;
 
-import org.springframework.security.web.util.matcher.IpAddressMatcher;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,12 +35,7 @@ import java.util.stream.Collectors;
 public class PathComponent extends AccessControl{
 
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
-    protected boolean isPublic = false;
     private String name;
-    private boolean accessAnyAuthenticatedUser;
-    private List<String> accessNetwork;
-    private List<IpAddressMatcher> accessNetworkMatchers;
-    private String accessExpression;
     private Map<String, PathComponent> components;
     private AccessControl write;
 
@@ -72,53 +65,6 @@ public class PathComponent extends AccessControl{
     public Optional<PathComponent> getPath(String name) {
         return Optional.ofNullable(components.get(name));
     }
-
-    public List<String> getAccessNetwork() {
-        return accessNetwork;
-    }
-
-    public void setAccessNetwork(List<String> accessIpRanges) {
-        this.accessNetwork = accessIpRanges;
-        this.accessNetworkMatchers = accessIpRanges.stream()
-                .map(IpAddressMatcher::new).collect(Collectors.toList());
-    }
-
-    public List<IpAddressMatcher> getAccessNetworkMatchers() {
-        return accessNetworkMatchers;
-    }
-
-    public String getAccessExpression() {
-        return accessExpression;
-    }
-
-    public void setAccessExpression(String accessExpression) {
-        this.accessExpression = accessExpression;
-    }
-
-    public boolean hasNetworkAccess() {
-        return accessNetwork != null && accessNetwork.size() > 0;
-    }
-
-    public boolean hasExpressionAccess() {
-        return accessExpression != null && accessExpression.length() > 0;
-    }
-
-    public boolean isAccessAnyAuthenticatedUser() {
-        return accessAnyAuthenticatedUser;
-    }
-
-    public void setAccessAnyAuthenticatedUser(boolean accessAnyAuthenticatedUser) {
-        this.accessAnyAuthenticatedUser = accessAnyAuthenticatedUser;
-    }
-
-    public boolean getPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
 
     public void validate() {
         if (getName() == null) {
