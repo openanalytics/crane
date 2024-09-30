@@ -1,0 +1,54 @@
+app:
+  default-cache:
+    - pattern: "/**/default_cached_file.html"
+      max-age: "PT66M"
+  storage-location: s3://oa-test-crane-bucket/repository/
+  openid-groups-claim: realm_roles
+  repositories:
+    - name: public_repo
+      public: true
+      write:
+        public: true
+      paths:
+        - name: public_in_public_repo
+          public: true
+          write:
+            public: true
+        - name: private_repo
+        - name: restricted_repo
+          access-users: demo
+          write:
+            access-users: demo
+        - name: restricted_to_users_repo
+          access-users: [ demo, test ]
+          write:
+            access-users: [ demo, test ]
+    - name: private_repo
+    - name: restricted_repo
+      access-users: demo
+      write:
+        access-users: demo
+    - name: restricted_to_users_repo
+      access-users: [ demo, test ]
+      write:
+        access-users: [ demo, test ]
+    - name: restricted_to_group_repo
+      access-groups: scientists
+      write:
+        access-groups: scientists
+    - name: restricted_to_groups_repo
+      access-groups:
+        - scientists
+        - mathematicians
+      write:
+        access-groups:
+          - scientists
+          - mathematicians
+    - name: restricted_simple_expression_repo
+      access-expression: "#{groups.contains('MATHEMATICIANS')}"
+      write:
+        access-expression: "#{groups.contains('MATHEMATICIANS')}"
+    - name: restricted_expression_using_and_repo
+      access-expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
+      write:
+        access-expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"

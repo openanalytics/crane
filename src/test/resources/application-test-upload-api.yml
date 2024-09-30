@@ -1,0 +1,54 @@
+app:
+  default-cache:
+    - pattern: "/**/default_cached_file.html"
+      max-age: "PT66M"
+  storage-location: /tmp/repository/
+  openid-groups-claim: realm_roles
+  repositories:
+    - name: public_repo
+      public: true
+      write:
+        public: true
+      paths:
+        - name: public_in_public_repo
+          public: true
+          write:
+            public: true
+        - name: private_repo
+        - name: restricted_repo
+          access-users: demo
+          write:
+            access-users: demo
+        - name: restricted_to_users_repo
+          access-users: [ demo, test ]
+          write:
+            access-users: [ demo, test ]
+    - name: private_repo
+    - name: restricted_repo
+      write:
+        access-users: demo
+      access-users: demo
+    - name: restricted_to_users_repo
+      write:
+        access-users: [ demo, test ]
+      access-users: [ demo, test ]
+    - name: restricted_to_group_repo
+      write:
+        access-groups: scientists
+      access-groups: scientists
+    - name: restricted_to_groups_repo
+      write:
+        access-groups:
+          - scientists
+          - mathematicians
+      access-groups:
+        - scientists
+        - mathematicians
+    - name: restricted_simple_expression_repo
+      write:
+        access-expression: "#{groups.contains('MATHEMATICIANS')}"
+      access-expression: "#{groups.contains('MATHEMATICIANS')}"
+    - name: restricted_expression_using_and_repo
+      write:
+        access-expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
+      access-expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"

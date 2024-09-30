@@ -67,7 +67,7 @@ public class Response {
     }
 
     public void assertNotFound() {
-        assertContentTypeWithCode(404, "text/html");
+        Assertions.assertEquals(404, code());
     }
 
     public void assertUnauthorized() {

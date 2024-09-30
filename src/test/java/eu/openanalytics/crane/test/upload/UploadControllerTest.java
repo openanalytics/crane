@@ -59,17 +59,16 @@ public class UploadControllerTest {
     @BeforeAll
     public static void beforeAll() throws URISyntaxException, IOException {
         keycloakInstance.start();
-        instances.add(new CraneInstance("application-test-api.yml"));
-        if (CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger)) {
+        instances.add(new CraneInstance("application-test-upload-api.yml"));
+        if (CraneInstance.addInstanceWithAwsAccess(instances, "application-test-upload-api-with-s3.yml", 7275, logger)) {
             ListObjectsV2Request initialRequest = ListObjectsV2Request.builder()
                     .bucket(bucket)
                     .build();
 
             ListObjectsV2Iterable pagination = getClient().listObjectsV2Paginator(initialRequest);
-            List<String> filesToDelete = List.of("repository/public_repo/testUpload.txt", "repository/public_repo/public_in_public_repo/testUpload.txt");
             pagination.forEach(listObjectsV2Response -> {
                 listObjectsV2Response.contents().forEach(s3Object -> {
-                    if (filesToDelete.contains(s3Object.key())) {
+                    if (s3Object.key().contains("testUpload")) {
                         deleteS3Object(s3Object);
                     }
                 });
@@ -91,10 +90,83 @@ public class UploadControllerTest {
     @MethodSource("instances")
     public void testUploadToPublicRepository(CraneInstance instance) throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String path = "/public_repo/testUpload.txt";
+        String genericPath = "/public_repo/testUpload_%s.txt";
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+
+        String path = genericPath.formatted("demo");
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+
+        path = genericPath.formatted("unauthorized");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
-        Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
+        response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+
+        path = genericPath.formatted("test");
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testUploadToPrivateRepository(CraneInstance instance) throws IOException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String genericPath = "/private_repo/testUpload_token_%s.txt";
+        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+        String path = genericPath.formatted("demo");
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertNotFound();
+
+        path = genericPath.formatted("unauthorized");
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
+
+        path = genericPath.formatted("test");
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertNotFound();
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testUploadToPrivateRepositoryWithRestrictedAccess(CraneInstance instance) throws IOException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String genericPath = "/restricted_repo/testUpload_%s.txt";
+        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+
+        String path = genericPath.formatted("demo");
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+
+        path = genericPath.formatted("unauthorized");
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
+
+        path = genericPath.formatted("test");
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertNotFound();
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testUploadToNestedMultiUserRestrictedRepositories(CraneInstance instance) throws IOException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String genericPath = "/public_repo/restricted_to_users_repo/testUpload_%s.txt";
+        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+
+        String path = genericPath.formatted("demo");
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+
+        path = genericPath.formatted("unauthorized");
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
+
+        path = genericPath.formatted("test");
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
     }
@@ -107,6 +179,32 @@ public class UploadControllerTest {
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testUploadToPublicInPublicRepository(CraneInstance instance) throws IOException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String genericPath = "/public_repo/public_in_public_repo/testUpload_%s.txt";
+        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+
+        String path = genericPath.formatted("demo");
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+
+        path = genericPath.formatted("unauthorized");
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+
+        path = genericPath.formatted("test");
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
     }
