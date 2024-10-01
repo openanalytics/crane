@@ -146,7 +146,7 @@ public class CraneInstance {
                 instances.add(new CraneInstance(configName, port));
                 return true;
             } catch (SdkClientException e) {
-                logger.warn("Could not connect to AWS - %s".formatted(e.getMessage()));
+                logger.warn("Could not connect to AWS", e);
                 return false;
             }
         }

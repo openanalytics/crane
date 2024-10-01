@@ -94,7 +94,7 @@ public class PosixAccessControlService {
         } catch (NoSuchFileException e) {
             return false;
         } catch (IOException e) {
-            logger.warn(String.format("Could not view POSIX file system permissions of %s", path), e);
+            logger.warn("Could not view POSIX file system permissions of {}", path, e);
             return false;
         }
 
