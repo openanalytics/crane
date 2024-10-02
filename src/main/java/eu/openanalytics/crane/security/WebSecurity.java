@@ -87,10 +87,9 @@ public class WebSecurity {
                                 "/actuator/health/readiness",
                                 "/actuator/auditevents",
                                 "/error",
-                                "/logout-success"
+                                "/logout-success",
+                                "/{repoName}/**"
                         ).permitAll()
-                        .requestMatchers("/{repoName}/**")
-                        .access((authentication, context) -> new AuthorizationDecision(craneAccessControlService.canAccess(authentication.get(), context.getRequest())))
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
                 .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, config))))
