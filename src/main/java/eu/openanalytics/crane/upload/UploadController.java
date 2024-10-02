@@ -65,7 +65,7 @@ public class UploadController {
     }
 
     @ResponseBody
-    @PostMapping(value="/__upload", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value="/__file", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> createResource(HttpServletRequest request, HttpServletResponse response) {
         boolean isMultipartForm = JakartaServletFileUpload.isMultipartContent(request);
 
