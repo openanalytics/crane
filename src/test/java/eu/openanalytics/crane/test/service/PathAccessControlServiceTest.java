@@ -22,7 +22,7 @@ package eu.openanalytics.crane.test.service;
 
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.model.config.Repository;
-import eu.openanalytics.crane.service.PathAccessControlService;
+import eu.openanalytics.crane.service.PathReadAccessControlService;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.AfterAll;
@@ -56,80 +56,80 @@ public class PathAccessControlServiceTest {
 
     @Test
     public void testAccessToRestrictedNetworkRepository() {
-        PathAccessControlService pathAccessControlService = inst.getBean("pathAccessControlService", PathAccessControlService.class);
+        PathReadAccessControlService pathReadAccessControlService = inst.getBean("pathReadAccessControlService", PathReadAccessControlService.class);
         String allowed_ip = "192.168.18.123";
         PathComponent repository = new Repository();
         repository.setName("network_restricted_repo");
-        repository.setAccessNetwork(List.of(allowed_ip));
+        repository.getReadAccess().setNetwork(List.of(allowed_ip));
 
         Authentication mockedAuthentication = mock(AnonymousAuthenticationToken.class);
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should get access correct ip");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertFalse(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should not get access incorrect ip");
+        Assertions.assertFalse(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should not get access incorrect ip");
 
         mockedAuthentication = mock(Authentication.class);
         when(mockedAuthentication.getName()).thenReturn("demo");
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should get access correct ip");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertFalse(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should not get access wrong not ip");
+        Assertions.assertFalse(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should not get access wrong not ip");
     }
 
     @Test
     public void testAccessToRestrictedNetworkAndUserRepository() {
-        PathAccessControlService pathAccessControlService = inst.getBean("pathAccessControlService", PathAccessControlService.class);
+        PathReadAccessControlService pathReadAccessControlService = inst.getBean("pathReadAccessControlService", PathReadAccessControlService.class);
         String allowed_ip = "192.168.18.123";
 
         PathComponent repository = new Repository();
         repository.setName("network_restricted_repo");
-        repository.setAccessNetwork(List.of(allowed_ip));
-        repository.setAccessUsers(List.of("demo"));
+        repository.getReadAccess().setNetwork(List.of(allowed_ip));
+        repository.getReadAccess().setUsers(List.of("demo"));
 
         Authentication mockedAuthentication = mock(Authentication.class);
         when(mockedAuthentication.getName()).thenReturn("demo");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip and user");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should get access correct ip and user");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct user but not ip");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should get access correct user but not ip");
 
         when(mockedAuthentication.getName()).thenReturn("test");
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertFalse(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should not get access wrong user and ip");
+        Assertions.assertFalse(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should not get access wrong user and ip");
     }
 
     @Test
     public void testAccessToRestrictedNetworkAndAnyAuthenticatedUserRepository() {
-        PathAccessControlService pathAccessControlService = inst.getBean("pathAccessControlService", PathAccessControlService.class);
+        PathReadAccessControlService pathReadAccessControlService = inst.getBean("pathReadAccessControlService", PathReadAccessControlService.class);
         String allowed_ip = "192.168.18.123";
 
         PathComponent repository = new Repository();
         repository.setName("network_restricted_repo");
-        repository.setAccessNetwork(List.of(allowed_ip));
-        repository.setAccessAnyAuthenticatedUser(true);
+        repository.getReadAccess().setNetwork(List.of(allowed_ip));
+        repository.getReadAccess().setAnyAuthenticatedUser(true);
 
         Authentication mockedAuthentication = mock(Authentication.class);
         when(mockedAuthentication.getName()).thenReturn("demo");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip and user is authenticated");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should get access correct ip and user is authenticated");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access as user is authenticated");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should get access as user is authenticated");
 
         when(mockedAuthentication.getName()).thenReturn("test");
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access user is authenticated");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should get access user is authenticated");
 
         mockedAuthentication = mock(AnonymousAuthenticationToken.class);
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
-        Assertions.assertTrue(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should get access correct ip");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should get access correct ip");
 
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
-        Assertions.assertFalse(pathAccessControlService.canAccess(mockedAuthentication, repository), "Should not get access incorrect ip and anonymous");
+        Assertions.assertFalse(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should not get access incorrect ip and anonymous");
     }
 }

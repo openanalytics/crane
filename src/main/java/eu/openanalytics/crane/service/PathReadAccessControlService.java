@@ -20,19 +20,19 @@
  */
 package eu.openanalytics.crane.service;
 
+import eu.openanalytics.crane.model.config.AccessControl;
+import eu.openanalytics.crane.model.config.PathComponent;
+import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.attribute.PosixFilePermission;
-
 @Service
-public class PosixAccessControlService extends AbstractPosixAccessControlService{
-    @Override
-    protected PosixFilePermission getOwnerAccess() {
-        return PosixFilePermission.OWNER_READ;
+public class PathReadAccessControlService extends AbstractPathAccessControlService {
+    public PathReadAccessControlService(SpecExpressionResolver specExpressionResolver) {
+        super(specExpressionResolver);
     }
 
     @Override
-    protected  PosixFilePermission getGroupAccess() {
-        return PosixFilePermission.GROUP_READ;
+    protected AccessControl getAccessControl(PathComponent pathComponent) {
+        return pathComponent.getReadAccess();
     }
 }

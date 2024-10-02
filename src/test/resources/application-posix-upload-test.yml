@@ -12,29 +12,38 @@ app:
       paths:
         - name: private
         - name: only_owner_demo
-          access-users: [ demo ]
+          read-access:
+            users: [ demo ]
         - name: only_group_scientists
-          access-groups: [ scientists ]
+          read-access:
+            groups: [ scientists ]
         - name: only_group_mathematicians_gid
-          access-groups: [ mathematicians ]
+          read-access:
+            groups: [ mathematicians ]
         - name: no_path_access
-          access-users: [ undefined users ]
+          read-access:
+            users: [ undefined users ]
     - name: private
       posix-access-control: true
     - name: only_owner_demo
       posix-access-control: true
-      access-users: [ demo ]
+      read-access:
+        users: [ demo ]
     - name: only_group_scientists
       posix-access-control: true
-      access-groups: [ scientists ]
+      read-access:
+        groups: [ scientists ]
     - name: only_group_mathematicians_gid
       posix-access-control: true
-      access-groups: [ mathematicians ]
+      read-access:
+        groups: [ mathematicians ]
     - name: no_posix_access
-      public: true
+      read-access:
+        public: true
     - name: no_path_access
       posix-access-control: true
-      access-users: [ undefined users ]
+      read-access:
+        users: [ undefined users ]
 spring:
   security:
     oauth2:

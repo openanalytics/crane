@@ -96,7 +96,7 @@ public abstract class AbstractPathAccessControlService {
             return false;
         }
 
-        if (accessControl.isAccessAnyAuthenticatedUser()) {
+        if (accessControl.isAnyAuthenticatedUser()) {
             return true;
         }
 
@@ -120,7 +120,7 @@ public abstract class AbstractPathAccessControlService {
             // no groups defined -> this user has no access based on the groups
             return false;
         }
-        for (String group : accessControl.getAccessGroups()) {
+        for (String group : accessControl.getGroups()) {
             if (CraneAccessControlService.isMember(auth, group)) {
                 return true;
             }
@@ -133,7 +133,7 @@ public abstract class AbstractPathAccessControlService {
             // no users defined -> this user has no access based on the users
             return false;
         }
-        for (String user : accessControl.getAccessUsers()) {
+        for (String user : accessControl.getUsers()) {
             if (auth.getName().equals(user)) {
                 return true;
             }
@@ -150,7 +150,7 @@ public abstract class AbstractPathAccessControlService {
         if (details == null) {
             return false;
         }
-        for (IpAddressMatcher matcher : accessControl.getAccessNetworkMatchers()) {
+        for (IpAddressMatcher matcher : accessControl.getNetworkMatchers()) {
             if (matcher.matches(details.getRemoteAddress())) {
                 return true;
             }
@@ -165,6 +165,6 @@ public abstract class AbstractPathAccessControlService {
             return false;
         }
         SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), accessControl);
-        return specExpressionResolver.evaluateToBoolean(accessControl.getAccessExpression(), context);
+        return specExpressionResolver.evaluateToBoolean(accessControl.getExpression(), context);
     }
 }

@@ -8,4 +8,5 @@ app:
     - name: private_repo
       paths:
         - name: public_repo
-          public: true
+          read-access:
+            public: true

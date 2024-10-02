@@ -34,6 +34,6 @@ public class PathWriteAccessControlService extends AbstractPathAccessControlServ
 
     @Override
     protected AccessControl getAccessControl(PathComponent pathComponent) {
-        return pathComponent.getWrite();
+        return pathComponent.getWriteAccess();
     }
 }

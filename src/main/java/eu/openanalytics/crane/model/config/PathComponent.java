@@ -32,12 +32,14 @@ import java.util.stream.Collectors;
  * E.g. in /my/path/filename, `my`, `path` and `filename` are all a component represented by this class.
  * In order to represent a filesystem tree with access-control, this class contains sub-components.
  */
-public class PathComponent extends AccessControl {
+public class PathComponent {
 
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
     private String name;
     private Map<String, PathComponent> components;
-    private AccessControl write = new AccessControl();
+
+    private AccessControl readAccess = new AccessControl();
+    private AccessControl writeAccess = new AccessControl();
 
     public String getName() {
         return name;
@@ -45,6 +47,14 @@ public class PathComponent extends AccessControl {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public AccessControl getReadAccess() {
+        return readAccess;
+    }
+
+    public void setReadAccess(AccessControl readAccess) {
+        this.readAccess = readAccess;
     }
 
     public List<PathComponent> getPaths() {
@@ -76,26 +86,15 @@ public class PathComponent extends AccessControl {
             throw new RuntimeException(String.format("PathComponent name %s contains invalid characters", name));
         }
 
-        if (isAccessAnyAuthenticatedUser() && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
-            throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot add user-based access control properties to a repo that allows any authenticated user", name));
-        }
-
-        if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
-            accessAnyAuthenticatedUser = true;
-        }
-
-        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
-        }
-
-        write.validate(name);
+        readAccess.validate(name);
+        writeAccess.validate(name);
         if (components != null) {
             for (PathComponent component : components.values()) {
-                if (component.getPublic() && !getPublic()) {
+                if (component.readAccess.getPublic() && !readAccess.getPublic()) {
                     throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot have a public repository (%s) in a private parent (%s)", component.name, component.name, name));
                 }
 
-                if (component.write.getPublic() && !write.getPublic()) {
+                if (component.writeAccess.getPublic() && !writeAccess.getPublic()) {
                     throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot have a write public repository (%s) in a write private parent (%s)", component.name, component.name, name));
                 }
                 component.validate();
@@ -103,11 +102,11 @@ public class PathComponent extends AccessControl {
         }
     }
 
-    public AccessControl getWrite() {
-        return write;
+    public AccessControl getWriteAccess() {
+        return writeAccess;
     }
 
-    public void setWrite(AccessControl write) {
-        this.write = write;
+    public void setWriteAccess(AccessControl writeAccess) {
+        this.writeAccess = writeAccess;
     }
 }

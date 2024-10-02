@@ -3,8 +3,10 @@ app:
   openid-groups-claim: groups
   repositories:
     - name: restricted_to_group_repo
-      access-groups: scientists
+      read-access:
+        groups: scientists
     - name: restricted_to_groups_repo
-      access-groups:
-        - scientists
-        - mathematicians
+      read-access:
+        groups:
+          - scientists
+          - mathematicians

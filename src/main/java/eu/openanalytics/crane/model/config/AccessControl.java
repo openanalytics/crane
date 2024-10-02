@@ -27,36 +27,36 @@ import java.util.stream.Collectors;
 
 public class AccessControl {
 
-    protected List<String> accessGroups;
-    protected List<String> accessUsers;
+    protected List<String> groups;
+    protected List<String> users;
     protected boolean isPublic = false;
-    protected List<String> accessNetwork;
-    protected boolean accessAnyAuthenticatedUser;
-    protected List<IpAddressMatcher> accessNetworkMatchers;
-    protected String accessExpression;
+    protected List<String> network;
+    protected boolean anyAuthenticatedUser;
+    protected List<IpAddressMatcher> networkMatchers;
+    protected String expression;
 
-    public List<String> getAccessGroups() {
-        return accessGroups;
+    public List<String> getGroups() {
+        return groups;
     }
 
-    public void setAccessGroups(List<String> accessGroups) {
-        this.accessGroups = accessGroups;
+    public void setGroups(List<String> groups) {
+        this.groups = groups;
     }
 
-    public List<String> getAccessUsers() {
-        return accessUsers;
+    public List<String> getUsers() {
+        return users;
     }
 
-    public void setAccessUsers(List<String> accessUsers) {
-        this.accessUsers = accessUsers;
+    public void setUsers(List<String> users) {
+        this.users = users;
     }
 
     public boolean hasGroupAccess() {
-        return accessGroups != null && accessGroups.size() > 0;
+        return groups != null && groups.size() > 0;
     }
 
     public boolean hasUserAccess() {
-        return accessUsers != null && accessUsers.size() > 0;
+        return users != null && users.size() > 0;
     }
 
     public boolean getPublic() {
@@ -67,51 +67,51 @@ public class AccessControl {
         this.isPublic = isPublic;
     }
 
-    public List<String> getAccessNetwork() {
-        return accessNetwork;
+    public List<String> getNetwork() {
+        return network;
     }
 
-    public void setAccessNetwork(List<String> accessIpRanges) {
-        this.accessNetwork = accessIpRanges;
-        this.accessNetworkMatchers = accessIpRanges.stream()
+    public void setNetwork(List<String> accessIpRanges) {
+        this.network = accessIpRanges;
+        this.networkMatchers = accessIpRanges.stream()
                 .map(IpAddressMatcher::new).collect(Collectors.toList());
     }
 
-    public List<IpAddressMatcher> getAccessNetworkMatchers() {
-        return accessNetworkMatchers;
+    public List<IpAddressMatcher> getNetworkMatchers() {
+        return networkMatchers;
     }
 
-    public String getAccessExpression() {
-        return accessExpression;
+    public String getExpression() {
+        return expression;
     }
 
-    public void setAccessExpression(String accessExpression) {
-        this.accessExpression = accessExpression;
+    public void setExpression(String expression) {
+        this.expression = expression;
     }
 
     public boolean hasNetworkAccess() {
-        return accessNetwork != null && accessNetwork.size() > 0;
+        return network != null && network.size() > 0;
     }
 
     public boolean hasExpressionAccess() {
-        return accessExpression != null && accessExpression.length() > 0;
+        return expression != null && expression.length() > 0;
     }
 
-    public boolean isAccessAnyAuthenticatedUser() {
-        return accessAnyAuthenticatedUser;
+    public boolean isAnyAuthenticatedUser() {
+        return anyAuthenticatedUser;
     }
 
-    public void setAccessAnyAuthenticatedUser(boolean accessAnyAuthenticatedUser) {
-        this.accessAnyAuthenticatedUser = accessAnyAuthenticatedUser;
+    public void setAnyAuthenticatedUser(boolean anyAuthenticatedUser) {
+        this.anyAuthenticatedUser = anyAuthenticatedUser;
     }
 
     public void validate(String name) {
-        if (isAccessAnyAuthenticatedUser() && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
+        if (isAnyAuthenticatedUser() && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
             throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot add user-based access control properties to a repo that allows any authenticated user", name));
         }
 
         if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
-            accessAnyAuthenticatedUser = true;
+            anyAuthenticatedUser = true;
         }
 
         if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {

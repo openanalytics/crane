@@ -38,14 +38,14 @@ import java.util.List;
 @Service
 public class CraneAccessControlService {
 
-    private final PosixAccessControlService posixAccessControlService;
-    private final PathAccessControlService pathAccessControlService;
+    private final PosixReadAccessControlService posixAccessControlService;
+    private final PathReadAccessControlService pathAccessControlService;
     private final CraneConfig craneConfig;
     private final UserService userService;
     private final PathWriteAccessControlService pathWriteAccessControlService;
     private final PosixWriteAccessControlService posixWriteAccessControlService;
 
-    public CraneAccessControlService(PosixAccessControlService posixAccessControlService, PathAccessControlService pathAccessControlService, CraneConfig craneConfig, UserService userService, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
+    public CraneAccessControlService(PosixReadAccessControlService posixAccessControlService, PathReadAccessControlService pathAccessControlService, CraneConfig craneConfig, UserService userService, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
         this.posixAccessControlService = posixAccessControlService;
         this.pathAccessControlService = pathAccessControlService;
         this.craneConfig = craneConfig;
