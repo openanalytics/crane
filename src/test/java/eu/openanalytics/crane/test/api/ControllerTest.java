@@ -97,12 +97,12 @@ public class ControllerTest {
     public void testLogout(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
-        resp.assertSuccess();
+        resp.assertSuccessWithRedirect();
         resp.assertRedirectedTo("/logout-success");
 
 
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/logout"));
-        resp.assertSuccess();
+        resp.assertSuccessWithRedirect();
         resp.assertRedirectedTo("/logout-success");
     }
 
@@ -110,10 +110,10 @@ public class ControllerTest {
     public void testRedis() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(redisInst);
 
-        Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/private_repo"));
+        Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/private_repo/"));
         resp.assertSuccess();
         resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
-        resp.assertSuccess();
+        resp.assertSuccessWithRedirect();
         resp.assertRedirectedTo("/logout-success");
     }
 

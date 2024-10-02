@@ -1,0 +1,88 @@
+# We use a builder image which fully prepares the /opt/crane directory.
+# This directory can then be copied in *one step* to the final image.
+# In addition we also need unzip during build but not during runtime.
+FROM public.ecr.aws/docker/library/debian:buster as builder
+
+# can be snapshots or releases
+ARG NEXUS_REPOSITORY=releases
+ARG JAR_LOCATION=https://nexus.openanalytics.eu/service/rest/v1/search/assets/download?sort=version&repository=$NEXUS_REPOSITORY&maven.groupId=eu.openanalytics&maven.artifactId=crane&maven.extension=jar
+
+RUN mkdir /opt/crane
+ADD $JAR_LOCATION /opt/crane/crane.jar
+
+RUN apt-get update -y && \
+  apt-get install unzip && \
+  unzip -p  /opt/crane/crane.jar META-INF/MANIFEST.MF | sed -En 's/Implementation-Version: (.*)\r/\1/gp' > /opt/crane/VERSION
+
+# FINAL IMAGE
+FROM public.ecr.aws/docker/library/eclipse-temurin:17-jammy
+
+LABEL maintainer="Tobia De Koninck <tdekoninck@openanalytics.eu>"
+
+COPY $CONFIGURATION /opt/crane/
+ENV CRANE_USER crane
+
+# CREATE USERS AND GROUPS
+RUN useradd demo -u 1001 && \
+    useradd testTypo -u 1002 && \
+    groupadd scientists && \
+    groupadd mathematiciansTypo -g 9998 && \
+    groupadd crane_public && \
+    groupadd crane_only && \
+    useradd -c 'crane user' -G scientists,mathematiciansTypo,crane_public,crane_only -m -d /home/$CRAN_USER -s /bin/nologin $CRANE_USER
+
+COPY --from=builder /opt/crane /opt/crane
+
+# CREATE REPOSITORIES AND THEIR FILES
+RUN mkdir /tmp/posix_repository && \
+    mkdir /tmp/posix_repository/private && \
+    mkdir /tmp/posix_repository/private/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths && \
+    touch /tmp/posix_repository/repository_with_paths/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_owner_demo && \
+    touch /tmp/posix_repository/repository_with_paths/only_owner_demo/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_owner_test_uid && \
+    touch /tmp/posix_repository/repository_with_paths/only_owner_test_uid/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_group_scientists && \
+    touch /tmp/posix_repository/repository_with_paths/only_group_scientists/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/only_group_mathematicians_gid && \
+    touch /tmp/posix_repository/repository_with_paths/only_group_mathematicians_gid/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/no_path_access && \
+    touch /tmp/posix_repository/repository_with_paths/no_path_access/file.txt && \
+    mkdir /tmp/posix_repository/repository_with_paths/write_public_repo && \
+    mkdir /tmp/posix_repository/only_owner_demo && \
+    touch /tmp/posix_repository/only_owner_demo/file.txt && \
+    mkdir /tmp/posix_repository/only_owner_test_uid && \
+    touch /tmp/posix_repository/only_owner_test_uid/file.txt && \
+    mkdir /tmp/posix_repository/only_group_scientists && \
+    touch /tmp/posix_repository/only_group_scientists/file.txt && \
+    mkdir /tmp/posix_repository/only_group_mathematicians_gid && \
+    touch /tmp/posix_repository/only_group_mathematicians_gid/file.txt && \
+    mkdir /tmp/posix_repository/no_path_access && \
+    touch /tmp/posix_repository/no_path_access/file.txt && \
+    mkdir /tmp/posix_repository/no_posix_access && \
+    touch /tmp/posix_repository/no_posix_access/file.txt && \
+    mkdir /tmp/posix_repository/write_public_repo
+
+
+# SET POSIX PERMISSIONS \
+RUN chgrp -R crane_public /tmp/posix_repository/ && \
+    chmod g+r,g+w /tmp/posix_repository && \
+    chgrp -R crane_public /tmp/posix_repository && \
+    chmod -R u+r,g+r,u+w,g+w /tmp/posix_repository && \
+    chown -R demo /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
+    chgrp -R crane_only /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
+    chmod -R u+r,u+w /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
+    chown -R testTypo /tmp/posix_repository/repository_with_paths/only_owner_test_uid /tmp/posix_repository/only_owner_test_uid && \
+    chgrp -R crane_only /tmp/posix_repository/repository_with_paths/only_owner_test_uid /tmp/posix_repository/only_owner_test_uid && \
+    chmod -R u+r,u+w /tmp/posix_repository/repository_with_paths/only_owner_test_uid /tmp/posix_repository/only_owner_test_uid && \
+    chgrp -R scientists /tmp/posix_repository/repository_with_paths/only_group_scientists /tmp/posix_repository/only_group_scientists && \
+    chmod -R g+r,g+w /tmp/posix_repository/repository_with_paths/only_group_scientists /tmp/posix_repository/only_group_scientists && \
+    chgrp -R mathematiciansTypo /tmp/posix_repository/repository_with_paths/only_group_mathematicians_gid /tmp/posix_repository/only_group_mathematicians_gid && \
+    chmod -R g+r,g+w /tmp/posix_repository/repository_with_paths/only_group_mathematicians_gid /tmp/posix_repository/only_group_mathematicians_gid && \
+    chmod -R u+w /tmp/posix_repository/repository_with_paths/write_public_repo /tmp/posix_repository/write_public_repo
+
+WORKDIR /opt/crane
+USER $CRANE_USER
+
+CMD ["java", "-noverify", "-jar", "/opt/crane/crane.jar", "--spring.jmx.enabled=false", "--spring.config.location=/opt/crane/application.yml"]

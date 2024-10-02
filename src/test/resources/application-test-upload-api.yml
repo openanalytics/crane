@@ -52,3 +52,6 @@ app:
       write:
         access-expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
       access-expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
+    - name: write_public_repo
+      write:
+        public: true

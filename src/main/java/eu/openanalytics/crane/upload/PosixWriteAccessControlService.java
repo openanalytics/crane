@@ -20,10 +20,23 @@
  */
 package eu.openanalytics.crane.upload;
 
+import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.security.CraneUser;
 import eu.openanalytics.crane.service.AbstractPosixAccessControlService;
+import eu.openanalytics.crane.service.CraneAccessControlService;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class PosixWriteAccessControlService extends AbstractPosixAccessControlService {
@@ -33,7 +46,38 @@ public class PosixWriteAccessControlService extends AbstractPosixAccessControlSe
     }
 
     @Override
-    protected  PosixFilePermission getGroupAccess() {
+    protected PosixFilePermission getGroupAccess() {
         return PosixFilePermission.GROUP_WRITE;
     }
+
+    @Override
+    public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
+        if (auth == null || repository == null) {
+            return false;
+        }
+
+        if (!repository.hasPosixAccessControl()) {
+            return true;
+        }
+
+        if (!pathSupportsPosix(repository.getStoragePath())) {
+            logger.warn("File system is not posix compliant");
+            return true;
+        }
+
+        Iterator<Path> subsequentPaths = Path.of(fullPath).iterator();
+        String storageLocation = repository.getStorageLocation();
+        StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length() - 1));
+        while (subsequentPaths.hasNext()) {
+            String subDirectory = pathBuilder.append("/").toString();
+            if (!canAccess(auth, subDirectory)) {
+                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, subDirectory);
+                return false;
+            }
+            pathBuilder.append(subsequentPaths.next());
+        }
+        String completePath = pathBuilder.toString();
+        return canAccess(auth, completePath.substring(0, completePath.lastIndexOf("/") + 1));
+    }
+
 }

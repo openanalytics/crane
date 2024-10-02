@@ -37,6 +37,11 @@ public class Response {
 
     public void assertSuccess() {
         Assertions.assertEquals(200, code());
+        if (response.priorResponse() != null) {
+            String url = response.request().url().toString();
+            String priorUrl = response.priorResponse().request().url().toString();
+            Assertions.assertEquals(url.substring(0, url.length()-1), priorUrl);
+        }
     }
 
     public void assertPlainSuccess() {
@@ -116,5 +121,11 @@ public class Response {
 
     public void assertBadRequest() {
         Assertions.assertEquals(400, code());
+    }
+
+    public void assertSuccessWithRedirect() {
+        Assertions.assertEquals(200, code());
+        Assertions.assertEquals(302, priorCode());
+        Assertions.assertEquals(response.request().url().port(), response.priorResponse().request().url().port());
     }
 }

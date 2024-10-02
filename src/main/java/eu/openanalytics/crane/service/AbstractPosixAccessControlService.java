@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractPosixAccessControlService {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected PosixFilePermission getOwnerAccess() {
         return null;
@@ -77,11 +77,11 @@ public abstract class AbstractPosixAccessControlService {
         return canAccess(auth, completePath);
     }
 
-    private boolean pathSupportsPosix(Path storagePath) {
+    protected boolean pathSupportsPosix(Path storagePath) {
         return storagePath.getFileSystem().supportedFileAttributeViews().contains("posix");
     }
 
-    private boolean canAccess(Authentication auth, String stringPath) {
+    protected boolean canAccess(Authentication auth, String stringPath) {
         CraneUser craneUser = (CraneUser) auth.getPrincipal();
         PosixFileAttributes attributes;
         int pathUID, pathGID;
@@ -109,5 +109,4 @@ public abstract class AbstractPosixAccessControlService {
         }
         return false;
     }
-
 }

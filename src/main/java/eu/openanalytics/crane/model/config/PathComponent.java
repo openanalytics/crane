@@ -32,12 +32,12 @@ import java.util.stream.Collectors;
  * E.g. in /my/path/filename, `my`, `path` and `filename` are all a component represented by this class.
  * In order to represent a filesystem tree with access-control, this class contains sub-components.
  */
-public class PathComponent extends AccessControl{
+public class PathComponent extends AccessControl {
 
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
     private String name;
     private Map<String, PathComponent> components;
-    private AccessControl write;
+    private AccessControl write = new AccessControl();
 
     public String getName() {
         return name;
@@ -85,13 +85,18 @@ public class PathComponent extends AccessControl{
         }
 
         if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
         }
 
+        write.validate(name);
         if (components != null) {
             for (PathComponent component : components.values()) {
                 if (component.getPublic() && !getPublic()) {
                     throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot have a public repository (%s) in a private parent (%s)", component.name, component.name, name));
+                }
+
+                if (component.write.getPublic() && !write.getPublic()) {
+                    throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot have a write public repository (%s) in a write private parent (%s)", component.name, component.name, name));
                 }
                 component.validate();
             }

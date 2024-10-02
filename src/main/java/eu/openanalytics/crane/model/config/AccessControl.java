@@ -104,4 +104,18 @@ public class AccessControl {
     public void setAccessAnyAuthenticatedUser(boolean accessAnyAuthenticatedUser) {
         this.accessAnyAuthenticatedUser = accessAnyAuthenticatedUser;
     }
+
+    public void validate(String name) {
+        if (isAccessAnyAuthenticatedUser() && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
+            throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot add user-based access control properties to a repo that allows any authenticated user", name));
+        }
+
+        if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
+            accessAnyAuthenticatedUser = true;
+        }
+
+        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
+        }
+    }
 }
