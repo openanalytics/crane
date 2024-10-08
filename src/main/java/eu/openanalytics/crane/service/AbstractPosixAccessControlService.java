@@ -128,9 +128,10 @@ public abstract class AbstractPosixAccessControlService {
             return permissions.contains(getOwnerAccess());
         }
 
-        if (CraneAccessControlService.isMember(auth, attributes.group().getName()) || craneUser.getPosixGIDs().contains(pathGID)) {
+        if (userService.isMember(auth, attributes.group().getName()) || craneUser.getPosixGIDs().contains(pathGID)) {
             return permissions.contains(getGroupAccess());
         }
         return false;
     }
+
 }

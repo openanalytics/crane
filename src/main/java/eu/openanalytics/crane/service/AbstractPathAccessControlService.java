@@ -143,7 +143,7 @@ public abstract class AbstractPathAccessControlService {
             return false;
         }
         for (String group : accessControl.getGroups()) {
-            if (CraneAccessControlService.isMember(auth, group)) {
+            if (userService.isMember(auth, group)) {
                 return true;
             }
         }
@@ -193,4 +193,5 @@ public abstract class AbstractPathAccessControlService {
     public boolean canAccess(Repository repository, String fullPath) {
         return canAccess(userService.getUser(), fullPath, repository);
     }
+
 }

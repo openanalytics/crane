@@ -22,6 +22,7 @@ package eu.openanalytics.crane.service;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -62,4 +63,16 @@ public class UserService {
         return SecurityContextHolder.getContext().getAuthentication();
     }
 
+    public boolean isMember(Authentication auth, String group) {
+        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
+            String groupName = grantedAuth.getAuthority().toUpperCase();
+            if (groupName.startsWith("ROLE_")) {
+                groupName = groupName.substring(5);
+            }
+            if (groupName.equalsIgnoreCase(group)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
