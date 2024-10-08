@@ -309,11 +309,11 @@ public class RepositoryHostingHandlerTest {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String privateRepo = "/public_repo/private_repo";
         String file = "/file.txt";
-//        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(privateRepo)).assertUnauthorizedRedirectToLogIn();
-//        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
-//        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
-//        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
-//        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(privateRepo)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(privateRepo + file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo + file)).assertSuccess();
