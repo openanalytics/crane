@@ -28,7 +28,8 @@ RUN useradd demo -u 1001 && \
     groupadd scientists && \
     groupadd mathematiciansTypo -g 9998 && \
     groupadd crane_public && \
-    useradd -c 'crane user' -G scientists,mathematiciansTypo,crane_public -m -d /home/$CRAN_USER -s /bin/nologin $CRANE_USER
+    groupadd crane_private && \
+    useradd -c 'crane user' -G scientists,mathematiciansTypo,crane_public,crane_private -m -d /home/$CRAN_USER -s /bin/nologin $CRANE_USER
 
 COPY --from=builder /opt/crane /opt/crane
 
@@ -66,9 +67,9 @@ RUN chown -R $CRANE_USER:crane_public /tmp/posix_repository/ && \
     chmod g+r /tmp/posix_repository && \
     chgrp -R crane_public /tmp/posix_repository && \
     chmod -R u+r,g+r /tmp/posix_repository && \
-    chown -R demo /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
+    chown -R demo:crane_private /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
     chmod -R u+r /tmp/posix_repository/repository_with_paths/only_owner_demo /tmp/posix_repository/only_owner_demo && \
-    chown -R testTypo /tmp/posix_repository/repository_with_paths/only_owner_test_uid /tmp/posix_repository/only_owner_test_uid && \
+    chown -R testTypo:crane_private /tmp/posix_repository/repository_with_paths/only_owner_test_uid /tmp/posix_repository/only_owner_test_uid && \
     chmod -R u+r /tmp/posix_repository/repository_with_paths/only_owner_test_uid /tmp/posix_repository/only_owner_test_uid && \
     chgrp -R scientists /tmp/posix_repository/repository_with_paths/only_group_scientists /tmp/posix_repository/only_group_scientists && \
     chmod -R g+r /tmp/posix_repository/repository_with_paths/only_group_scientists /tmp/posix_repository/only_group_scientists && \

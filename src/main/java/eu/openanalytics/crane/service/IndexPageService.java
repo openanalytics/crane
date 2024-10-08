@@ -40,11 +40,13 @@ import java.util.stream.Stream;
 public class IndexPageService {
 
     private final CraneConfig config;
-    private final CraneAccessControlService craneAccessControlService;
+    private final PathReadAccessControlService pathReadAccessControlService;
+    private final PosixReadAccessControlService posixReadAccessControlService;
 
-    public IndexPageService(CraneConfig config, CraneAccessControlService pathAccessControlService) {
+    public IndexPageService(CraneConfig config, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService) {
         this.config = config;
-        this.craneAccessControlService = pathAccessControlService;
+        this.pathReadAccessControlService = pathReadAccessControlService;
+        this.posixReadAccessControlService = posixReadAccessControlService;
     }
 
     public String getTemplateName(Repository repository) {
@@ -61,7 +63,8 @@ public class IndexPageService {
                     // TODO
                     return;
                 }
-                if (craneAccessControlService.canAccess(repository, p.toString().substring(repository.getStorageLocation().length()))) {
+                String fullPath =  p.toString().substring(repository.getStorageLocation().length());
+                if (pathReadAccessControlService.canAccess(repository, fullPath) && posixReadAccessControlService.canAccess(repository, fullPath)) {
                     if (craneResource instanceof CraneFile craneFile) {
                         craneFiles.add(craneFile);
                     } else if (craneResource instanceof CraneDirectory craneDirectory) {

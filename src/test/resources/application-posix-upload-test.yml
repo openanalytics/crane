@@ -44,6 +44,9 @@ app:
       posix-access-control: true
       read-access:
         users: [ undefined users ]
+    - name: write_public_repo
+      write-access:
+        public: true
 spring:
   security:
     oauth2:

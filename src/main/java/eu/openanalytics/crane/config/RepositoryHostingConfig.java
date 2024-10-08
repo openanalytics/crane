@@ -20,11 +20,8 @@
  */
 package eu.openanalytics.crane.config;
 
-import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.RepositoryHostingHandler;
-import eu.openanalytics.crane.security.auditing.AuditingService;
-import eu.openanalytics.crane.service.HandelSpecExpressionService;
-import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.model.config.Repository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.HttpRequestHandler;
@@ -38,16 +35,9 @@ import java.util.Map;
 public class RepositoryHostingConfig {
 
     private final CraneConfig config;
-    private final UserService userService;
 
-    private final AuditingService auditingService;
-    private final HandelSpecExpressionService handelSpecExpressionsService;
-
-    public RepositoryHostingConfig(CraneConfig config, AuditingService auditingService, UserService userService, HandelSpecExpressionService handelSpecExpressionsService) {
+    public RepositoryHostingConfig(CraneConfig config) {
         this.config = config;
-        this.auditingService = auditingService;
-        this.userService = userService;
-        this.handelSpecExpressionsService = handelSpecExpressionsService;
     }
 
     @Bean
@@ -56,7 +46,7 @@ public class RepositoryHostingConfig {
 
         for (Repository repository : config.getRepositories()) {
             Path repositoryRoot = repository.getStoragePath().resolve(repository.getName());
-            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot, auditingService, userService, handelSpecExpressionsService);
+            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot);
             urlMap.put(String.format("/%s/**", repository.getName()), resourceHttpRequestHandler);
         }
 

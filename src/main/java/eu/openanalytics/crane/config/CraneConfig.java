@@ -23,6 +23,7 @@ package eu.openanalytics.crane.config;
 import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -256,6 +257,20 @@ public class CraneConfig {
 
     public Repository getRepository(String name) {
         return repositories.get(name);
+    }
+
+    public Repository getRepository(HttpServletRequest request) {
+        String stringPath = request.getRequestURI().replaceFirst("/__file", "");
+        int endOfRepoName = stringPath.length();
+        if (stringPath.indexOf("/", 1) != -1) {
+            endOfRepoName = stringPath.indexOf("/", 1);
+        }
+        String repoName = stringPath.substring(stringPath.indexOf("/") + 1, endOfRepoName);
+        Repository repository = (Repository) request.getAttribute("repo");
+        if (repository == null || !repository.getName().equalsIgnoreCase(repoName)) {
+            repository = getRepository(repoName);
+        }
+        return repository;
     }
 
     public boolean hasOpenidGroupsClaim() {

@@ -20,16 +20,18 @@
  */
 package eu.openanalytics.crane.upload;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.service.AbstractPathAccessControlService;
+import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PathWriteAccessControlService extends AbstractPathAccessControlService {
-    public PathWriteAccessControlService(SpecExpressionResolver specExpressionResolver) {
-        super(specExpressionResolver);
+    public PathWriteAccessControlService(SpecExpressionResolver specExpressionResolver, UserService userService, CraneConfig craneConfig) {
+        super(specExpressionResolver, userService, craneConfig);
     }
 
     @Override

@@ -26,13 +26,11 @@ import eu.openanalytics.crane.service.CraneAccessControlService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SpecExpressionContext {
@@ -58,7 +56,7 @@ public class SpecExpressionContext {
                 ctx.claims = ((JwtAuthenticationToken) o).getToken().getClaims();
             }
             if (o instanceof Authentication) {
-                ctx.groups = CraneAccessControlService.getGroups((Authentication) o);
+                ctx.groups = getGroups((Authentication) o);
             }
             if (o instanceof HttpServletRequest) {
                 ctx.request = (HttpServletRequest) o;
@@ -153,5 +151,17 @@ public class SpecExpressionContext {
 
     public HttpServletRequest getRequest() {
         return request;
+    }
+
+    private static List<String> getGroups(Authentication auth) {
+        List<String> groups = new ArrayList<>();
+        if (auth != null) {
+            for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
+                String authName = grantedAuth.getAuthority().toUpperCase();
+                if (authName.startsWith("ROLE_")) authName = authName.substring(5);
+                groups.add(authName);
+            }
+        }
+        return groups;
     }
 }

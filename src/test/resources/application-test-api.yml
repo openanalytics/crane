@@ -60,8 +60,8 @@ app:
     - name: on_error_expression
       read-access:
         public: true
-      on-error-expression: "#{response.status == 404 ? eval(true, request.getAttributeNames(), request.setAttribute('test-attribute', 'test-value'), response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 3)[2])) : false}"
+      on-error-expression: "#{response.status == 404 ? eval(true, request.getAttributeNames(), request.setAttribute('test-attribute', 'test-value'), response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 4)[3])) : false}"
     - name: on_error_expression_return_false
       read-access:
         public: true
-      on-error-expression: "#{response.status != 404 ? eval(true, response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 3)[2])) : false}"
+      on-error-expression: "#{response.status != 404 ? eval(true, response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 4)[3])) : false}"

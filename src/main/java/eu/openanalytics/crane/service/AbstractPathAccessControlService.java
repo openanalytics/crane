@@ -20,10 +20,13 @@
  */
 package eu.openanalytics.crane.service;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -38,13 +41,32 @@ import java.util.Optional;
 public abstract class AbstractPathAccessControlService {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected final SpecExpressionResolver specExpressionResolver;
+    protected final UserService userService;
+    protected final CraneConfig craneConfig;
 
-    public AbstractPathAccessControlService(SpecExpressionResolver specExpressionResolver) {
+    public AbstractPathAccessControlService(SpecExpressionResolver specExpressionResolver, UserService userService, CraneConfig craneConfig) {
         this.specExpressionResolver = specExpressionResolver;
+        this.userService = userService;
+        this.craneConfig = craneConfig;
     }
 
     protected AccessControl getAccessControl(PathComponent pathComponent) {
         return null;
+    }
+
+    public boolean canAccess(HttpServletRequest request) {
+        Authentication auth = userService.getUser();
+        Repository repository = craneConfig.getRepository(request);
+        String relativePath = request.getRequestURI().replaceFirst("/__file/([^/]+/)?", "");
+        String path = repository.getName() + "/" + relativePath;
+        return canAccess(auth, path, repository);
+//        String fullPath = String.valueOf((Path) request.getAttribute("path"));
+//        PathComponent pathComponent = (PathComponent) request.getAttribute("repo");
+//        return canAccess(auth, fullPath, pathComponent);
+    }
+
+    public boolean canAccess(Repository repository) {
+        return canAccess(userService.getUser(), "/" + repository.getName(), repository);
     }
 
     public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent) {
@@ -166,5 +188,9 @@ public abstract class AbstractPathAccessControlService {
         }
         SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), accessControl);
         return specExpressionResolver.evaluateToBoolean(accessControl.getExpression(), context);
+    }
+
+    public boolean canAccess(Repository repository, String fullPath) {
+        return canAccess(userService.getUser(), fullPath, repository);
     }
 }

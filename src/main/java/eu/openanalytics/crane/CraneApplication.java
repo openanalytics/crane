@@ -26,6 +26,7 @@ import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfigurati
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.io.FileWriter;
@@ -36,6 +37,7 @@ import java.util.Properties;
 
 @EnableAsync
 @EnableWebMvc
+@EnableMethodSecurity
 @SpringBootApplication(exclude = {RedisAutoConfiguration.class, AuditAutoConfiguration.class})
 public class CraneApplication {
 

@@ -20,12 +20,17 @@
  */
 package eu.openanalytics.crane.service;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.attribute.PosixFilePermission;
 
 @Service
-public class PosixReadAccessControlService extends AbstractPosixAccessControlService{
+public class PosixReadAccessControlService extends AbstractPosixAccessControlService {
+    public PosixReadAccessControlService(UserService userService, CraneConfig craneConfig) {
+        super(userService, craneConfig);
+    }
+
     @Override
     protected PosixFilePermission getOwnerAccess() {
         return PosixFilePermission.OWNER_READ;

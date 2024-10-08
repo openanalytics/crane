@@ -33,6 +33,8 @@ import org.carlspring.cloud.storage.s3fs.S3Path;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -64,9 +66,10 @@ public class UploadController {
         }
     }
 
+    @PreAuthorize("@pathWriteAccessControlService.canAccess(#r) && @posixWriteAccessControlService.canAccess(#r)")
     @ResponseBody
-    @PostMapping(value="/__file", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Map<String, Object>>> createResource(HttpServletRequest request, HttpServletResponse response) {
+    @PostMapping(value="/__file/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createResource(@P("r") HttpServletRequest request, HttpServletResponse response) {
         boolean isMultipartForm = JakartaServletFileUpload.isMultipartContent(request);
 
         if (!isMultipartForm) {

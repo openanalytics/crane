@@ -21,15 +21,13 @@
 package eu.openanalytics.crane.security;
 
 import eu.openanalytics.crane.config.CraneConfig;
-import eu.openanalytics.crane.service.CraneAccessControlService;
+import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
-import eu.openanalytics.crane.security.auditing.AuditingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -54,15 +52,13 @@ public class WebSecurity {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final CraneAccessControlService craneAccessControlService;
     private final AuditingService auditingService;
     private final TokenParser tokenParser;
 
-    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, CraneAccessControlService craneAccessControlService, AuditingService auditingService) {
+    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, AuditingService auditingService) {
         this.config = config;
         this.openIdReAuthorizeFilter = openIdReAuthorizeFilter;
         this.specExpressionResolver = specExpressionResolver;
-        this.craneAccessControlService = craneAccessControlService;
         this.auditingService = auditingService;
         this.tokenParser = new TokenParser(config);
     }
@@ -78,7 +74,7 @@ public class WebSecurity {
                                 "/",
                                 "/.well-known/configured-openid-configuration",
                                 "/favicon.ico",
-                                "/__file",
+                                "/__file/**",
                                 "/__index",
                                 "/__index/css/**",
                                 "/__index/webjars/**",

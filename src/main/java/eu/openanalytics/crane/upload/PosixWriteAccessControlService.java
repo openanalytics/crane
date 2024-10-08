@@ -20,26 +20,23 @@
  */
 package eu.openanalytics.crane.upload;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
-import eu.openanalytics.crane.security.CraneUser;
 import eu.openanalytics.crane.service.AbstractPosixAccessControlService;
-import eu.openanalytics.crane.service.CraneAccessControlService;
+import eu.openanalytics.crane.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFileAttributeView;
-import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 @Service
 public class PosixWriteAccessControlService extends AbstractPosixAccessControlService {
+    public PosixWriteAccessControlService(UserService userService, CraneConfig craneConfig) {
+        super(userService, craneConfig);
+    }
+
     @Override
     protected PosixFilePermission getOwnerAccess() {
         return PosixFilePermission.OWNER_WRITE;
@@ -70,14 +67,14 @@ public class PosixWriteAccessControlService extends AbstractPosixAccessControlSe
         StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length() - 1));
         while (subsequentPaths.hasNext()) {
             String subDirectory = pathBuilder.append("/").toString();
-            if (!canAccess(auth, subDirectory)) {
+            if (!canAccessPosix(auth, subDirectory, repository)) {
                 logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, subDirectory);
                 return false;
             }
             pathBuilder.append(subsequentPaths.next());
         }
         String completePath = pathBuilder.toString();
-        return canAccess(auth, completePath.substring(0, completePath.lastIndexOf("/") + 1));
+        return canAccessPosix(auth, completePath.substring(0, completePath.lastIndexOf("/") + 1), repository);
     }
 
 }

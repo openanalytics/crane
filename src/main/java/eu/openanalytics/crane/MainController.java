@@ -22,16 +22,15 @@ package eu.openanalytics.crane;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
-import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.security.auditing.AuditingService;
-import eu.openanalytics.crane.service.CraneAccessControlService;
+import eu.openanalytics.crane.service.PathReadAccessControlService;
+import eu.openanalytics.crane.service.PosixReadAccessControlService;
+import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,14 +42,14 @@ import java.util.stream.Collectors;
 
 @Controller
 public class MainController extends BaseUIController {
-
-    private final CraneAccessControlService craneAccessControlService;
-
+    private final PathReadAccessControlService pathReadAccessControlService;
+    private final PosixReadAccessControlService posixReadAccessControlService;
     private final AuditingService auditingService;
 
-    public MainController(CraneConfig config, UserService userService, CraneAccessControlService craneAccessControlService, AuditingService auditingService) {
+    public MainController(CraneConfig config, UserService userService, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, AuditingService auditingService) {
         super(userService, config);
-        this.craneAccessControlService = craneAccessControlService;
+        this.pathReadAccessControlService = pathReadAccessControlService;
+        this.posixReadAccessControlService = posixReadAccessControlService;
         this.auditingService = auditingService;
     }
 
@@ -62,11 +61,10 @@ public class MainController extends BaseUIController {
 
     @GetMapping(value = "/", produces = "text/html")
     public String getRepositoriesAsHtml(HttpServletRequest request, ModelMap map) {
-        Authentication user = SecurityContextHolder.getContext().getAuthentication();
         boolean authenticated = userService.isAuthenticated();
 
         List<String> repositories = config.getRepositories().stream()
-                .filter(r -> craneAccessControlService.canAccess(user, r))
+                .filter(r -> pathReadAccessControlService.canAccess(r) && posixReadAccessControlService.canAccess(r))
                 .map(Repository::getName)
                 .collect(Collectors.toList());
 
@@ -85,13 +83,11 @@ public class MainController extends BaseUIController {
     @ResponseBody
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRepositoriesAsJson(HttpServletRequest request) {
-        Authentication user = SecurityContextHolder.getContext().getAuthentication();
-
         return ApiResponse.success(
                 Map.of(
                         "directories",
                         config.getRepositories().stream()
-                                .filter(r -> craneAccessControlService.canAccess(user, r))
+                                .filter(r -> pathReadAccessControlService.canAccess(r) && posixReadAccessControlService.canAccess(r))
                                 .map(Repository::getName)
                                 .toList()
                 )

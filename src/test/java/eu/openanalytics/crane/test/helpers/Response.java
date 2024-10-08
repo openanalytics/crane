@@ -37,10 +37,10 @@ public class Response {
 
     public void assertSuccess() {
         Assertions.assertEquals(200, code());
-        if (response.priorResponse() != null) {
+        if (response.priorResponse() != null && !response.priorResponse().request().url().toString().contains("/login")) {
             String url = response.request().url().toString();
             String priorUrl = response.priorResponse().request().url().toString();
-            Assertions.assertEquals(url.substring(0, url.length()-1), priorUrl);
+            Assertions.assertEquals(url.substring(0, url.length()-1), priorUrl.replaceFirst("/__file", ""));
         }
     }
 

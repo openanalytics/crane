@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.service;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
@@ -27,8 +28,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PathReadAccessControlService extends AbstractPathAccessControlService {
-    public PathReadAccessControlService(SpecExpressionResolver specExpressionResolver) {
-        super(specExpressionResolver);
+    public PathReadAccessControlService(SpecExpressionResolver specExpressionResolver, UserService userService, CraneConfig craneConfig) {
+        super(specExpressionResolver, userService, craneConfig);
     }
 
     @Override
