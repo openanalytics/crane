@@ -253,14 +253,14 @@ public class RepositoryHostingHandlerTest {
     public void testAccessToNonExistentRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String repository = "/this-does-not-exist";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
         apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
         String file = repository + "/file.txt";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertNotFound();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
         apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
@@ -477,7 +477,7 @@ public class RepositoryHostingHandlerTest {
 
         attack_path = "/%2e%2e/%2e%2e/etc/passwd";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertNotFound();
+        resp.assertUnauthorizedRedirectToLogIn();
 
         attack_path = "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd";
         resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
@@ -485,7 +485,7 @@ public class RepositoryHostingHandlerTest {
 
         attack_path = "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertNotFound();
+        resp.assertUnauthorizedRedirectToLogIn();
 
         attack_path = "/..%2f..%2fetc/passwd";
         resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));

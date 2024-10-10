@@ -131,22 +131,22 @@ public class PosixAccessControlServiceTest {
 
         resp = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         String body = resp.body();
-        Set<String> repositories = new HashSet<>(Set.of("repository_with_paths", "only_group_mathematicians_gid", "file.txt"));
+        Set<String> repositories = new HashSet<>(Set.of("only_owner_test_uid", "only_group_mathematicians_gid", "file.txt"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
         resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         body = resp.body();
-        repositories.addAll(Set.of("only_owner_demo", "only_group_scientists"));
+        repositories = new HashSet<>(Set.of("only_owner_demo", "only_group_scientists", "only_group_mathematicians_gid", "file.txt"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
         resp = apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(path));
         body = resp.body();
-        repositories = new HashSet<>(Set.of("repository_with_paths", "only_group_mathematicians_gid", "file.txt"));
+        repositories = new HashSet<>(Set.of("only_owner_test_uid", "only_group_mathematicians_gid", "file.txt"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
 
         resp = apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         body = resp.body();
-        repositories.addAll(Set.of("only_owner_demo", "only_group_scientists"));
+        repositories = new HashSet<>(Set.of("only_owner_demo", "only_group_scientists", "only_group_mathematicians_gid", "file.txt"));
         Assertions.assertTrue(repositories.stream().allMatch(body::contains));
     }
 

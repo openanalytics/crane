@@ -64,7 +64,7 @@ public class MainController extends BaseUIController {
         boolean authenticated = userService.isAuthenticated();
 
         List<String> repositories = config.getRepositories().stream()
-                .filter(r -> pathReadAccessControlService.canAccess(r) && posixReadAccessControlService.canAccess(r))
+                .filter(r -> pathReadAccessControlService.canAccess(r.getName(), "/") && posixReadAccessControlService.canAccess(r.getName(), "/"))
                 .map(Repository::getName)
                 .collect(Collectors.toList());
 
@@ -87,7 +87,7 @@ public class MainController extends BaseUIController {
                 Map.of(
                         "directories",
                         config.getRepositories().stream()
-                                .filter(r -> pathReadAccessControlService.canAccess(r) && posixReadAccessControlService.canAccess(r))
+                                .filter(r -> pathReadAccessControlService.canAccess(r.getName(), "/") && posixReadAccessControlService.canAccess(r.getName(), "/"))
                                 .map(Repository::getName)
                                 .toList()
                 )

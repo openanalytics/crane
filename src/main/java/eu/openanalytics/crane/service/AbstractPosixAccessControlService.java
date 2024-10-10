@@ -23,7 +23,6 @@ package eu.openanalytics.crane.service;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.security.CraneUser;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -53,6 +52,10 @@ public abstract class AbstractPosixAccessControlService {
 
     protected abstract PosixFilePermission getGroupAccess();
 
+    public boolean canAccess(Repository repository, String stringPath) {
+        return canAccess(userService.getUser(), stringPath, repository);
+    }
+
     public boolean canAccess(String repository, String path) {
         return canAccess(userService.getUser(), path, craneConfig.getRepository(repository));
     }
@@ -71,9 +74,9 @@ public abstract class AbstractPosixAccessControlService {
             return true;
         }
 
-        Iterator<Path> subsequentPaths = Path.of(fullPath).iterator();
+        Iterator<Path> subsequentPaths = getSubsequentPaths(fullPath);
         String storageLocation = repository.getStorageLocation();
-        StringBuilder pathBuilder = new StringBuilder(storageLocation.substring(0, storageLocation.length() - 1));
+        StringBuilder pathBuilder = new StringBuilder(storageLocation);
         while (subsequentPaths.hasNext()) {
             String subDirectory = pathBuilder.append("/").toString();
             if (!canAccessPosix(auth, subDirectory, repository)) {
@@ -86,16 +89,12 @@ public abstract class AbstractPosixAccessControlService {
         return canAccessPosix(auth, completePath, repository);
     }
 
+    protected Iterator<Path> getSubsequentPaths(String path) {
+        return Path.of(path).iterator();
+    }
+
     protected boolean pathSupportsPosix(Path storagePath) {
         return storagePath.getFileSystem().supportedFileAttributeViews().contains("posix");
-    }
-
-    public boolean canAccess(Repository repository) {
-        return canAccess(repository, "/");
-    }
-
-    public boolean canAccess(Repository repository, String stringPath) {
-        return canAccess(userService.getUser(), stringPath, repository);
     }
 
     protected boolean canAccessPosix(Authentication auth, String stringPath, Repository repository) {
@@ -109,7 +108,7 @@ public abstract class AbstractPosixAccessControlService {
             pathGID = (int) pathAttributes.get("gid");
             attributes = Files.getFileAttributeView(path, PosixFileAttributeView.class).readAttributes();
         } catch (NoSuchFileException e) {
-            return repository.getIndexFileName().equals(stringPath.replaceFirst("^.+/", ""));
+            return false;
         } catch (IOException e) {
             logger.warn("Could not view POSIX file system permissions of {}", path, e);
             return false;

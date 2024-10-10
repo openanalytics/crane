@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane;
 
+import com.google.common.collect.Streams;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
@@ -73,7 +74,8 @@ public class DownloadController {
                      @P("r") @PathVariable(name = "repository") String stringRepository,
                      @P("p") @PathVariable(name = "path") String stringPath) throws ServletException, IOException {
         Repository repository = craneConfig.getRepository(stringRepository);
-        Path path = repository.getStoragePath().resolve(stringPath.substring(1));
+        String relativePath = String.join("/", Streams.stream(Path.of(stringPath).iterator()).map(Path::toString).toList());
+        Path path = repository.getStoragePath().resolve(relativePath);
         if (!stringPath.endsWith("/") && Files.isDirectory(path)) {
             response.sendRedirect(request.getRequestURI().replaceFirst("/__file", "") + "/");
             return;
