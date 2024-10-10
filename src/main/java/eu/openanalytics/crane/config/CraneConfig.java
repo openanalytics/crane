@@ -25,6 +25,7 @@ import eu.openanalytics.crane.model.config.Repository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
+import org.carlspring.cloud.storage.s3fs.S3FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -108,8 +109,9 @@ public class CraneConfig {
                 r.setCache(defaultCache);
             }
             if (r.getStorageLocation() == null) {
-                r.setStorageLocation(storageLocation);
-                r.setStoragePath(root);
+                Path repositoryStoragePath = root.resolve(r.getName());
+                r.setStoragePath(repositoryStoragePath);
+                r.setStorageLocation(repositoryStoragePath.toString());
             } else {
                 r.setStoragePath(storageLocationToPath(validateRepositoryStorageLocation(r.getStorageLocation(), r.getName())));
             }
@@ -368,11 +370,11 @@ public class CraneConfig {
     }
 
     public boolean usesS3() {
-        if (storageLocation.startsWith("s3://")) {
+        if (root.getFileSystem() instanceof S3FileSystem) {
             return true;
         }
         for (Repository repository : repositories.values()) {
-            if (repository.getStorageLocation().startsWith("s3://")) {
+            if (repository.getStoragePath().getFileSystem() instanceof S3FileSystem) {
                 return true;
             }
         }

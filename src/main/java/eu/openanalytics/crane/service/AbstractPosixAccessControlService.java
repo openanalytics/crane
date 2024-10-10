@@ -49,19 +49,12 @@ public abstract class AbstractPosixAccessControlService {
         this.craneConfig = craneConfig;
     }
 
-    protected PosixFilePermission getOwnerAccess() {
-        return null;
-    }
+    protected abstract PosixFilePermission getOwnerAccess();
 
-    protected PosixFilePermission getGroupAccess() {
-        return null;
-    }
+    protected abstract PosixFilePermission getGroupAccess();
 
-    public boolean canAccess(HttpServletRequest request) {
-        Authentication auth = userService.getUser();
-        Repository repository = craneConfig.getRepository(request);
-        String relativePath = request.getRequestURI().replaceFirst("/__file", "");
-        return canAccess(auth, relativePath, repository);
+    public boolean canAccess(String repository, String path) {
+        return canAccess(userService.getUser(), path, craneConfig.getRepository(repository));
     }
 
     public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
@@ -98,7 +91,7 @@ public abstract class AbstractPosixAccessControlService {
     }
 
     public boolean canAccess(Repository repository) {
-        return canAccess(repository, "/" + repository.getName());
+        return canAccess(repository, "/");
     }
 
     public boolean canAccess(Repository repository, String stringPath) {

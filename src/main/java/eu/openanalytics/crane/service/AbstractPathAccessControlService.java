@@ -50,29 +50,18 @@ public abstract class AbstractPathAccessControlService {
         this.craneConfig = craneConfig;
     }
 
-    protected AccessControl getAccessControl(PathComponent pathComponent) {
-        return null;
-    }
+    protected abstract AccessControl getAccessControl(PathComponent pathComponent);
 
-    public boolean canAccess(HttpServletRequest request) {
-        Authentication auth = userService.getUser();
-        Repository repository = craneConfig.getRepository(request);
-        String relativePath = request.getRequestURI().replaceFirst("/__file/([^/]+/)?", "");
-        String path = repository.getName() + "/" + relativePath;
-        return canAccess(auth, path, repository);
-//        String fullPath = String.valueOf((Path) request.getAttribute("path"));
-//        PathComponent pathComponent = (PathComponent) request.getAttribute("repo");
-//        return canAccess(auth, fullPath, pathComponent);
+    public boolean canAccess(String repository, String path) {
+        return canAccess(userService.getUser(), path, craneConfig.getRepository(repository));
     }
 
     public boolean canAccess(Repository repository) {
-        return canAccess(userService.getUser(), "/" + repository.getName(), repository);
+        return canAccess(userService.getUser(), "/", repository);
     }
 
-    public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent) {
-        Iterator<Path> path = Path.of(fullPath).iterator();
-        path.next();
-        return canAccess(auth, fullPath, pathComponent, path);
+    public boolean canAccess(Authentication auth, String path, PathComponent pathComponent) {
+        return canAccess(auth, path, pathComponent, Path.of(path).iterator());
     }
 
     public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {

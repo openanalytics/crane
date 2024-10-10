@@ -7,7 +7,7 @@ app:
   repositories:
     - name: public_repo
       read-access:
-      public: true
+        public: true
       paths:
         - name: public_in_public_repo
           read-access:

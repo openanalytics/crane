@@ -21,10 +21,10 @@
 package eu.openanalytics.crane.upload;
 
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
@@ -36,6 +36,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
@@ -66,10 +67,12 @@ public class UploadController {
         }
     }
 
-    @PreAuthorize("@pathWriteAccessControlService.canAccess(#r) && @posixWriteAccessControlService.canAccess(#r)")
+    @PreAuthorize("@pathWriteAccessControlService.canAccess(#r, #p) && @posixWriteAccessControlService.canAccess(#r, #p)")
     @ResponseBody
-    @PostMapping(value="/__file/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Map<String, Object>>> createResource(@P("r") HttpServletRequest request, HttpServletResponse response) {
+    @PostMapping(value = "/__file/{repository}/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createResource(HttpServletRequest request,
+                                                                           @P("r") @PathVariable(name = "repository") String stringRepository,
+                                                                           @P("p") @PathVariable(name = "path") String stringPath) {
         boolean isMultipartForm = JakartaServletFileUpload.isMultipartContent(request);
 
         if (!isMultipartForm) {
@@ -78,12 +81,11 @@ public class UploadController {
 
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
 
-        Path path = (Path) request.getAttribute("path");
-        if (path == null) {
-            return ApiResponse.failNotFound();
-        }
+        Repository repository = config.getRepository(stringRepository);
+        Path path = repository.getStoragePath().resolve(stringPath.substring(1));
+
         if (Files.exists(path)) {
-            return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(path)));
+            return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(stringPath)));
         }
 
         try {
@@ -116,13 +118,13 @@ public class UploadController {
 
     private void writeFileToS3(FileItemInput fileItemInput, Path path) throws IOException {
         BlockingInputStreamAsyncRequestBody body =
-                AsyncRequestBody.forBlockingInputStream(null);
+            AsyncRequestBody.forBlockingInputStream(null);
 
         S3Path s3Path = (S3Path) path;
         Upload s3UploadRequest = transferManager.upload(builder -> builder
-                .requestBody(body)
-                .putObjectRequest(req -> req.bucket(s3Path.getBucketName()).key(s3Path.getKey()))
-                .build());
+            .requestBody(body)
+            .putObjectRequest(req -> req.bucket(s3Path.getBucketName()).key(s3Path.getKey()))
+            .build());
 
         body.writeInputStream(fileItemInput.getInputStream());
         s3UploadRequest.completionFuture().join();

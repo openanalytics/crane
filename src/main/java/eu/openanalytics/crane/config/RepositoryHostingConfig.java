@@ -20,12 +20,12 @@
  */
 package eu.openanalytics.crane.config;
 
-import eu.openanalytics.crane.RepositoryHostingHandler;
 import eu.openanalytics.crane.model.config.Repository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
+import org.springframework.web.util.UrlPathHelper;
 
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -35,6 +35,7 @@ import java.util.Map;
 public class RepositoryHostingConfig {
 
     private final CraneConfig config;
+    private final UrlPathHelper urlPathHelper = new UrlPathHelper();
 
     public RepositoryHostingConfig(CraneConfig config) {
         this.config = config;
@@ -45,9 +46,9 @@ public class RepositoryHostingConfig {
         Map<String, HttpRequestHandler> urlMap = new LinkedHashMap<>();
 
         for (Repository repository : config.getRepositories()) {
-            Path repositoryRoot = repository.getStoragePath().resolve(repository.getName());
-            RepositoryHostingHandler resourceHttpRequestHandler = new RepositoryHostingHandler(repository, repositoryRoot);
-            urlMap.put(String.format("/%s/**", repository.getName()), resourceHttpRequestHandler);
+            urlMap.put(String.format("/%s/**", repository.getName()), (request, response) -> {
+                request.getRequestDispatcher("/__file" + urlPathHelper.getPathWithinApplication(request)).forward(request, response);
+            });
         }
 
         return new SimpleUrlHandlerMapping(urlMap);

@@ -25,8 +25,6 @@ import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.HandelSpecExpressionService;
-import eu.openanalytics.crane.service.PathReadAccessControlService;
-import eu.openanalytics.crane.service.PosixReadAccessControlService;
 import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -59,24 +57,30 @@ public class DownloadController {
     private final UserService userService;
     private final AuditingService auditingService;
     private final HandelSpecExpressionService handelSpecExpressionService;
-    public final PathReadAccessControlService pathReadAccessControlService;
-    public final PosixReadAccessControlService posixReadAccessControlService;
-    public final CraneConfig craneConfig;
+    private final CraneConfig craneConfig;
 
-    public DownloadController(UserService userService, AuditingService auditingService, HandelSpecExpressionService handelSpecExpressionService, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, CraneConfig craneConfig) {
+    public DownloadController(UserService userService, AuditingService auditingService, HandelSpecExpressionService handelSpecExpressionService, CraneConfig craneConfig) {
         this.userService = userService;
-        this.pathReadAccessControlService = pathReadAccessControlService;
-        this.posixReadAccessControlService = posixReadAccessControlService;
         this.auditingService = auditingService;
         this.handelSpecExpressionService = handelSpecExpressionService;
         this.craneConfig = craneConfig;
     }
 
-    @PreAuthorize("@pathReadAccessControlService.canAccess(#r) && @posixReadAccessControlService.canAccess(#r)")
-    @GetMapping("/__file/{*path}")
-    public void read(@P("r") HttpServletRequest request, HttpServletResponse response, @PathVariable(name = "path") String stringPath) throws ServletException, IOException {
-        Repository repository = craneConfig.getRepository(request);
-        Path path = repository.getStoragePath().resolve(stringPath.substring(stringPath.indexOf("/") + 1));
+    @PreAuthorize("@pathReadAccessControlService.canAccess(#r, #p) && @posixReadAccessControlService.canAccess(#r, #p)")
+    @GetMapping("/__file/{repository}/{*path}")
+    public void read(HttpServletRequest request,
+                     HttpServletResponse response,
+                     @P("r") @PathVariable(name = "repository") String stringRepository,
+                     @P("p") @PathVariable(name = "path") String stringPath) throws ServletException, IOException {
+        Repository repository = craneConfig.getRepository(stringRepository);
+        Path path = repository.getStoragePath().resolve(stringPath.substring(1));
+        if (!stringPath.endsWith("/") && Files.isDirectory(path)) {
+            response.sendRedirect(request.getRequestURI().replaceFirst("/__file", "") + "/");
+            return;
+        }
+        if (Files.isDirectory(path)) {
+            path = path.resolve(repository.getIndexFileName());
+        }
         if (!Files.exists(path)) {
             if (path.endsWith(repository.getIndexFileName())) {
                 Path directory = path.getParent();
@@ -102,10 +106,6 @@ public class DownloadController {
             return;
         }
 
-        if (Files.isDirectory(path)) {
-            response.sendRedirect(request.getRequestURI().replaceFirst("/__file", "") + "/");
-            return;
-        }
         if (new ServletWebRequest(request, response).checkNotModified(Files.getLastModifiedTime(path).toMillis())) {
             return;
         }
