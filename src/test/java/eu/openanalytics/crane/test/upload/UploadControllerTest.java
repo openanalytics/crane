@@ -151,7 +151,7 @@ public class UploadControllerTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertNotFound();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
     }
 
     @ParameterizedTest

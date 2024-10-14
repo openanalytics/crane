@@ -23,6 +23,8 @@ package eu.openanalytics.crane.upload;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
+import eu.openanalytics.crane.service.AbstractPosixAccessControlService;
+import eu.openanalytics.crane.service.UserService;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload2.core.FileItemInput;
@@ -34,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,9 +57,15 @@ import java.util.Map;
 public class UploadController {
     private S3TransferManager transferManager;
     private final CraneConfig config;
+    private final PathWriteAccessControlService pathWriteAccessControlService;
+    private final PosixWriteAccessControlService posixWriteAccessControlService;
+    private final UserService userService;
 
-    public UploadController(CraneConfig config) {
+    public UploadController(CraneConfig config, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService, UserService userService) {
         this.config = config;
+        this.pathWriteAccessControlService = pathWriteAccessControlService;
+        this.posixWriteAccessControlService = posixWriteAccessControlService;
+        this.userService = userService;
     }
 
     @PostConstruct
@@ -67,12 +76,15 @@ public class UploadController {
         }
     }
 
-    @PreAuthorize("@pathWriteAccessControlService.canAccess(#r, #p) && @posixWriteAccessControlService.canAccess(#r, #p)")
+//    @PreAuthorize("@pathWriteAccessControlService.canAccess(#r, #p) && @posixWriteAccessControlService.canAccess(#r, #p)")
     @ResponseBody
     @PostMapping(value = "/__file/{repository}/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> createResource(HttpServletRequest request,
                                                                            @P("r") @PathVariable(name = "repository") String stringRepository,
                                                                            @P("p") @PathVariable(name = "path") String stringPath) {
+        if (!pathWriteAccessControlService.canAccess(stringRepository, stringPath) || !posixWriteAccessControlService.canAccess(stringRepository, stringPath)) {
+            return userService.getUser() instanceof AnonymousAuthenticationToken ? ApiResponse.failUnauthorized() : ApiResponse.failForbidden();
+        }
         boolean isMultipartForm = JakartaServletFileUpload.isMultipartContent(request);
 
         if (!isMultipartForm) {

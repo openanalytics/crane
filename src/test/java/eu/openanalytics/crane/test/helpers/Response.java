@@ -128,4 +128,8 @@ public class Response {
         Assertions.assertEquals(302, priorCode());
         Assertions.assertEquals(response.request().url().port(), response.priorResponse().request().url().port());
     }
+
+    public void assertForbidden() {
+        Assertions.assertEquals(403, code());
+    }
 }
