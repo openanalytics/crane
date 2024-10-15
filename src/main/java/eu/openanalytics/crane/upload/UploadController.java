@@ -23,6 +23,7 @@ package eu.openanalytics.crane.upload;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
+import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.AbstractPosixAccessControlService;
 import eu.openanalytics.crane.service.UserService;
 import jakarta.annotation.PostConstruct;
@@ -35,10 +36,13 @@ import org.carlspring.cloud.storage.s3fs.S3Path;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authorization.event.AuthorizationDeniedEvent;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,6 +58,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @Controller
 public class UploadController {
@@ -63,12 +68,14 @@ public class UploadController {
     private final PathWriteAccessControlService pathWriteAccessControlService;
     private final PosixWriteAccessControlService posixWriteAccessControlService;
     private final UserService userService;
+    private final UploadAuditing auditingService;
 
-    public UploadController(CraneConfig config, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService, UserService userService) {
+    public UploadController(CraneConfig config, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService, UserService userService, UploadAuditing auditingService) {
         this.config = config;
         this.pathWriteAccessControlService = pathWriteAccessControlService;
         this.posixWriteAccessControlService = posixWriteAccessControlService;
         this.userService = userService;
+        this.auditingService = auditingService;
     }
 
     @PostConstruct
@@ -86,11 +93,13 @@ public class UploadController {
                                                                            @P("r") @PathVariable(name = "repository") String stringRepository,
                                                                            @P("p") @PathVariable(name = "path") String stringPath) {
         if (!pathWriteAccessControlService.canAccess(stringRepository, stringPath) || !posixWriteAccessControlService.canAccess(stringRepository, stringPath)) {
+            auditingService.createAuthorizationDeniedEvent(userService.getUser());
             return userService.getUser() instanceof AnonymousAuthenticationToken ? ApiResponse.failUnauthorized() : ApiResponse.failForbidden();
         }
         boolean isMultipartForm = JakartaServletFileUpload.isMultipartContent(request);
 
         if (!isMultipartForm) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "Request wasn't a multipart form"));
         }
 
@@ -100,12 +109,14 @@ public class UploadController {
         Path path = repository.getStoragePath().resolve(stringPath.substring(1));
 
         if (Files.exists(path)) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(stringRepository + stringPath)));
         }
 
         try {
             FileItemInput fileItemInput = getFileItemInput(upload.getItemIterator(request));
             if (fileItemInput == null) {
+                auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
                 return ApiResponse.fail(Map.of("message", "Upload failed. No parameter named `file` found"));
             }
             if (path.toString().startsWith("s3://")) {
@@ -125,8 +136,10 @@ public class UploadController {
             } else {
                 throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
             }
+            auditingService.createUploadAuditEvent(request);
             return ApiResponse.success(Map.of("message", "File upload succeeded"));
         } catch (IOException e) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File upload failed"));
         }
     }

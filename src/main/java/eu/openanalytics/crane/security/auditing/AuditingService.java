@@ -40,7 +40,7 @@ public class AuditingService {
 
     private final UserService userService;
 
-    private final AuditEventRepository auditEventRepository;
+    protected final AuditEventRepository auditEventRepository;
 
     public AuditingService(UserService userService, AuditEventRepository auditEventRepository) {
         this.userService = userService;
@@ -79,7 +79,7 @@ public class AuditingService {
         auditEventRepository.add(new AuditEvent(getPrincipal(), type, data));
     }
 
-    private Map<String, Object> createData() {
+    protected Map<String, Object> createData() {
         ServletRequestAttributes attributes = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
         if (attributes == null) {
             return Map.of(
@@ -98,7 +98,7 @@ public class AuditingService {
         );
     }
 
-    private Map<String, Object> createData(HttpServletRequest request, HttpStatus status) {
+    protected Map<String, Object> createData(HttpServletRequest request, HttpStatus status) {
         return Map.of(
                 "request_method", request.getMethod(),
                 "request_path", request.getRequestURI(),
