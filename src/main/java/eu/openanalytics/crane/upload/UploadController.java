@@ -100,7 +100,7 @@ public class UploadController {
         Path path = repository.getStoragePath().resolve(stringPath.substring(1));
 
         if (Files.exists(path)) {
-            return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(stringPath)));
+            return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(stringRepository + stringPath)));
         }
 
         try {
@@ -118,7 +118,7 @@ public class UploadController {
                         try {
                             Files.setAttribute(path, "unix:" + attr, pathAttributes.get(attr));
                         } catch (IOException e) {
-                            logger.warn("Crane could not set '{}' unix attribute", attr);
+                            logger.warn("Crane could not set '{}' unix attribute of '{}'", attr, path);
                         }
                     }
                 }
