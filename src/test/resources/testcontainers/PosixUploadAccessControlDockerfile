@@ -83,6 +83,6 @@ RUN chgrp -R crane_public /tmp/posix_repository/ && \
     chmod -R u+w /tmp/posix_repository/repository_with_paths/write_public_repo /tmp/posix_repository/write_public_repo
 
 WORKDIR /opt/crane
-USER $CRANE_USER
+#USER $CRANE_USER
 
 CMD ["java", "-noverify", "-jar", "/opt/crane/crane.jar", "--spring.jmx.enabled=false", "--spring.config.location=/opt/crane/application.yml"]

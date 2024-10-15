@@ -112,6 +112,10 @@ public class UploadController {
             } else {
                 throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
             }
+            Map<String, Object> pathAttributes = Files.readAttributes(path.getParent(), "unix:owner,uid,gid,permissions");
+            for (String attr: pathAttributes.keySet()) {
+                Files.setAttribute(path, "unix:" + attr, pathAttributes.get(attr));
+            }
             return ApiResponse.success(Map.of("message", "File upload succeeded"));
         } catch (IOException e) {
             return ApiResponse.fail(Map.of("message", "File upload failed"));
