@@ -32,6 +32,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.util.UriComponentsBuilder;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.StsException;
 
@@ -48,7 +49,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 @ConfigurationProperties(prefix = "app")
@@ -137,12 +137,10 @@ public class CraneConfig {
             String path = new URI("/" + uri.getAuthority() + uri.getPath()).getPath();
             try (FileSystem fs = FileSystems.newFileSystem(URI.create("s3:" + s3Endpoint.getSchemeSpecificPart()), env, Thread.currentThread().getContextClassLoader())) {
                 Path storageLocationPath = fs.getPath(path);
-                try {
-                    Files.list(storageLocationPath).close();
-                } catch (IOException e){
-                    throw new IllegalArgumentException("Crane cannot access the following storage location '%s'".formatted(storageLocation), e);
-                }
+                Files.list(storageLocationPath).close();
                 return storageLocationPath;
+            } catch (IOException | S3Exception e){
+                throw new IllegalArgumentException("Crane cannot access the following storage location '%s'".formatted(storageLocation), e);
             }
         } else {
             FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));

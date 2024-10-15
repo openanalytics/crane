@@ -26,7 +26,9 @@ import eu.openanalytics.crane.test.helpers.TestHelperException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.testcontainers.shaded.org.apache.commons.lang3.exception.ExceptionUtils;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 public class CraneConfigTest {
 
@@ -121,6 +123,22 @@ public class CraneConfigTest {
         Assertions.assertEquals(
                 "PathComponent abc is invalid, cannot have a public repository (abc) in a private parent (private_repo)",
                 rootCause.getMessage()
+        );
+    }
+
+    @Test
+    @EnabledIfEnvironmentVariable(named = "AWS_PROFILE", matches = "oa-poc")
+    public void testConfigurationWithNoAccessToS3Bucket() {
+        TestHelperException exception = Assertions.assertThrows(
+                TestHelperException.class,
+                () -> {
+                    new CraneInstance("application-test-no-s3-access.yml");
+                }
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(S3Exception.class, rootCause.getClass());
+        Assertions.assertTrue(
+                rootCause.getMessage().contains("is not authorized to perform: s3:ListBucket on resource:")
         );
     }
 }
