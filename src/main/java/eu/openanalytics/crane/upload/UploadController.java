@@ -33,6 +33,8 @@ import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.carlspring.cloud.storage.s3fs.S3Path;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -55,6 +57,7 @@ import java.util.Map;
 
 @Controller
 public class UploadController {
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     private S3TransferManager transferManager;
     private final CraneConfig config;
     private final PathWriteAccessControlService pathWriteAccessControlService;
@@ -109,12 +112,18 @@ public class UploadController {
                 writeFileToS3(fileItemInput, path);
             } else if (path.toString().startsWith("/")) {
                 FileUtils.copyInputStreamToFile(fileItemInput.getInputStream(), path.toFile());
+                if (repository.hasPosixAccessControl()) {
+                    Map<String, Object> pathAttributes = Files.readAttributes(path.getParent(), "unix:owner,uid,gid,permissions");
+                    for (String attr : pathAttributes.keySet()) {
+                        try {
+                            Files.setAttribute(path, "unix:" + attr, pathAttributes.get(attr));
+                        } catch (IOException e) {
+                            logger.warn("Crane could not set '{}' unix attribute", attr);
+                        }
+                    }
+                }
             } else {
                 throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
-            }
-            Map<String, Object> pathAttributes = Files.readAttributes(path.getParent(), "unix:owner,uid,gid,permissions");
-            for (String attr: pathAttributes.keySet()) {
-                Files.setAttribute(path, "unix:" + attr, pathAttributes.get(attr));
             }
             return ApiResponse.success(Map.of("message", "File upload succeeded"));
         } catch (IOException e) {
