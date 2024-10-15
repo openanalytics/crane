@@ -10,7 +10,8 @@ app:
     - name: repository_with_paths
       posix-access-control: true
       write-access:
-        public: true
+        users: [ demo, test, undefined, users ]
+        groups: [ scientists, mathematicians ]
       paths:
         - name: private
         - name: only_owner_demo
@@ -30,7 +31,7 @@ app:
             groups: [ mathematicians ]
         - name: no_path_access
           read-access:
-            users: [ undefined users ]
+            users: [ undefined, users ]
     - name: private
       posix-access-control: true
     - name: only_owner_demo
@@ -59,9 +60,9 @@ app:
     - name: no_path_access
       posix-access-control: true
       read-access:
-        users: [ undefined users ]
+        users: [ undefined, users ]
       write-access:
-        users: [ undefined users ]
+        users: [ undefined, users ]
 spring:
   security:
     oauth2:

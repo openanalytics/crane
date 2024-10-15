@@ -73,12 +73,12 @@ public class Repository extends PathComponent {
 
         AccessControl readAccess = getReadAccess();
         if (readAccess.isPublic && (readAccess.hasGroupAccess() || readAccess.hasUserAccess() || readAccess.hasExpressionAccess() || readAccess.hasNetworkAccess() || hasPosixAccessControl())) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add read access control properties to a public repo", getName()));
         }
 
         AccessControl writeAccess = getWriteAccess();
-        if (writeAccess.getPublic() && (writeAccess.hasGroupAccess() || writeAccess.hasUserAccess() || writeAccess.hasExpressionAccess() || writeAccess.hasNetworkAccess())) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", getName()));
+        if (writeAccess.getPublic() && (writeAccess.hasGroupAccess() || writeAccess.hasUserAccess() || writeAccess.hasExpressionAccess() || writeAccess.hasNetworkAccess() || hasPosixAccessControl())) {
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add write access control properties to a public repo", getName()));
         }
     }
 

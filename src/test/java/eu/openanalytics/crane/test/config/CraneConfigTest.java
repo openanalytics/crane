@@ -126,6 +126,38 @@ public class CraneConfigTest {
         );
     }
 
+    
+    public void testConfigurationWithReadPublicRepoAndPosixEnabled() {
+        TestHelperException exception = Assertions.assertThrows(
+                TestHelperException.class,
+                () -> {
+                    new CraneInstance("application-with-posix-and-read-public-repo.yml");
+                }
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals(
+                "Repository public_and_posix is invalid, cannot add read access control properties to a public repo",
+                rootCause.getMessage()
+        );
+    }
+
+    @Test
+    public void testConfigurationWithWritePublicRepoAndPosixEnabled() {
+        TestHelperException exception = Assertions.assertThrows(
+                TestHelperException.class,
+                () -> {
+                    new CraneInstance("application-with-posix-and-write-public-repo.yml");
+                }
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals(
+                "Repository public_and_posix is invalid, cannot add write access control properties to a public repo",
+                rootCause.getMessage()
+        );
+    }
+
     @Test
     @EnabledIfEnvironmentVariable(named = "AWS_PROFILE", matches = "oa-poc")
     public void testConfigurationWithNoAccessToS3Bucket() {
