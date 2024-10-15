@@ -44,9 +44,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @ConfigurationProperties(prefix = "app")
@@ -133,12 +135,22 @@ public class CraneConfig {
 
             URI uri = new URI(storageLocation);
             String path = new URI("/" + uri.getAuthority() + uri.getPath()).getPath();
-
             try (FileSystem fs = FileSystems.newFileSystem(URI.create("s3:" + s3Endpoint.getSchemeSpecificPart()), env, Thread.currentThread().getContextClassLoader())) {
-                return fs.getPath(path);
+                Path storageLocationPath = fs.getPath(path);
+                try {
+                    Files.list(storageLocationPath).close();
+                } catch (IOException e){
+                    throw new IllegalArgumentException("Crane cannot access the following storage location '%s'".formatted(storageLocation), e);
+                }
+                return storageLocationPath;
             }
         } else {
             FileSystem fs = FileSystems.getFileSystem(new URI("file:///"));
+            try {
+                Files.list(Path.of(storageLocation)).close();
+            } catch (IOException e){
+                throw new IllegalArgumentException("Crane cannot access the following storage location '%s'".formatted(storageLocation), e);
+            }
             return fs.getPath(new URI(storageLocation).getPath());
         }
     }
