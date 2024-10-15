@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.openanalytics.crane.security.auditing.FileAuditEventRepository;
-import eu.openanalytics.crane.test.api.RepositoryHostingHandlerTest;
+import eu.openanalytics.crane.test.api.DownloadControllerTest;
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
@@ -37,8 +37,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.services.sts.StsClient;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,7 +52,7 @@ public class AuditingServiceTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final String ANONYMOUS_USER = "anonymousUser";
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
-    private static final Logger logger = LoggerFactory.getLogger(RepositoryHostingHandlerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
     private static BufferedReader bufferedReader;
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())

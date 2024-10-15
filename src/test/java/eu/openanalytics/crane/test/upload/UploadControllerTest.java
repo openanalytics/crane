@@ -21,7 +21,7 @@
 package eu.openanalytics.crane.test.upload;
 
 import com.google.common.io.Files;
-import eu.openanalytics.crane.test.api.RepositoryHostingHandlerTest;
+import eu.openanalytics.crane.test.api.DownloadControllerTest;
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
@@ -50,7 +50,7 @@ import java.util.List;
 
 @Testcontainers
 public class UploadControllerTest {
-    private static final Logger logger = LoggerFactory.getLogger(RepositoryHostingHandlerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static List<CraneInstance> instances = new ArrayList<>();
     private static S3Client client;

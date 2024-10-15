@@ -79,9 +79,11 @@ public class IndexPageService {
         // breadcrumbs
         List<CraneResource> breadcrumbs = new ArrayList<>();
         Path current = path;
-        while (current != null && !current.toString().equals(repository.getStoragePath().toString())) {
-            breadcrumbs.add(0, CraneResource.createFromPath(current, config));
+        CraneResource resource = CraneResource.createFromPath(current, config);;
+        while (resource!= null && current != null && !current.toString().equals(repository.getStoragePath().toString())) {
+            breadcrumbs.add(0, resource);
             current = current.getParent();
+            resource = CraneResource.createFromPath(current, config);
         }
 
         Map<String, Object> map = new HashMap<>();

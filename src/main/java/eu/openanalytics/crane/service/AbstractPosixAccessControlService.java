@@ -75,18 +75,15 @@ public abstract class AbstractPosixAccessControlService {
         }
 
         Iterator<Path> subsequentPaths = getSubsequentPaths(fullPath);
-        String storageLocation = repository.getStorageLocation();
-        StringBuilder pathBuilder = new StringBuilder(storageLocation);
+        Path currentPath = repository.getStoragePath();
         while (subsequentPaths.hasNext()) {
-            String subDirectory = pathBuilder.append("/").toString();
-            if (!canAccessPosix(auth, subDirectory, repository)) {
-                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, subDirectory);
+            if (!canAccessPosix(auth, currentPath)) {
+                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, currentPath);
                 return false;
             }
-            pathBuilder.append(subsequentPaths.next());
+            currentPath = currentPath.resolve(subsequentPaths.next());
         }
-        String completePath = pathBuilder.toString();
-        return canAccessPosix(auth, completePath, repository);
+        return canAccessPosix(auth, currentPath);
     }
 
     protected Iterator<Path> getSubsequentPaths(String path) {
@@ -97,11 +94,10 @@ public abstract class AbstractPosixAccessControlService {
         return storagePath.getFileSystem().supportedFileAttributeViews().contains("posix");
     }
 
-    protected boolean canAccessPosix(Authentication auth, String stringPath, Repository repository) {
+    protected boolean canAccessPosix(Authentication auth, Path path) {
         CraneUser craneUser = (CraneUser) auth.getPrincipal();
         PosixFileAttributes attributes;
         int pathUID, pathGID;
-        Path path = Path.of(stringPath);
         try {
             Map<String, Object> pathAttributes = Files.readAttributes(path, "unix:uid,gid");
             pathUID = (int) pathAttributes.get("uid");

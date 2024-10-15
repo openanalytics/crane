@@ -35,8 +35,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Testcontainers
-public class RepositoryHostingHandlerTest {
-    private static final Logger logger = LoggerFactory.getLogger(RepositoryHostingHandlerTest.class);
+public class DownloadControllerTest {
+    private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static CraneInstance groupsInst;
     static List<CraneInstance> instances = new ArrayList<>();

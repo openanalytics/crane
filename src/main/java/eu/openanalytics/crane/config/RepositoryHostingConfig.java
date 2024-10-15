@@ -46,9 +46,8 @@ public class RepositoryHostingConfig {
         Map<String, HttpRequestHandler> urlMap = new LinkedHashMap<>();
 
         for (Repository repository : config.getRepositories()) {
-            urlMap.put(String.format("/%s/**", repository.getName()), (request, response) -> {
-                request.getRequestDispatcher("/__file" + urlPathHelper.getPathWithinApplication(request)).forward(request, response);
-            });
+            urlMap.put(String.format("/%s/**", repository.getName()), (request, response) ->
+                    request.getRequestDispatcher("/__file" + urlPathHelper.getPathWithinApplication(request)).forward(request, response));
         }
 
         return new SimpleUrlHandlerMapping(urlMap);
