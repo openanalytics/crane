@@ -72,7 +72,7 @@ public class AuditingServiceTest {
         Map<String, String> properties = new HashMap<>();
         properties.put("app.audit-logging", auditLogsFile.getAbsolutePath());
         instances.add(new CraneInstance("application-test-api.yml", properties));
-        CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
+        CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger, properties);
     }
 
     static List<CraneInstance> instances() {

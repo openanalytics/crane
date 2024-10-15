@@ -139,11 +139,15 @@ public class CraneInstance {
     }
 
     public static boolean addInstanceWithAwsAccess(List<CraneInstance> instances, String configName, int port, Logger logger) {
+        return addInstanceWithAwsAccess(instances, configName, port, logger, new HashMap<>());
+    }
+
+    public static boolean addInstanceWithAwsAccess(List<CraneInstance> instances, String configName, int port, Logger logger, Map<String, String> properties) {
         String awsProfile = System.getenv("AWS_PROFILE");
         if (awsProfile != null && awsProfile.equals("oa-poc")) {
             try (StsClient stsClient = StsClient.create()) {
                 stsClient.getCallerIdentity();
-                instances.add(new CraneInstance(configName, port));
+                instances.add(new CraneInstance(configName, port, properties, true));
                 return true;
             } catch (SdkClientException e) {
                 logger.warn("Could not connect to AWS", e);
