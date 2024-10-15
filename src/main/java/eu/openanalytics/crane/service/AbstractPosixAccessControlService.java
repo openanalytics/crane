@@ -25,6 +25,7 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.security.CraneUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
@@ -95,6 +96,9 @@ public abstract class AbstractPosixAccessControlService {
     }
 
     protected boolean canAccessPosix(Authentication auth, Path path) {
+        if (auth instanceof AnonymousAuthenticationToken) {
+            return false;
+        }
         CraneUser craneUser = (CraneUser) auth.getPrincipal();
         PosixFileAttributes attributes;
         int pathUID, pathGID;

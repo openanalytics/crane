@@ -119,19 +119,13 @@ public class UploadControllerTest {
         String genericPath = "/private_repo/testUpload_token_%s.txt";
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
-        Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
-        response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("unauthorized");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
-        response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
-        response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
     }
 
     @ParameterizedTest

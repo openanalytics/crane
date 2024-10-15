@@ -9,16 +9,24 @@ app:
   repositories:
     - name: repository_with_paths
       posix-access-control: true
+      write-access:
+        public: true
       paths:
         - name: private
         - name: only_owner_demo
           read-access:
             users: [ demo ]
+          write-access:
+            users: [ demo ]
         - name: only_group_scientists
           read-access:
             groups: [ scientists ]
+          write-access:
+            groups: [ scientists ]
         - name: only_group_mathematicians_gid
           read-access:
+            groups: [ mathematicians ]
+          write-access:
             groups: [ mathematicians ]
         - name: no_path_access
           read-access:
@@ -29,24 +37,31 @@ app:
       posix-access-control: true
       read-access:
         users: [ demo ]
+      write-access:
+        users: [ demo ]
     - name: only_group_scientists
       posix-access-control: true
       read-access:
+        groups: [ scientists ]
+      write-access:
         groups: [ scientists ]
     - name: only_group_mathematicians_gid
       posix-access-control: true
       read-access:
         groups: [ mathematicians ]
+      write-access:
+        groups: [ mathematicians ]
     - name: no_posix_access
       read-access:
+        public: true
+      write-access:
         public: true
     - name: no_path_access
       posix-access-control: true
       read-access:
         users: [ undefined users ]
-    - name: write_public_repo
       write-access:
-        public: true
+        users: [ undefined users ]
 spring:
   security:
     oauth2:

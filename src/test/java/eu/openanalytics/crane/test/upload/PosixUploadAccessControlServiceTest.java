@@ -146,19 +146,13 @@ public class PosixUploadAccessControlServiceTest {
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
-        Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
-        response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("unauthorized");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
-        response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
-        response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
     }
 
     @Test
@@ -234,7 +228,10 @@ public class PosixUploadAccessControlServiceTest {
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("unauthorized");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("test");
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();

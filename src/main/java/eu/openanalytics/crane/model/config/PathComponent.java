@@ -20,6 +20,8 @@
  */
 package eu.openanalytics.crane.model.config;
 
+import eu.openanalytics.crane.upload.UploadAccessControl;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +41,7 @@ public class PathComponent {
     private Map<String, PathComponent> components;
 
     private AccessControl readAccess = new AccessControl();
-    private AccessControl writeAccess = new AccessControl();
+    private AccessControl writeAccess = new UploadAccessControl();
 
     public String getName() {
         return name;
