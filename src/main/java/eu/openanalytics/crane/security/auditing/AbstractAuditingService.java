@@ -98,7 +98,7 @@ public abstract class AbstractAuditingService {
     public Map<String, Object> createData(HttpServletRequest request, HttpStatus status) {
         return Map.of(
                 "request_method", request.getMethod(),
-                "request_path", request.getRequestURI(),
+                "request_path", preparePath(request.getRequestURI()),
                 "response_status", status.value(),
                 "remote_address", request.getRemoteAddr()
         );
