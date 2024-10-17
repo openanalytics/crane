@@ -26,6 +26,7 @@ import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.authorization.event.AuthorizationDeniedEvent;
 import org.springframework.security.core.Authentication;
@@ -36,80 +37,16 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.Map;
 
 @Service
-public class AuditingService {
-
-    private final UserService userService;
-
-    protected final AuditEventRepository auditEventRepository;
+public class AuditingService extends AbstractAuditingService {
 
     public AuditingService(UserService userService, AuditEventRepository auditEventRepository) {
-        this.userService = userService;
-        this.auditEventRepository = auditEventRepository;
-    }
-
-    public void createErrorHandlerAuditEvent(HttpServletRequest request, HttpStatus status) {
-        createAuditEvent("ERROR_HANDLER", createData(request, status));
-    }
-
-    public void createLogoutHandlerAuditEvent(HttpServletRequest request) {
-        createAuditEvent("LOGOUT", createData(request, HttpStatus.OK));
-    }
-
-    public void createRepositoryHandlerAuditEvent(HttpServletRequest request) {
-        createAuditEvent("REPOSITORY_HANDLER", createData(request, HttpStatus.OK));
-    }
-
-    public void createListRepositoriesAuditEvent(HttpServletRequest request) {
-        createAuditEvent("LIST_REPOSITORIES", createData(request, HttpStatus.OK));
+        super(userService, auditEventRepository);
     }
 
     @EventListener
     public void onAuthenticationSuccessEvent(AuthenticationSuccessEvent event) {
         String principal = event.getAuthentication().getName();
         auditEventRepository.add(new AuditEvent(principal, "AUTHENTICATION_SUCCESS", createData()));
-    }
-
-    @EventListener
-    public void onAuthorizationDeniedEvent(AuthorizationDeniedEvent<?> event) {
-        String principal = event.getAuthentication().get().getName();
-        auditEventRepository.add(new AuditEvent(principal, "AUTHORIZATION_FAILURE", createData()));
-    }
-
-    protected void createAuditEvent(String type, Map<String, Object> data) {
-        auditEventRepository.add(new AuditEvent(getPrincipal(), type, data));
-    }
-
-    protected Map<String, Object> createData() {
-        ServletRequestAttributes attributes = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
-        if (attributes == null) {
-            return Map.of(
-                    "request_method", "",
-                    "request_path", "",
-                    "response_status", 0,
-                    "remote_address", ""
-            );
-        }
-        HttpServletRequest request = attributes.getRequest();
-        return Map.of(
-                "request_method", request.getMethod(),
-                "request_path", request.getRequestURI(),
-                "response_status", 0,
-                "remote_address", request.getRemoteAddr()
-        );
-    }
-
-    protected Map<String, Object> createData(HttpServletRequest request, HttpStatus status) {
-        return Map.of(
-                "request_method", request.getMethod(),
-                "request_path", request.getRequestURI(),
-                "response_status", status.value(),
-                "remote_address", request.getRemoteAddr()
-        );
-    }
-
-    private String getPrincipal() {
-        Authentication authentication = userService.getUser();
-        return authentication == null ? "anonymousUser" : authentication.getName();
     }
 
 }

@@ -22,6 +22,7 @@ package eu.openanalytics.crane.security;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.security.auditing.AuditingService;
+import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import org.slf4j.Logger;
@@ -64,13 +65,15 @@ public class WebSecurity {
     private final AuditingService auditingService;
     private final TokenParser tokenParser;
     private final UrlPathHelper urlPathHelper = new UrlPathHelper();
+    private final UserService userService;
 
-    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, AuditingService auditingService) {
+    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, AuditingService auditingService, UserService userService) {
         this.config = config;
         this.openIdReAuthorizeFilter = openIdReAuthorizeFilter;
         this.specExpressionResolver = specExpressionResolver;
         this.auditingService = auditingService;
         this.tokenParser = new TokenParser(config);
+        this.userService = userService;
     }
 
     @Bean
@@ -96,7 +99,7 @@ public class WebSecurity {
                                 "/logout-success"
                         ).permitAll()
                         .requestMatchers("/{repoName}/**")
-                        .access(this::check)
+                        .access(this::checkAccessWithAuditing)
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
                 .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, config))))
@@ -107,12 +110,18 @@ public class WebSecurity {
                 .requestCache((cache) -> cache.requestCache(requestCache));
         return http.build();
     }
-
-    private AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    private AuthorizationDecision checkAccessWithAuditing(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+        boolean canAccess = checkAccess(authentication, context);
+        if (!canAccess) {
+            auditingService.createAuthorizationDeniedEvent(userService.getUser());
+        }
+        return new AuthorizationDecision(canAccess);
+    }
+    private boolean checkAccess(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
         String path = urlPathHelper.getRequestUri(context.getRequest());
         if (path.contains("%")) {
             // don't support encoded paths
-            return new AuthorizationDecision(false);
+            return false;
         }
 
         File absolutePath = new File(path);
@@ -120,16 +129,16 @@ public class WebSecurity {
         try {
             String canonicalPath = absolutePath.getCanonicalPath();
             if (!new File(canonicalPath).isAbsolute()) {
-                return new AuthorizationDecision(false);
+                return false;
             }
             if (!absolutePath.getAbsolutePath().equals(canonicalPath)) {
-                return new AuthorizationDecision(false);
+                return false;
             }
         } catch (IOException e) {
-            return new AuthorizationDecision(false);
+            return false;
         }
         String repository = Path.of(path).iterator().next().toString();
-        return new AuthorizationDecision(config.getRepository(repository) != null);
+        return config.getRepository(repository) != null;
     }
 
     public LogoutSuccessHandler getLogoutSuccessHandler() {

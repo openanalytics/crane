@@ -20,23 +20,16 @@
  */
 package eu.openanalytics.crane.upload;
 
-import eu.openanalytics.crane.security.auditing.AbstractAuditingService;
+import eu.openanalytics.crane.service.AbstractAccessControlService;
 import eu.openanalytics.crane.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.boot.actuate.audit.AuditEventRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
 @Service
-public class UploadAuditing extends AbstractAuditingService {
-    public UploadAuditing(UserService userService, AuditEventRepository auditEventRepository) {
-        super(userService, auditEventRepository);
+public class UploadAccessControlService extends AbstractAccessControlService {
+    UploadAccessControlService(PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService, UploadAuditing auditingService, UserService userService) {
+        pathAccessControlService = pathWriteAccessControlService;
+        posixAccessControlService = posixWriteAccessControlService;
+        this.auditingService = auditingService;
+        this.userService = userService;
     }
-
-    public void createUploadAuditEvent(HttpServletRequest request) {
-        createAuditEvent("UPLOAD", createData(request, HttpStatus.OK));
-    }
-
 }

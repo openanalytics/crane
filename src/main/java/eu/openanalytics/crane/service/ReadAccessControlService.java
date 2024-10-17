@@ -18,25 +18,18 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane.upload;
+package eu.openanalytics.crane.service;
 
-import eu.openanalytics.crane.security.auditing.AbstractAuditingService;
-import eu.openanalytics.crane.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.boot.actuate.audit.AuditEventRepository;
-import org.springframework.http.HttpStatus;
+import eu.openanalytics.crane.security.auditing.AuditingService;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
 @Service
-public class UploadAuditing extends AbstractAuditingService {
-    public UploadAuditing(UserService userService, AuditEventRepository auditEventRepository) {
-        super(userService, auditEventRepository);
-    }
+public class ReadAccessControlService extends AbstractAccessControlService {
+    public ReadAccessControlService(PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, AuditingService auditingService, UserService userService) {
+        pathAccessControlService = pathReadAccessControlService;
+        posixAccessControlService = posixReadAccessControlService;
+        this.auditingService = auditingService;
+        this.userService = userService;
 
-    public void createUploadAuditEvent(HttpServletRequest request) {
-        createAuditEvent("UPLOAD", createData(request, HttpStatus.OK));
     }
-
 }

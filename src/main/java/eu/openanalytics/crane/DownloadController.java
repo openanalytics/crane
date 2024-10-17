@@ -67,7 +67,7 @@ public class DownloadController {
         this.craneConfig = craneConfig;
     }
 
-    @PreAuthorize("@pathReadAccessControlService.canAccess(#r, #p) && @posixReadAccessControlService.canAccess(#r, #p)")
+    @PreAuthorize("@readAccessControlService.canAccess(#r, #p)")
     @GetMapping("/__file/{repository}/{*path}")
     public void read(HttpServletRequest request,
                      HttpServletResponse response,
