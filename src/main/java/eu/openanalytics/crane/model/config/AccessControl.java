@@ -95,11 +95,11 @@ public class AccessControl {
     }
 
     public boolean hasNetworkAccess() {
-        return network != null && network.size() > 0;
+        return network != null && !network.isEmpty();
     }
 
     public boolean hasExpressionAccess() {
-        return expression != null && expression.length() > 0;
+        return expression != null && !expression.isEmpty();
     }
 
     public boolean isAnyAuthenticatedUser() {
@@ -110,13 +110,13 @@ public class AccessControl {
         this.anyAuthenticatedUser = anyAuthenticatedUser;
     }
 
-    public void validate(String name) {
+    public void validate() {
         if (anyAuthenticatedUser != null && anyAuthenticatedUser && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
-            throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot add user-based access control properties to a repo that allows any authenticated user", name));
+            throw new IllegalArgumentException("Cannot add user-based access control properties when any-authenticated-user is enabled");
         }
 
         if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess() || anyAuthenticatedUser != null)) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
+            throw new IllegalArgumentException("Cannot add access control properties to a public repo");
         }
 
         if (anyAuthenticatedUser == null){

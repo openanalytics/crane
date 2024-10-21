@@ -87,16 +87,24 @@ public class PathComponent {
             throw new RuntimeException(String.format("PathComponent name %s contains invalid characters", name));
         }
 
-        readAccess.validate(name);
-        writeAccess.validate(name);
+        try {
+            readAccess.validate();
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(String.format("PathComponent %s has invalid read access control: %s", name, ex.getMessage()));
+        }
+        try{
+            writeAccess.validate();
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(String.format("PathComponent %s has invalid write access control: %s", name, ex.getMessage()));
+        }
         if (components != null) {
             for (PathComponent component : components.values()) {
                 if (component.readAccess.getPublic() && !readAccess.getPublic()) {
-                    throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot have a public repository (%s) in a private parent (%s)", component.name, component.name, name));
+                    throw new IllegalArgumentException(String.format("PathComponent %s has invalid read access control: cannot have a public PathComponent (%s) in a private parent (%s)", component.name, component.name, name));
                 }
 
                 if (component.writeAccess.getPublic() && !writeAccess.getPublic()) {
-                    throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot have a write public repository (%s) in a write private parent (%s)", component.name, component.name, name));
+                    throw new IllegalArgumentException(String.format("PathComponent %s has invalid write access control: cannot have a public PathComponent (%s) in a private parent (%s)", component.name, component.name, name));
                 }
                 component.validate();
             }

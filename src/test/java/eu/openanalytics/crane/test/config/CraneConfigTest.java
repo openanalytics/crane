@@ -42,8 +42,8 @@ public class CraneConfigTest {
     @Test
     public void testConfigurationWithMissingStoragePath() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> new CraneInstance("application-no-storage-location.yml")
+            TestHelperException.class,
+            () -> new CraneInstance("application-no-storage-location.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
@@ -53,8 +53,8 @@ public class CraneConfigTest {
     @Test
     public void testConfigurationWithInvalidRootStorageLocation() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> new CraneInstance("application-invalid-storage-location.yml")
+            TestHelperException.class,
+            () -> new CraneInstance("application-invalid-storage-location.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
@@ -64,8 +64,8 @@ public class CraneConfigTest {
     @Test
     public void testConfigurationWithInvalidRepositoryStorageLocation() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> new CraneInstance("application-invalid-repository-storage-location.yml")
+            TestHelperException.class,
+            () -> new CraneInstance("application-invalid-repository-storage-location.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
@@ -75,8 +75,8 @@ public class CraneConfigTest {
     @Test
     public void testConfigurationWithoutOpenidIssuerUri() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> new CraneInstance("application-no-openid-issuer-uri.yml", false)
+            TestHelperException.class,
+            () -> new CraneInstance("application-no-openid-issuer-uri.yml", false)
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
@@ -86,8 +86,8 @@ public class CraneConfigTest {
     @Test
     public void testConfigurationWithoutAnyRepositories() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> new CraneInstance("application-no-repositories.yml")
+            TestHelperException.class,
+            () -> new CraneInstance("application-no-repositories.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
@@ -97,64 +97,64 @@ public class CraneConfigTest {
     @Test
     public void testConfigurationWithAPublicRepositoryWithAPrivateParent() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> {
-                    new CraneInstance("application-with-public-repository-in-private-parent.yml");
-                }
+            TestHelperException.class,
+            () -> {
+                new CraneInstance("application-with-public-repository-in-private-parent.yml");
+            }
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
         Assertions.assertEquals(
-                "PathComponent public_repo is invalid, cannot have a public repository (public_repo) in a private parent (private_repo)",
-                rootCause.getMessage()
+            "PathComponent public_repo has invalid read access control: cannot have a public PathComponent (public_repo) in a private parent (private_repo)",
+            rootCause.getMessage()
         );
     }
 
     @Test
     public void testConfigurationWithAPublicRepositoryWithAPrivateParentDeeperNesting() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> {
-                    new CraneInstance("application-with-public-repository-in-private-parent-deeper-nesting.yml");
-                }
+            TestHelperException.class,
+            () -> {
+                new CraneInstance("application-with-public-repository-in-private-parent-deeper-nesting.yml");
+            }
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
         Assertions.assertEquals(
-                "PathComponent abc is invalid, cannot have a public repository (abc) in a private parent (private_repo)",
-                rootCause.getMessage()
+            "PathComponent abc has invalid read access control: cannot have a public PathComponent (abc) in a private parent (private_repo)",
+            rootCause.getMessage()
         );
     }
 
     
     public void testConfigurationWithReadPublicRepoAndPosixEnabled() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> {
-                    new CraneInstance("application-with-posix-and-read-public-repo.yml");
-                }
+            TestHelperException.class,
+            () -> {
+                new CraneInstance("application-with-posix-and-read-public-repo.yml");
+            }
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
         Assertions.assertEquals(
-                "Repository public_and_posix is invalid, cannot add read access control properties to a public repo",
-                rootCause.getMessage()
+            "Repository public_and_posix is invalid, cannot add read access control properties to a public repo",
+            rootCause.getMessage()
         );
     }
 
     @Test
     public void testConfigurationWithWritePublicRepoAndPosixEnabled() {
         TestHelperException exception = Assertions.assertThrows(
-                TestHelperException.class,
-                () -> {
-                    new CraneInstance("application-with-posix-and-write-public-repo.yml");
-                }
+            TestHelperException.class,
+            () -> {
+                new CraneInstance("application-with-posix-and-write-public-repo.yml");
+            }
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
         Assertions.assertEquals(
-                "Repository public_and_posix is invalid, cannot add write access control properties to a public repo",
-                rootCause.getMessage()
+            "Repository public_and_posix is invalid, cannot add write access control properties to a public repo",
+            rootCause.getMessage()
         );
     }
 
