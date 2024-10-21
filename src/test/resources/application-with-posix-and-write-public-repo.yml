@@ -1,5 +1,5 @@
 app:
-  storage-location: /tmp/posix_repository/
+  storage-location: /tmp/repository/
   openid-issuer-uri: "${OPENID_URL}"
   openid-groups-claim: realm_roles
   openid-posix-uid-claim: "uid"
