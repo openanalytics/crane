@@ -27,13 +27,18 @@ import java.util.stream.Collectors;
 
 public class AccessControl {
 
+    private final boolean defaultAnyAuthenticatedUser;
     protected List<String> groups;
     protected List<String> users;
     protected boolean isPublic = false;
     protected List<String> network;
-    protected boolean anyAuthenticatedUser;
+    protected Boolean anyAuthenticatedUser;
     protected List<IpAddressMatcher> networkMatchers;
     protected String expression;
+
+    public AccessControl(boolean defaultAnyAuthenticatedUser) {
+        this.defaultAnyAuthenticatedUser = defaultAnyAuthenticatedUser;
+    }
 
     public List<String> getGroups() {
         return groups;
@@ -106,16 +111,22 @@ public class AccessControl {
     }
 
     public void validate(String name) {
-        if (isAnyAuthenticatedUser() && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
+        if (anyAuthenticatedUser != null && anyAuthenticatedUser && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
             throw new IllegalArgumentException(String.format("PathComponent %s is invalid, cannot add user-based access control properties to a repo that allows any authenticated user", name));
         }
 
-        if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
-            anyAuthenticatedUser = true;
+        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess() || anyAuthenticatedUser != null)) {
+            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
         }
 
-        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess())) {
-            throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add access control properties to a public repo", name));
+        if (anyAuthenticatedUser == null){
+            if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
+                // use default config when no authorization is provided
+                anyAuthenticatedUser = defaultAnyAuthenticatedUser;
+            } else {
+                // disable when at least one authorization option is used
+                anyAuthenticatedUser = false;
+            }
         }
     }
 }

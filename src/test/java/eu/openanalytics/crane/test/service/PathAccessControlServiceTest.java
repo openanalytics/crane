@@ -61,6 +61,7 @@ public class PathAccessControlServiceTest {
         PathComponent repository = new Repository();
         repository.setName("network_restricted_repo");
         repository.getReadAccess().setNetwork(List.of(allowed_ip));
+        repository.validate();
 
         Authentication mockedAuthentication = mock(AnonymousAuthenticationToken.class);
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
@@ -87,6 +88,7 @@ public class PathAccessControlServiceTest {
         repository.setName("network_restricted_repo");
         repository.getReadAccess().setNetwork(List.of(allowed_ip));
         repository.getReadAccess().setUsers(List.of("demo"));
+        repository.validate();
 
         Authentication mockedAuthentication = mock(Authentication.class);
         when(mockedAuthentication.getName()).thenReturn("demo");
