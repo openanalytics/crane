@@ -20,7 +20,10 @@
  */
 package eu.openanalytics.crane.test.api;
 
-import eu.openanalytics.crane.test.helpers.*;
+import eu.openanalytics.crane.test.helpers.ApiTestHelper;
+import eu.openanalytics.crane.test.helpers.CraneInstance;
+import eu.openanalytics.crane.test.helpers.KeycloakInstance;
+import eu.openanalytics.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -44,6 +47,7 @@ public class DownloadControllerTest {
     @BeforeAll
     public static void beforeAll() {
         keycloakInstance.start();
+        System.setProperty("testing", "true");
         instances.add(new CraneInstance("application-test-api.yml"));
         CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
         groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7273);
@@ -457,19 +461,19 @@ public class DownloadControllerTest {
 
         String attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
         Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertBadRequest();
+        resp.assertNotFound();
 
         attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertBadRequest();
+        resp.assertUnauthorizedRedirectToLogIn();
 
         attack_path = "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd";
         resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertBadRequest();
+        resp.assertNotFound();
 
         attack_path = "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertBadRequest();
+        resp.assertUnauthorizedRedirectToLogIn();
 
         attack_path = "/%2e%2e/%2e%2e/etc/passwd";
         resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
@@ -489,19 +493,19 @@ public class DownloadControllerTest {
 
         attack_path = "/..%2f..%2fetc/passwd";
         resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertBadRequest();
+        resp.assertNotFound();
 
         attack_path = "/..%2f..%2fetc/passwd";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertBadRequest();
+        resp.assertUnauthorizedRedirectToLogIn();
 
         attack_path = "/public_repo/..%2f..%2f..%2f/etc/passwd";
         resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertBadRequest();
+        resp.assertNotFound();
 
         attack_path = "/public_repo/..%2f..%2f..%2f/etc/passwd";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertBadRequest();
+        resp.assertUnauthorizedRedirectToLogIn();
     }
 
     @ParameterizedTest
