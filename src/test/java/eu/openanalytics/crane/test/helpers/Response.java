@@ -20,8 +20,8 @@
  */
 package eu.openanalytics.crane.test.helpers;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
-import org.thymeleaf.util.StringUtils;
 
 import java.io.IOException;
 
@@ -33,7 +33,6 @@ public class Response {
     public Response(okhttp3.Response response) {
         this.response = response;
     }
-
 
     public void assertSuccess() {
         Assertions.assertEquals(200, code());
@@ -64,7 +63,6 @@ public class Response {
         Assertions.assertEquals(302, priorCode());
         assertContentTypeWithCode(200, "text/html");
     }
-
 
     private int priorCode() {
         Assertions.assertNotNull(response.priorResponse());

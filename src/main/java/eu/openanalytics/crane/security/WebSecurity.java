@@ -27,7 +27,6 @@ import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -41,12 +40,9 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
-import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.web.util.UrlPathHelper;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
@@ -100,47 +96,27 @@ public class WebSecurity {
                                 "/error",
                                 "/logout-success"
                         ).permitAll()
-                        .requestMatchers("/{repoName}/**")
-                        .access(this::checkAccessWithAuditing)
+                        .requestMatchers("/{repoName}/**").access(this::checkAccessWithAuditing)
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
                 .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, config))))
                 .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(new CraneOidcUserService(tokenParser, config))))
                 .oauth2Client(withDefaults())
                 .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
+                .addFilterBefore(new PathTraversalFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
                 .requestCache((cache) -> cache.requestCache(requestCache));
         return http.build();
     }
+
     private AuthorizationDecision checkAccessWithAuditing(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
-        boolean canAccess = checkAccess(authentication, context);
-        if (!canAccess) {
-            auditingService.createAuthorizationDeniedEvent(userService.getUser());
-        }
-        return new AuthorizationDecision(canAccess);
-    }
-    private boolean checkAccess(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
         String path = urlPathHelper.getRequestUri(context.getRequest());
-        if (path.contains("%")) {
-            // don't support encoded paths
-            return false;
-        }
-
-        File absolutePath = new File(path);
-
-        try {
-            String canonicalPath = absolutePath.getCanonicalPath();
-            if (!new File(canonicalPath).isAbsolute()) {
-                return false;
-            }
-            if (!absolutePath.getAbsolutePath().equals(canonicalPath)) {
-                return false;
-            }
-        } catch (IOException e) {
-            return false;
-        }
         String repository = Path.of(path).iterator().next().toString();
-        return config.getRepository(repository) != null;
+        if (config.getRepository(repository) == null) {
+            auditingService.createAuthorizationDeniedEvent(userService.getUser());
+            return new AuthorizationDecision(false);
+        }
+        return new AuthorizationDecision(true);
     }
 
     public LogoutSuccessHandler getLogoutSuccessHandler() {
@@ -161,20 +137,5 @@ public class WebSecurity {
         };
     }
 
-    @Bean
-    @ConditionalOnProperty(value = "testing", havingValue = "true")
-    public StrictHttpFirewall httpFirewall() {
-        StrictHttpFirewall firewall = new StrictHttpFirewall();
-        firewall.setUnsafeAllowAnyHttpMethod(true);
-        firewall.setAllowBackSlash(true);
-        firewall.setAllowUrlEncodedCarriageReturn(true);
-        firewall.setAllowUrlEncodedDoubleSlash(true);
-        firewall.setAllowUrlEncodedLineSeparator(true);
-        firewall.setAllowUrlEncodedLineFeed(true);
-        firewall.setAllowUrlEncodedPercent(true);
-        firewall.setAllowUrlEncodedPeriod(true);
-        firewall.setAllowUrlEncodedParagraphSeparator(true);
-        firewall.setAllowUrlEncodedSlash(true);
-        return firewall;
-    }
+
 }

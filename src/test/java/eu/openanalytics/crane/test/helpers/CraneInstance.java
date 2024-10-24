@@ -22,12 +22,16 @@ package eu.openanalytics.crane.test.helpers;
 
 import com.redis.testcontainers.RedisContainer;
 import eu.openanalytics.crane.CraneApplication;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.firewall.FirewalledRequest;
+import org.springframework.security.web.firewall.RequestRejectedException;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import org.testcontainers.utility.DockerImageName;
@@ -38,7 +42,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CraneInstance {
@@ -54,29 +62,31 @@ public class CraneInstance {
     private final String configName;
 
     public CraneInstance(String configFileName) {
-        this(configFileName, 7271, new HashMap<>(), true);
+        this(configFileName, 7271, new HashMap<>(), true, false);
     }
 
     public CraneInstance(String configFileName, int port) {
-        this(configFileName, port, new HashMap<>(), true);
+        this(configFileName, port, new HashMap<>(), true, false);
     }
 
     public CraneInstance(String configFileName, boolean setupKeycloak) {
-        this(configFileName, 7271, new HashMap<>(), setupKeycloak);
+        this(configFileName, 7271, new HashMap<>(), setupKeycloak, false);
     }
 
     public CraneInstance(String configFileName, Map<String, String> properties) {
-        this(configFileName, 7271, properties, true);
+        this(configFileName, 7271, properties, true, false);
     }
 
-    public CraneInstance(String configFileName, int port, Map<String, String> properties, boolean setupKeycloak) {
+    public CraneInstance(String configFileName, int port, Map<String, String> properties, boolean setupKeycloak, boolean disableHttpFirewall) {
         this.configName = configFileName;
         try {
             this.port = port;
             int mgmtPort = port % 1000 + 9000;
 
             SpringApplication application = new SpringApplication(CraneApplication.class);
-            application.addPrimarySources(Collections.singletonList(TestConfiguration.class));
+            if (disableHttpFirewall) {
+                application.addPrimarySources(Collections.singletonList(DisableHttpFirewall.class));
+            }
             Properties allProperties = CraneApplication.getDefaultProperties();
             allProperties.put("spring.config.location", "src/test/resources/" + configFileName);
             allProperties.put("server.port", port);
@@ -147,7 +157,7 @@ public class CraneInstance {
         if (awsProfile != null && awsProfile.equals("oa-poc")) {
             try (StsClient stsClient = StsClient.create()) {
                 stsClient.getCallerIdentity();
-                instances.add(new CraneInstance(configName, port, properties, true));
+                instances.add(new CraneInstance(configName, port, properties, true, false));
                 return true;
             } catch (SdkClientException e) {
                 logger.warn("Could not connect to AWS", e);
@@ -197,7 +207,6 @@ public class CraneInstance {
         }
     }
 
-//    @Override
     public void close() {
         app.stop();
         app.close();
@@ -213,4 +222,36 @@ public class CraneInstance {
     public String toString() {
         return this.configName;
     }
+
+    public static class DisableHttpFirewall {
+        /**
+         * Disables the firewall during tests, to make sure the tests are testing our code.
+         */
+        @Bean
+        public StrictHttpFirewall httpFirewall() {
+            StrictHttpFirewall firewall = new StrictHttpFirewall() {
+                @Override
+                public FirewalledRequest getFirewalledRequest(HttpServletRequest request) throws RequestRejectedException {
+                    return new FirewalledRequest(request) {
+                        @Override
+                        public void reset() {
+
+                        }
+                    };
+                }
+            };
+            firewall.setUnsafeAllowAnyHttpMethod(true);
+            firewall.setAllowBackSlash(true);
+            firewall.setAllowUrlEncodedCarriageReturn(true);
+            firewall.setAllowUrlEncodedDoubleSlash(true);
+            firewall.setAllowUrlEncodedLineSeparator(true);
+            firewall.setAllowUrlEncodedLineFeed(true);
+            firewall.setAllowUrlEncodedPercent(true);
+            firewall.setAllowUrlEncodedPeriod(true);
+            firewall.setAllowUrlEncodedParagraphSeparator(true);
+            firewall.setAllowUrlEncodedSlash(true);
+            return firewall;
+        }
+    }
+
 }

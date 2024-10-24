@@ -26,6 +26,10 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.net.CookieManager;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -137,6 +141,47 @@ public class ApiTestHelper {
         try {
             return new Response(clientWithoutAuth.newCall(request.build()).execute());
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Uses the native JDK HttpClient to perform the request.
+     */
+    public HttpRequest.Builder createNativeHtmlRequest(String path) {
+        return HttpRequest.newBuilder(URI.create(baseUrl + path)).header("Accept", "text/html");
+    }
+
+    /**
+     * Uses the native JDK HttpClient to perform the request.
+     */
+    public HttpRequest.Builder createNativeJsonRequest(String path) {
+        return HttpRequest.newBuilder(URI.create(baseUrl + path)).header("Accept", "application/json");
+    }
+
+    /**
+     * Uses the native JDK HttpClient to perform the request.
+     */
+    public NativeResponse nativeCallWithTokenAuthDemoUser(HttpRequest.Builder requestBuilder) {
+        var client = HttpClient.newHttpClient();
+        try {
+            KeycloakAuthTokenInterceptor interceptor = new KeycloakAuthTokenInterceptor("demo", "demo");
+            HttpRequest request = interceptor.intercept(requestBuilder).build();
+            return new NativeResponse(client.send(request, HttpResponse.BodyHandlers.ofString()), request);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Uses the native JDK HttpClient to perform the request.
+     */
+    public NativeResponse nativeCallWithoutAuth(HttpRequest.Builder requestBuilder) {
+        var client = HttpClient.newHttpClient();
+        try {
+            HttpRequest request = requestBuilder.build();
+            return new NativeResponse(client.send(request, HttpResponse.BodyHandlers.ofString()), request);
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

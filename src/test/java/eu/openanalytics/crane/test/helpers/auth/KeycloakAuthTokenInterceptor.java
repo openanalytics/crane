@@ -25,6 +25,7 @@ import okhttp3.*;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.net.http.HttpRequest;
 import java.time.Duration;
 
 public class KeycloakAuthTokenInterceptor implements Interceptor {
@@ -66,6 +67,11 @@ public class KeycloakAuthTokenInterceptor implements Interceptor {
         Request authenticatedRequest = request.newBuilder()
                 .header("Authorization", credentials).build();
         return chain.proceed(authenticatedRequest);
+    }
+
+    public HttpRequest.Builder intercept(HttpRequest.Builder request) {
+        request.header("Authorization", credentials).build();
+        return request;
     }
 
     static class KeycloakToken {

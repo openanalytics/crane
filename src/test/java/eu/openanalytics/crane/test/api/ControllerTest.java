@@ -52,7 +52,7 @@ public class ControllerTest {
         keycloakInstance.start();
         instances.add(new CraneInstance("application-test-api.yml"));
         CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
-        redisInst = new CraneInstance("application-test-api.yml", 7071, Map.of("spring.session.store-type", "redis"), true);
+        redisInst = new CraneInstance("application-test-api.yml", 7071, Map.of("spring.session.store-type", "redis"), true, false);
     }
 
     static List<CraneInstance> instances() {

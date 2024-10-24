@@ -23,6 +23,7 @@ package eu.openanalytics.crane.test.api;
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
+import eu.openanalytics.crane.test.helpers.NativeResponse;
 import eu.openanalytics.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,6 +36,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 @Testcontainers
@@ -42,24 +44,32 @@ public class DownloadControllerTest {
     private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static CraneInstance groupsInst;
+
     static List<CraneInstance> instances = new ArrayList<>();
+    static List<CraneInstance> instanceWithoutFirewall = new ArrayList<>();
 
     @BeforeAll
     public static void beforeAll() {
         keycloakInstance.start();
-        System.setProperty("testing", "true");
         instances.add(new CraneInstance("application-test-api.yml"));
         CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
         groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7273);
+
+        instanceWithoutFirewall.add(new CraneInstance("application-test-api.yml", 7276, new HashMap<>(), true, true));
     }
 
     static List<CraneInstance> instances() {
         return instances;
     }
 
+    static List<CraneInstance> instanceWithoutFirewall() {
+        return instanceWithoutFirewall;
+    }
+
     @AfterAll
     public static void afterAll() {
         instances.forEach(CraneInstance::close);
+        instanceWithoutFirewall.forEach(CraneInstance::close);
         groupsInst.close();
     }
 
@@ -391,7 +401,7 @@ public class DownloadControllerTest {
         String repository = "/cache_txt_repo";
 
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository))
-                .assertHasNoCachingHeader();
+            .assertHasNoCachingHeader();
 
         String text = repository + "/file.txt";
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(text));
@@ -421,7 +431,7 @@ public class DownloadControllerTest {
         String repository = "/cache_txt_and_csv_repo";
 
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository))
-                .assertHasNoCachingHeader();
+            .assertHasNoCachingHeader();
 
         String text = repository + "/file.txt";
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(text));
@@ -455,57 +465,49 @@ public class DownloadControllerTest {
     }
 
     @ParameterizedTest
-    @MethodSource("instances")
+    @MethodSource({"instances", "instanceWithoutFirewall"})
     void testPathTraversalAttack(CraneInstance instance) {
+        // note this test uses the native JDK client, because the OkHttp client canonicalizes the URL and therefore removes the encoded and '..' characters.
+        // see https://github.com/square/okhttp/issues/7089
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
-        String attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
-        Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertNotFound();
+        List<String> attackPaths = List.of(
+            "/%2e%2e%2f%2e%2e%2fetc/passwd",
+            "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd",
+            "/%2e%2e/%2e%2e/etc/passwd",
+            "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd",
+            "/..%2f..%2fetc/passwd",
+            "/public_repo/..%2f..%2f..%2f/etc/passwd",
+            "/../../etc/password",
+            "/../file.txt",
+            "/public_repo/../file.txt",
+            "/public_repo/%252E%252E%252Ffile.txt", // double encoded
+            "/public_repo/my_file%25%25.txt", // encoded percent character
+            "/public_repo/test%2B.txt" // encoded + character
+        );
 
-        attack_path = "/%2e%2e%2f%2e%2e%2fetc/passwd";
-        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertUnauthorizedRedirectToLogIn();
+        for (String path : attackPaths) {
+            NativeResponse resp = apiTestHelper.nativeCallWithTokenAuthDemoUser(apiTestHelper.createNativeHtmlRequest(path));
+            resp.assertBadRequest();
 
-        attack_path = "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd";
-        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertNotFound();
+            resp = apiTestHelper.nativeCallWithoutAuth(apiTestHelper.createNativeHtmlRequest(path));
+            resp.assertBadRequest();
 
-        attack_path = "/public_repo/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd";
-        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertUnauthorizedRedirectToLogIn();
+            resp = apiTestHelper.nativeCallWithoutAuth(apiTestHelper.createNativeJsonRequest(path));
+            resp.assertBadRequest();
+        }
 
-        attack_path = "/%2e%2e/%2e%2e/etc/passwd";
-        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertNotFound();
+        List<String> allowedPaths = List.of("/some_repo/test+.txt"); // regular + character allowed
+        for (String path : allowedPaths) {
+            NativeResponse resp = apiTestHelper.nativeCallWithTokenAuthDemoUser(apiTestHelper.createNativeHtmlRequest(path));
+            resp.assertNotFound();
 
-        attack_path = "/%2e%2e/%2e%2e/etc/passwd";
-        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertUnauthorizedRedirectToLogIn();
+            resp = apiTestHelper.nativeCallWithoutAuth(apiTestHelper.createNativeHtmlRequest(path));
+            resp.assertUnauthorizedRedirectToLogIn();
 
-        attack_path = "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd";
-        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertNotFound();
-
-        attack_path = "/public_repo/%2e%2e/%2e%2e/%2e%2e/etc/passwd";
-        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertUnauthorizedRedirectToLogIn();
-
-        attack_path = "/..%2f..%2fetc/passwd";
-        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertNotFound();
-
-        attack_path = "/..%2f..%2fetc/passwd";
-        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertUnauthorizedRedirectToLogIn();
-
-        attack_path = "/public_repo/..%2f..%2f..%2f/etc/passwd";
-        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertNotFound();
-
-        attack_path = "/public_repo/..%2f..%2f..%2f/etc/passwd";
-        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(attack_path));
-        resp.assertUnauthorizedRedirectToLogIn();
+            resp = apiTestHelper.nativeCallWithoutAuth(apiTestHelper.createNativeJsonRequest(path));
+            resp.assertUnauthorized();
+        }
     }
 
     @ParameterizedTest
