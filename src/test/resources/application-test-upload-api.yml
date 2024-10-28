@@ -5,7 +5,7 @@ app:
   storage-location: /tmp/repository/
   openid-groups-claim: realm_roles
   repositories:
-    - name: public_repo
+    public_repo:
       read-access:
         public: true
       write-access:
@@ -27,23 +27,23 @@ app:
             users: [ demo, test ]
           write-access:
             users: [ demo, test ]
-    - name: private_repo
-    - name: restricted_repo
+    private_repo:
+    restricted_repo:
       read-access:
         users: demo
       write-access:
         users: demo
-    - name: restricted_to_users_repo
+    restricted_to_users_repo:
       read-access:
         users: [ demo, test ]
       write-access:
         users: [ demo, test ]
-    - name: restricted_to_group_repo
+    restricted_to_group_repo:
       read-access:
         groups: scientists
       write-access:
         groups: scientists
-    - name: restricted_to_groups_repo
+    restricted_to_groups_repo:
       read-access:
         groups:
           - scientists
@@ -52,16 +52,16 @@ app:
         groups:
           - scientists
           - mathematicians
-    - name: restricted_simple_expression_repo
+    restricted_simple_expression_repo:
       read-access:
         expression: "#{groups.contains('MATHEMATICIANS')}"
       write-access:
         expression: "#{groups.contains('MATHEMATICIANS')}"
-    - name: restricted_expression_using_and_repo
+    restricted_expression_using_and_repo:
       read-access:
         expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
       write-access:
         expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
-    - name: write_public_repo
+    write_public_repo:
       write-access:
         public: true

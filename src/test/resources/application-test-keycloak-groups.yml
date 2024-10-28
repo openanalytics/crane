@@ -2,10 +2,10 @@ app:
   storage-location: /tmp/repository/
   openid-groups-claim: groups
   repositories:
-    - name: restricted_to_group_repo
+    restricted_to_group_repo:
       read-access:
         groups: scientists
-    - name: restricted_to_groups_repo
+    restricted_to_groups_repo:
       read-access:
         groups:
           - scientists

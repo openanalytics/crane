@@ -5,7 +5,7 @@ app:
   storage-location: /tmp/repository/
   openid-groups-claim: realm_roles
   repositories:
-    - name: public_repo
+    public_repo:
       read-access:
         public: true
       paths:

@@ -2,7 +2,7 @@ app:
   storage-location: /tmp/repository/
   openid-groups-claim: groups
   repositories:
-    - name: private_repo
+    private_repo:
 spring:
   session:
     store-type: redis

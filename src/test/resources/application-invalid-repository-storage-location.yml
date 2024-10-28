@@ -2,5 +2,5 @@ app:
   openid-groups-claim: realm_roles
   storage-location: /tmp/
   repositories:
-    - name: repository_with_invalid_storage_location
+    repository_with_invalid_storage_location:
       storage-location: invalid-location

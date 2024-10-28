@@ -7,7 +7,7 @@ app:
   openid-posix-uid-claim: "uid"
   openid-posix-gids-claim: "gids"
   repositories:
-    - name: repository_with_paths
+    repository_with_paths:
       posix-access-control: true
       write-access:
         users: [ demo, test, undefined, users ]
@@ -32,32 +32,32 @@ app:
         - name: no_path_access
           read-access:
             users: [ undefined, users ]
-    - name: private
+    private:
       posix-access-control: true
-    - name: only_owner_demo
+    only_owner_demo:
       posix-access-control: true
       read-access:
         users: [ demo ]
       write-access:
         users: [ demo ]
-    - name: only_group_scientists
+    only_group_scientists:
       posix-access-control: true
       read-access:
         groups: [ scientists ]
       write-access:
         groups: [ scientists ]
-    - name: only_group_mathematicians_gid
+    only_group_mathematicians_gid:
       posix-access-control: true
       read-access:
         groups: [ mathematicians ]
       write-access:
         groups: [ mathematicians ]
-    - name: no_posix_access
+    no_posix_access:
       read-access:
         public: true
       write-access:
         public: true
-    - name: no_path_access
+    no_path_access:
       posix-access-control: true
       read-access:
         users: [ undefined, users ]

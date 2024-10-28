@@ -5,5 +5,5 @@ app:
   storage-location: s3://oa-test-crane-no-access/
   openid-groups-claim: realm_roles
   repositories:
-    - name: public_repo
+    public_repo:
       public: true
