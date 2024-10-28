@@ -13,23 +13,23 @@ app:
         users: [ demo, test, undefined, users ]
         groups: [ scientists, mathematicians ]
       paths:
-        - name: private
-        - name: only_owner_demo
+        private:
+        only_owner_demo:
           read-access:
             users: [ demo ]
           write-access:
             users: [ demo ]
-        - name: only_group_scientists
+        only_group_scientists:
           read-access:
             groups: [ scientists ]
           write-access:
             groups: [ scientists ]
-        - name: only_group_mathematicians_gid
+        only_group_mathematicians_gid:
           read-access:
             groups: [ mathematicians ]
           write-access:
             groups: [ mathematicians ]
-        - name: no_path_access
+        no_path_access:
           read-access:
             users: [ undefined, users ]
     private:

@@ -65,8 +65,9 @@ public class PathComponent {
         return null;
     }
 
-    public void setPaths(List<PathComponent> paths) {
-        this.components = paths.stream().collect(Collectors.toMap(PathComponent::getName, p -> p));
+    public void setPaths(Map<String, PathComponent> paths) {
+        paths.forEach((name, pathComponent) -> pathComponent.setName(name));
+        this.components = paths;
     }
 
     public boolean hasPaths() {

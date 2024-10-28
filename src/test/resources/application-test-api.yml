@@ -9,14 +9,14 @@ app:
       read-access:
         public: true
       paths:
-        - name: public_in_public_repo
+        public_in_public_repo:
           read-access:
             public: true
-        - name: private_repo
-        - name: restricted_repo
+        private_repo:
+        restricted_repo:
           read-access:
             users: demo
-        - name: restricted_to_users_repo
+        restricted_to_users_repo:
           read-access:
             users: [ demo, test ]
     private_repo:

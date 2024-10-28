@@ -9,8 +9,8 @@ app:
       read-access:
         public: true
       paths:
-        - name: private_repo
+        private_repo:
           paths:
-            - name: abc
+            abc:
               read-access:
                 public: true

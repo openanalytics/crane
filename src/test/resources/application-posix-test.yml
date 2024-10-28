@@ -10,17 +10,17 @@ app:
     repository_with_paths:
       posix-access-control: true
       paths:
-        - name: private
-        - name: only_owner_demo
+        private:
+        only_owner_demo:
           read-access:
             users: [ demo ]
-        - name: only_group_scientists
+        only_group_scientists:
           read-access:
             groups: [ scientists ]
-        - name: only_group_mathematicians_gid
+        only_group_mathematicians_gid:
           read-access:
             groups: [ mathematicians ]
-        - name: no_path_access
+        no_path_access:
           read-access:
             users: [ undefined users ]
     private:
