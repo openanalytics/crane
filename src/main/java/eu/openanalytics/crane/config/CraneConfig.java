@@ -50,7 +50,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @ConfigurationProperties(prefix = "app")
@@ -250,11 +249,9 @@ public class CraneConfig {
         return repositories.values();
     }
 
-    public void setRepositories(List<Repository> repositories) {
-        this.repositories = repositories.stream()
-                .collect(Collectors.toMap(
-                        Repository::getName,
-                        it -> it));
+    public void setRepositories(Map<String, Repository> repositories) {
+        repositories.forEach((repositoryName, repository) -> repository.setName(repositoryName));
+        this.repositories = repositories;
     }
 
     public Repository getRepository(String name) {
