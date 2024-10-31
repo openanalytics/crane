@@ -34,12 +34,28 @@ public class Response {
         this.response = response;
     }
 
+    private String path() {
+        return response.request().url().toString();
+    }
+
+    private String method() {
+        return response.request().method();
+    }
+
+    private String user() {
+        String user = response.request().header("user");
+        if (user == null || user.isEmpty()) {
+            return "unauthenticated";
+        }
+        return user;
+    }
+
     public void assertSuccess() {
-        Assertions.assertEquals(200, code());
+        checkResponseCode(200, code());
         if (response.priorResponse() != null && !response.priorResponse().request().url().toString().contains("/login")) {
             String url = response.request().url().toString();
             String priorUrl = response.priorResponse().request().url().toString();
-            Assertions.assertEquals(url.substring(0, url.length()-1), priorUrl.replaceFirst("/__file", ""));
+            Assertions.assertEquals(url.substring(0, url.length() - 1), priorUrl.replaceFirst("/__file", ""));
         }
     }
 
@@ -60,8 +76,13 @@ public class Response {
     }
 
     public void assertUnauthorizedRedirectToLogIn() {
-        Assertions.assertEquals(302, priorCode());
+        checkResponseCode(302, priorCode());
         assertContentTypeWithCode(200, "text/html");
+    }
+
+    private void checkResponseCode(int expectedResponseCode, int actualResponseCode) {
+        String message = String.format("Unexpected response code %d expected %d from request %s %s made by user %s", actualResponseCode, expectedResponseCode, method(), path(), user());
+        Assertions.assertEquals(expectedResponseCode, actualResponseCode, message);
     }
 
     private int priorCode() {
@@ -70,15 +91,15 @@ public class Response {
     }
 
     public void assertNotFound() {
-        Assertions.assertEquals(404, code());
+        checkResponseCode(404, code());
     }
 
     public void assertUnauthorized() {
-        Assertions.assertEquals(401, code());
+        checkResponseCode(401, code());
     }
 
     private void assertContentTypeWithCode(int expected, String contentType) {
-        Assertions.assertEquals(expected, code());
+        checkResponseCode(expected, code());
         Assertions.assertTrue(response.header("Content-Type", "").startsWith(contentType));
         Assertions.assertNotNull(body());
     }
@@ -122,12 +143,12 @@ public class Response {
     }
 
     public void assertSuccessWithRedirect() {
-        Assertions.assertEquals(200, code());
-        Assertions.assertEquals(302, priorCode());
+        checkResponseCode(200, code());
+        checkResponseCode(302, priorCode());
         Assertions.assertEquals(response.request().url().port(), response.priorResponse().request().url().port());
     }
 
     public void assertForbidden() {
-        Assertions.assertEquals(403, code());
+        checkResponseCode(403, code());
     }
 }

@@ -20,7 +20,12 @@
  */
 package eu.openanalytics.crane.test.helpers.auth;
 
-import okhttp3.*;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import java.io.IOException;
 
@@ -36,7 +41,9 @@ public class KeycloakAuthOidcInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
-        Response response = chain.proceed(chain.request());
+        // Adding username for test messages
+        Request initialRequest = chain.request().newBuilder().header("user", username).build();
+        Response response = chain.proceed(initialRequest);
         Request request = response.request();
         ResponseBody responseBody = response.body();
         if (responseBody != null && responseBody.contentLength() != -1) {
@@ -45,12 +52,12 @@ public class KeycloakAuthOidcInterceptor implements Interceptor {
             String authenticationUrl = body.substring(startOfAuthenticationUrl, body.indexOf('"', startOfAuthenticationUrl));
             if (authenticationUrl.startsWith("http://") || authenticationUrl.startsWith("https://")) {
                 Request authenticationRequest = request.newBuilder()
-                        .post(RequestBody.create(
-                                String.format("password=%s&username=%s&credentialId=", password, username),
-                                MediaType.get("application/x-www-form-urlencoded"))
-                        )
-                        .url(authenticationUrl)
-                        .build();
+                    .post(RequestBody.create(
+                        String.format("password=%s&username=%s&credentialId=", password, username),
+                        MediaType.get("application/x-www-form-urlencoded"))
+                    )
+                    .url(authenticationUrl)
+                    .build();
                 response = chain.proceed(authenticationRequest);
             }
         }

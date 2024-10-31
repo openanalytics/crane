@@ -21,7 +21,11 @@
 package eu.openanalytics.crane.test.helpers.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import okhttp3.*;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -30,29 +34,17 @@ import java.time.Duration;
 
 public class KeycloakAuthTokenInterceptor implements Interceptor {
 
-    public static OkHttpClient client = new OkHttpClient.Builder()
-            .followRedirects(false)
-            .callTimeout(Duration.ofSeconds(120))
-            .readTimeout(Duration.ofSeconds(120))
-            .build();
+    public static OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
     private final String credentials;
+    private final String user;
+
     public KeycloakAuthTokenInterceptor(String user, String password) {
+        this.user = user;
         try {
-            eu.openanalytics.crane.test.helpers.Response response = new eu.openanalytics.crane.test.helpers.Response(
-                    client.newCall(
-                            new Request.Builder().post(
-                                            RequestBody.create(
-                                                    "username=" + user +
-                                                            "&password=" + password +
-                                                            "&grant_type=password" +
-                                                            "&client_id=crane_client" +
-                                                            "&client_secret=secret",
-                                                    MediaType.parse("application/x-www-form-urlencoded")
-                                            )
-                                    ).url("http://localhost:9189/realms/crane/protocol/openid-connect/token")
-                                    .build()
-                    ).execute()
-            );
+            eu.openanalytics.crane.test.helpers.Response response = new eu.openanalytics.crane.test.helpers.Response(client.newCall(new Request.Builder().post(RequestBody.create("username=" + user + "&password=" + password + "&grant_type" +
+                    "=password" + "&client_id=crane_client" + "&client_secret=secret", MediaType.parse("application/x-www-form-urlencoded")))
+                .url("http://localhost:9189/realms/crane/protocol/openid-connect/token")
+                .build()).execute());
             ObjectMapper mapper = new ObjectMapper();
             KeycloakToken keycloakToken = mapper.readValue(response.body(), KeycloakToken.class);
             this.credentials = keycloakToken.getCredentials();
@@ -64,8 +56,8 @@ public class KeycloakAuthTokenInterceptor implements Interceptor {
     @Override
     public okhttp3.Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
-        Request authenticatedRequest = request.newBuilder()
-                .header("Authorization", credentials).build();
+        // Adding username for test messages
+        Request authenticatedRequest = request.newBuilder().header("Authorization", credentials).header("user", user).build();
         return chain.proceed(authenticatedRequest);
     }
 

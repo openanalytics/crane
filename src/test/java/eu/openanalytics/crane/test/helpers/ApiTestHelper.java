@@ -22,7 +22,12 @@ package eu.openanalytics.crane.test.helpers;
 
 import eu.openanalytics.crane.test.helpers.auth.KeycloakAuthOidcInterceptor;
 import eu.openanalytics.crane.test.helpers.auth.KeycloakAuthTokenInterceptor;
-import okhttp3.*;
+import okhttp3.CookieJar;
+import okhttp3.JavaNetCookieJar;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 import java.io.IOException;
 import java.net.CookieManager;
@@ -48,34 +53,13 @@ public class ApiTestHelper {
             throw new TestHelperException(String.format("The passed url '%s' does not start with 'http://' or 'https://'", baseUrl));
         }
         this.baseUrl = baseUrl;
-        clientWithoutAuth = new OkHttpClient.Builder()
-                .callTimeout(Duration.ofSeconds(120))
-                .readTimeout(Duration.ofSeconds(120))
-                .build();
-        clientTokenDemo = new OkHttpClient.Builder()
-                .addInterceptor(new KeycloakAuthTokenInterceptor("demo", "demo"))
-                .callTimeout(Duration.ofSeconds(120))
-                .readTimeout(Duration.ofSeconds(120))
-                .build();
-        clientTokenTest = new OkHttpClient.Builder()
-                .addInterceptor(new KeycloakAuthTokenInterceptor("test", "test"))
-                .callTimeout(Duration.ofSeconds(120))
-                .readTimeout(Duration.ofSeconds(120))
-                .build();
+        clientWithoutAuth = new OkHttpClient.Builder().callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+        clientTokenDemo = new OkHttpClient.Builder().addInterceptor(new KeycloakAuthTokenInterceptor("demo", "demo")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+        clientTokenTest = new OkHttpClient.Builder().addInterceptor(new KeycloakAuthTokenInterceptor("test", "test")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
         CookieJar demoCookieJar = new JavaNetCookieJar(new CookieManager());
-        clientOidcDemo = new OkHttpClient.Builder()
-                .cookieJar(demoCookieJar)
-                .addInterceptor(new KeycloakAuthOidcInterceptor("demo", "demo"))
-                .callTimeout(Duration.ofSeconds(120))
-                .readTimeout(Duration.ofSeconds(120))
-                .build();
+        clientOidcDemo = new OkHttpClient.Builder().cookieJar(demoCookieJar).addInterceptor(new KeycloakAuthOidcInterceptor("demo", "demo")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
         CookieJar testCookieJar = new JavaNetCookieJar(new CookieManager());
-        clientOidcTest = new OkHttpClient.Builder()
-                .cookieJar(testCookieJar)
-                .addInterceptor(new KeycloakAuthOidcInterceptor("test", "test"))
-                .callTimeout(Duration.ofSeconds(120))
-                .readTimeout(Duration.ofSeconds(120))
-                .build();
+        clientOidcTest = new OkHttpClient.Builder().cookieJar(testCookieJar).addInterceptor(new KeycloakAuthOidcInterceptor("test", "test")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
     }
 
     public static ApiTestHelper from(CraneInstance inst) {
@@ -87,8 +71,7 @@ public class ApiTestHelper {
     }
 
     public Request.Builder createHtmlRequest(String path) {
-        return new Request.Builder()
-                .url(baseUrl + path).addHeader("Accept", "text/html");
+        return new Request.Builder().url(baseUrl + path).addHeader("Accept", "text/html");
     }
 
     public Request.Builder createMultiPartRequest(String path, Path fileToUpload) throws IOException {
@@ -96,13 +79,8 @@ public class ApiTestHelper {
     }
 
     public Request.Builder createMultiPartRequest(String path, Path fileToUpload, String parameterName, String fileName) throws IOException {
-        MultipartBody body = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart(parameterName, fileName, RequestBody.create(Files.readAllBytes(fileToUpload)))
-                .build();
-        return new Request.Builder()
-                .url(baseUrl + path).addHeader("Accept", "*/*")
-                .post(body);
+        MultipartBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart(parameterName, fileName, RequestBody.create(Files.readAllBytes(fileToUpload))).build();
+        return new Request.Builder().url(baseUrl + path).addHeader("Accept", "*/*").post(body);
     }
 
     public Response callWithTokenAuthDemoUser(Request.Builder request) {

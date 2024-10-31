@@ -43,10 +43,9 @@ import java.util.List;
 public class DownloadControllerTest {
     private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
-    private static CraneInstance groupsInst;
-
     static List<CraneInstance> instances = new ArrayList<>();
     static List<CraneInstance> instanceWithoutFirewall = new ArrayList<>();
+    private static CraneInstance groupsInst;
 
     @BeforeAll
     public static void beforeAll() {
@@ -569,5 +568,32 @@ public class DownloadControllerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertNotFound();
         apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertNotFound();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertNotFound();
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testCustomRepositoryStorageLocation(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String repository = "/custom_storage_location";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+
+
+        String file = "/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+
+        file = "/in_custom_storage_location/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
     }
 }
