@@ -85,6 +85,7 @@ public class IndexPageService {
             current = current.getParent();
             resource = CraneResource.createFromPath(current, config);
         }
+        breadcrumbs.add(0, resource);
 
         Map<String, Object> map = new HashMap<>();
         map.put("files", craneFiles);

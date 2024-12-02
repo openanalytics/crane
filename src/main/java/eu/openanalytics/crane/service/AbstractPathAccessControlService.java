@@ -53,28 +53,25 @@ public abstract class AbstractPathAccessControlService {
     protected abstract AccessControl getAccessControl(PathComponent pathComponent);
 
     public boolean canAccess(String repository, String path) {
-        return canAccess(userService.getUser(), path, craneConfig.getRepository(repository));
+        return canAccess(craneConfig.getRepository(repository), path);
     }
 
-    public boolean canAccess(Repository repository) {
-        return canAccess(userService.getUser(), "/", repository);
-    }
-
-    public boolean canAccess(Authentication auth, String path, PathComponent pathComponent) {
-        return canAccess(auth, path, pathComponent, Path.of(path).iterator());
+    public boolean canAccess(Repository repository, String fullPath) {
+        return canAccess(userService.getUser(), fullPath, repository, Path.of(fullPath).iterator());
     }
 
     public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
+        String accessPath = Path.of(fullPath).resolve(pathComponent.getName()).toString();
         if (!canAccess(auth, getAccessControl(pathComponent))) {
-            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, pathComponent.getName());
+            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), accessPath, pathComponent.getName());
             return false;
         }
         if (!pathComponent.hasPaths()) {
-            logger.debug("User {} can access path {}, because they can access {}", auth.getName(), fullPath, pathComponent.getName());
+            logger.debug("User {} can access path {}, because they can access {}", auth.getName(), accessPath, pathComponent.getName());
             return true;
         }
         if (!path.hasNext()) {
-            logger.debug("User {} can access path {}, because they can access {}", auth.getName(), fullPath, pathComponent.getName());
+            logger.debug("User {} can access path {}, because they can access {}", auth.getName(), accessPath, pathComponent.getName());
             return true;
         }
 
@@ -82,7 +79,7 @@ public abstract class AbstractPathAccessControlService {
         Optional<PathComponent> nextPathComponent = pathComponent.getPath(nextPartOfRequestedPath);
 
         if (nextPathComponent.isEmpty()) {
-            logger.debug("User {} can access path {}, because there is no access-control for {}", auth.getName(), fullPath, nextPartOfRequestedPath);
+            logger.debug("User {} can access path {}, because there is no access-control for {}", auth.getName(), accessPath, nextPartOfRequestedPath);
             return true;
         }
 
@@ -179,8 +176,5 @@ public abstract class AbstractPathAccessControlService {
         return specExpressionResolver.evaluateToBoolean(accessControl.getExpression(), context);
     }
 
-    public boolean canAccess(Repository repository, String fullPath) {
-        return canAccess(userService.getUser(), fullPath, repository);
-    }
 
 }
