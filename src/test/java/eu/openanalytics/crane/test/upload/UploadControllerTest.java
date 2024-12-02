@@ -240,6 +240,7 @@ public class UploadControllerTest {
         String path = "/invalid/path";
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
     }
 
     @ParameterizedTest

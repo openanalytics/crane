@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -69,7 +70,10 @@ public class ErrorsController extends BaseUIController implements ErrorControlle
         int status = getStatus(request, response);
 
         String error = "error";
-        if (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value()) {
+        if (request.getMethod().equals(HttpMethod.POST.name()) && status == HttpStatus.FORBIDDEN.value()) {
+            error = "forbidden";
+            status = 403;
+        } else if (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value()) {
             error = "not-found";
             status = 404;
         }
