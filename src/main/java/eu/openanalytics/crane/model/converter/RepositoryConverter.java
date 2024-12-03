@@ -18,7 +18,7 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane.model;
+package eu.openanalytics.crane.model.converter;
 
 import eu.openanalytics.crane.model.config.Repository;
 import org.jetbrains.annotations.NotNull;

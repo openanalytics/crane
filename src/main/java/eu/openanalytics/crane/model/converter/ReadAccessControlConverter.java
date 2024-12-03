@@ -18,25 +18,19 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane.model;
+package eu.openanalytics.crane.model.converter;
 
-import eu.openanalytics.crane.model.config.PathComponent;
+import eu.openanalytics.crane.model.config.ReadAccessControl;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-/**
- * The PathComponentConverter is required to parse paths that have no properties defined.
- * PathComponents without properties in the application.yml are passed as empty Strings which can't be
- * directly converted to a PathComponent.
- */
 @Component
 @ConfigurationPropertiesBinding
-public class PathComponentConverter implements Converter<String, PathComponent> {
-
+public class ReadAccessControlConverter implements Converter<String, ReadAccessControl> {
     @Override
-    public PathComponent convert(@NotNull String source) {
-        return new PathComponent();
+    public ReadAccessControl convert(@NotNull String source) {
+        return new ReadAccessControl();
     }
 }
