@@ -110,7 +110,7 @@ public class WebSecurity {
     }
 
     private AuthorizationDecision checkAccessWithAuditing(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
-        String path = urlPathHelper.getRequestUri(context.getRequest());
+        String path = urlPathHelper.getPathWithinApplication(context.getRequest());
         String repository = Path.of(path).iterator().next().toString();
         if (config.getRepository(repository) == null) {
             auditingService.createAuthorizationDeniedEvent(userService.getUser());
