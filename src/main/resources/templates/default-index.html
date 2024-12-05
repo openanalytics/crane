@@ -25,8 +25,8 @@
 <head lang="en">
     <title th:text="${title}"></title>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
-    <link media="screen" rel="stylesheet" th:href="@{'/__index/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
-    <link media="screen" rel="stylesheet" th:href="@{'/__index/css/default.css'}"/>
+    <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
+    <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
 </head>
 <body>
 <div class="container">
@@ -58,8 +58,8 @@
 
     </table>
 </div>
-<script th:src="@{/__index/webjars/jquery/3.7.1/jquery.min.js}"></script>
-<script th:src="@{/__index/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
+<script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
 <script>
     $(document).ready(function () {
         $('table').DataTable({

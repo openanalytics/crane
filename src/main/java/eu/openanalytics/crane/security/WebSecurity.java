@@ -93,8 +93,8 @@ public class WebSecurity {
                                 "/favicon.ico",
                                 "/__file/**",
                                 "/__index",
-                                "/__index/css/**",
-                                "/__index/webjars/**",
+                                "/__assets/css/**",
+                                "/__assets/webjars/**",
                                 "/actuator/health",
                                 "/actuator/health/liveness",
                                 "/actuator/health/readiness",
@@ -113,6 +113,7 @@ public class WebSecurity {
                 .oauth2Client(withDefaults())
                 .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
                 .addFilterBefore(new PathTraversalFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new BlockInternalUrlFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
                 .requestCache((cache) -> cache.requestCache(requestCache));
         return http.build();
