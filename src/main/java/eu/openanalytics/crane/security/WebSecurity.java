@@ -25,6 +25,8 @@ import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -35,14 +37,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
+import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UrlPathHelper;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
@@ -75,7 +81,7 @@ public class WebSecurity {
     }
 
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    protected SecurityFilterChain filterChain(HttpSecurity http, SavedRequestAwareAuthenticationSuccessHandler successHandler) throws Exception {
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setMatchingRequestParameterName(null);
         http
@@ -100,7 +106,10 @@ public class WebSecurity {
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
                 .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, config))))
-                .oauth2Login(login -> login.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(new CraneOidcUserService(tokenParser, config))))
+                .oauth2Login(login -> login
+                        .userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(new CraneOidcUserService(tokenParser, config)))
+                        .successHandler(successHandler)
+                )
                 .oauth2Client(withDefaults())
                 .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
                 .addFilterBefore(new PathTraversalFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -135,6 +144,25 @@ public class WebSecurity {
             delegate.setDefaultTargetUrl(resolvedLogoutUrl);
             delegate.onLogoutSuccess(httpServletRequest, httpServletResponse, authentication);
         };
+    }
+
+    @Bean
+    public SavedRequestAwareAuthenticationSuccessHandler savedRequestAwareAuthenticationSuccessHandler() {
+        SavedRequestAwareAuthenticationSuccessHandler savedRequestAwareAuthenticationSuccessHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+        savedRequestAwareAuthenticationSuccessHandler.setRedirectStrategy(new DefaultRedirectStrategy() {
+            @Override
+            public void sendRedirect(HttpServletRequest request, HttpServletResponse response, String url) throws IOException {
+                String redirectUrl = calculateRedirectUrl(request.getContextPath(), url);
+                if (redirectUrl.contains("/__file/")) {
+                    redirectUrl = redirectUrl.replace("/__file/", "/");
+                }
+                if (redirectUrl.contains("/__index/")) {
+                    redirectUrl = redirectUrl.replace("/__index/", "/");
+                }
+                response.sendRedirect(redirectUrl);
+            }
+        });
+        return savedRequestAwareAuthenticationSuccessHandler;
     }
 
 
