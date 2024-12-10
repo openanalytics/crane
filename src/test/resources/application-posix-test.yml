@@ -24,6 +24,8 @@ app:
           read-access:
             users: [ undefined users ]
     private:
+      read-access:
+        any-authenticated-user: true
       posix-access-control: true
     only_owner_demo:
       posix-access-control: true

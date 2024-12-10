@@ -17,6 +17,8 @@ app:
           write-access:
             public: true
         private_repo:
+          read-access:
+            any-authenticated-user: true
         restricted_repo:
           read-access:
             users: demo
@@ -65,3 +67,5 @@ app:
     write_public_repo:
       write-access:
         public: true
+      read-access:
+        any-authenticated-user: true

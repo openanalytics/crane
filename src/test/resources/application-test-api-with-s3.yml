@@ -13,6 +13,8 @@ app:
           read-access:
             public: true
         private_repo:
+          read-access:
+            any-authenticated-user: true
         restricted_repo:
           read-access:
             users: demo
@@ -20,6 +22,8 @@ app:
           read-access:
             users: [ demo, test ]
     private_repo:
+      read-access:
+        any-authenticated-user: true
     restricted_repo:
       read-access:
         users: demo

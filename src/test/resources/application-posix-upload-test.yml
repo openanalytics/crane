@@ -14,6 +14,8 @@ app:
         groups: [ scientists, mathematicians ]
       paths:
         private:
+          read-access:
+            any-authenticated-user: true
         only_owner_demo:
           read-access:
             users: [ demo ]
@@ -34,6 +36,8 @@ app:
             users: [ undefined, users ]
     private:
       posix-access-control: true
+      read-access:
+        any-authenticated-user: true
     only_owner_demo:
       posix-access-control: true
       read-access:

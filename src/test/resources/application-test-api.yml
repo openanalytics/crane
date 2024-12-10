@@ -13,6 +13,8 @@ app:
           read-access:
             public: true
         private_repo:
+          read-access:
+            any-authenticated-user: true
         restricted_repo:
           read-access:
             users: demo
@@ -20,6 +22,8 @@ app:
           read-access:
             users: [ demo, test ]
     private_repo:
+      read-access:
+        any-authenticated-user: true
     restricted_repo:
       read-access:
         users: demo
@@ -66,4 +70,6 @@ app:
         public: true
       on-error-expression: "#{response.status != 404 ? eval(true, response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 4)[3])) : false}"
     custom_storage_location:
+      read-access:
+        any-authenticated-user: true
       storage-location: /tmp/repository/custom_storage_location/
