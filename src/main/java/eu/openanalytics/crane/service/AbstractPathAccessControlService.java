@@ -61,7 +61,7 @@ public abstract class AbstractPathAccessControlService {
     }
 
     public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
-        String accessPath = Path.of(fullPath).resolve(pathComponent.getName()).toString();
+        String accessPath = pathComponent.getName() + fullPath;
         if (!canAccess(auth, getAccessControl(pathComponent))) {
             logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), accessPath, pathComponent.getName());
             return false;
