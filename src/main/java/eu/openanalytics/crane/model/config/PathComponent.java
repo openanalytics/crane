@@ -39,8 +39,8 @@ public class PathComponent {
     private String name;
     private Map<String, PathComponent> components;
 
-    private ReadAccessControl readAccess = new ReadAccessControl();
-    private WriteAccessControl writeAccess = new WriteAccessControl();
+    private AccessControl readAccess = new AccessControl();
+    private AccessControl writeAccess = new AccessControl();
 
     public String getName() {
         return name;
@@ -50,11 +50,11 @@ public class PathComponent {
         this.name = name;
     }
 
-    public ReadAccessControl getReadAccess() {
+    public AccessControl getReadAccess() {
         return readAccess;
     }
 
-    public void setReadAccess(ReadAccessControl readAccess) {
+    public void setReadAccess(AccessControl readAccess) {
         this.readAccess = readAccess;
     }
 
@@ -112,11 +112,11 @@ public class PathComponent {
         }
     }
 
-    public WriteAccessControl getWriteAccess() {
+    public AccessControl getWriteAccess() {
         return writeAccess;
     }
 
-    public void setWriteAccess(WriteAccessControl writeAccess) {
+    public void setWriteAccess(AccessControl writeAccess) {
         this.writeAccess = writeAccess;
     }
 }

@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 public class AccessControl {
 
-    private final boolean defaultAnyAuthenticatedUser;
     protected List<String> groups;
     protected List<String> users;
     protected boolean isPublic = false;
@@ -36,9 +35,7 @@ public class AccessControl {
     protected List<IpAddressMatcher> networkMatchers;
     protected String expression;
 
-    public AccessControl(boolean defaultAnyAuthenticatedUser) {
-        this.defaultAnyAuthenticatedUser = defaultAnyAuthenticatedUser;
-    }
+    public AccessControl() {}
 
     public List<String> getGroups() {
         return groups;
@@ -120,13 +117,8 @@ public class AccessControl {
         }
 
         if (anyAuthenticatedUser == null){
-            if (!hasGroupAccess() && !hasUserAccess() && !hasExpressionAccess() && !hasNetworkAccess()) {
-                // use default config when no authorization is provided
-                anyAuthenticatedUser = defaultAnyAuthenticatedUser;
-            } else {
-                // disable when at least one authorization option is used
-                anyAuthenticatedUser = false;
-            }
+            // disable when at least one authorization option is used
+            anyAuthenticatedUser = false;
         }
     }
 }

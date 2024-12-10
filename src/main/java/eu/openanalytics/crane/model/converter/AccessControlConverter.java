@@ -18,10 +18,19 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane.model.config;
+package eu.openanalytics.crane.model.converter;
 
-public class ReadAccessControl extends AccessControl {
-    public ReadAccessControl() {
-        super(true);
+import eu.openanalytics.crane.model.config.AccessControl;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
+
+@Component
+@ConfigurationPropertiesBinding
+public class AccessControlConverter implements Converter<String, AccessControl> {
+    @Override
+    public AccessControl convert(@NotNull String source) {
+        return new AccessControl();
     }
 }
