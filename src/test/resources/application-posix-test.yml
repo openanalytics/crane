@@ -8,6 +8,8 @@ app:
   openid-posix-gids-claim: "gids"
   repositories:
     repository_with_paths:
+      read-access:
+        any-authenticated-user: true
       posix-access-control: true
       paths:
         private:

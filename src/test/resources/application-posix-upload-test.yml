@@ -9,6 +9,8 @@ app:
   repositories:
     repository_with_paths:
       posix-access-control: true
+      read-access:
+        any-authenticated-user: true
       write-access:
         users: [ demo, test, undefined, users ]
         groups: [ scientists, mathematicians ]
