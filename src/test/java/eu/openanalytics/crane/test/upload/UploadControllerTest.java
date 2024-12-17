@@ -235,6 +235,23 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
+    public void testAccessToInaccessiblePathsInUserRestrictedRepositories(CraneInstance instance) throws IOException {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String genericPath = "/restricted_to_users_repo/inaccessible_path/testUpload_%s.txt";
+        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
+
+        String path = genericPath.formatted("demo");
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+
+        path = genericPath.formatted("unauthorized");
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
+
+        path = genericPath.formatted("test");
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
     public void testUploadInvalidPath(CraneInstance instance) throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String path = "/invalid/path";
