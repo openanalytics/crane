@@ -57,6 +57,28 @@
         </tbody>
 
     </table>
+    <div class="container" style="max-width: 500px">
+        <form
+            id="uploadForm"
+            method="post"
+            th:action="@{${resource}}"
+            enctype="multipart/form-data">
+        <input id="input-file" type="file" name="file"/>
+            <input id="file-name" type="text" name="Name your file">
+            <button class="btn btn-sm btn-outline-success float-right" type="submit">
+                Upload
+            </button>
+        </form>
+        <div
+            th:if="${message != null}"
+            class="alert alert-secondary alert-dismissible fade show text-center message mt-3"
+            role="alert">
+            [[${message}]]
+            <button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
 </div>
 <script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
 <script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
@@ -68,6 +90,28 @@
         });
         $('table').css("visibility", "visible");
     });
+    let form = document.getElementById("uploadForm");
+    let fileNameField = document.getElementById("file-name");
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const url = form.action + fileNameField.value;
+        console.log(fileNameField.value)
+        console.log(url)
+
+        try {
+            const formData = new FormData(form);
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log(response);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 </script>
 </body>
 
