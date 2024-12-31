@@ -37,23 +37,21 @@
     <dialog id="upload-dialog">
         <form id="upload-form" method="post" th:action="@{${resource}}" enctype="multipart/form-data">
             <div><h1>Upload file</h1></div>
-            <hr/>
-            <div class="input-field">
-                <label>File name</label>
-                <input id="file-name" type="text" placeholder="Name your file"/>
-            </div>
             <div class="upload-input-field">
                 <label>File to upload</label>
                 <input id="upload-input-file" type="file" name="file"/>
             </div>
+            <div class="input-field">
+                <label>File name</label>
+                <input id="file-name" type="text" placeholder="Name your file"/>
+            </div>
             <div class="flex flex-space-between">
-                <button id="upload" type="button" class="button">Upload</button>
                 <button id="cancel" type="button" class="button">Cancel</button>
+                <button id="upload" type="button" class="button">Upload</button>
             </div>
         </form>
     </dialog>
 
-    <table>
     <table th:attr="data-has-write-access=${hasWriteAccess}">
         <thead>
         <tr>
@@ -77,52 +75,47 @@
         </tbody>
 
     </table>
-    <div class="container" style="max-width: 500px">
-        <div
-            th:if="${message != null}"
-            class="alert alert-secondary alert-dismissible fade show text-center message mt-3"
-            role="alert">
-            [[${message}]]
-            <button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    </div>
 </div>
 <script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
 <script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
 <script th:src="@{'/__assets/webjars/datatables-buttons/3.1.2/js/dataTables.buttons.min.js'}"></script>
 <script>
-    const upload_dialog = document.getElementById("upload-dialog");
+    const uploadDialog = document.getElementById("upload-dialog");
     const form = document.getElementById("upload-form");
     const fileNameField = document.getElementById("file-name");
+    const fileInputField = document.getElementById("upload-input-file");
 
-    async function upload_action(e) {
+    function updateFilename() {
+        if (fileNameField.value === "" && fileInputField.files.length > 0) {
+            fileNameField.value = fileInputField.files[0].name;
+        }
+    }
+
+    function uploadAction(e) {
         e.preventDefault();
         const url = form.action + fileNameField.value;
 
-        try {
-            console.log(form);
-            const formData = new FormData(form);
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData
-            });
-
-            console.log(response);
-        } catch (error) {
-            console.error(error);
-        }
-        close_dialog()
+        const formData = new FormData(form);
+        const response = fetch(url, {
+            method: 'POST',
+            body: formData
+        }).then(async (resp) => {
+            if (resp.ok) {
+                location.reload();
+                return;
+            }
+            closeDialog();
+            let respJson = await resp.json();
+            alert(respJson.data.message);
+        });
     }
 
-    function close_dialog() {
-        upload_dialog.close();
-        form.reset()
+    function closeDialog() {
+        uploadDialog.close();
+        form.reset();
     }
 
     $(document).ready(function () {
-        $('table').DataTable({
         let table = $('table');
         let dataTableOptions = {
             aaSorting: [], // apply no sort by default
@@ -143,8 +136,9 @@
         }
         $('table').DataTable(dataTableOptions);
         $('table').css("visibility", "visible");
-        document.getElementById("cancel").addEventListener("click", close_dialog)
-        document.getElementById("upload").addEventListener("click", upload_action)
+        fileInputField.addEventListener("change", updateFilename);
+        document.getElementById("cancel").addEventListener("click", closeDialog);
+        document.getElementById("upload").addEventListener("click", uploadAction);
     });
 </script>
 </body>

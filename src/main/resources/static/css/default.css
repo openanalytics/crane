@@ -119,24 +119,21 @@ table {
 }
 
 dialog {
-  top: 0;
-  right: 0;
-  bottom: 30%;
-  left: 0;
-  z-index: 999;
-  position: fixed;
-}
-
-dialog form {
+    top: 0;
+    right: 0;
+    bottom: 30%;
+    left: 0;
+    z-index: 999;
     width: 500px;
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     background: white;
     border-radius: 20px;
     border: solid lightgray 1px;
     padding-top: 1.25rem;
+}
+
+dialog::backdrop {
+    backdrop-filter: blur(10px);
 }
 
 input#file-name, input#upload-input-file {
@@ -162,6 +159,8 @@ dialog form div h1 {
     font-weight: bolder;
     font-size: 150%;
     margin: 0;
+    border-bottom: solid #d3d3d3 1px;
+    padding-bottom: .5rem;
 }
 
 dialog form div label {
@@ -221,11 +220,3 @@ input#file-name {
     background-color: transparent;
     height: 27px;
 }
-
-hr {
-    margin: .5rem 1rem 1rem 1rem;
-    border: none;
-    height: 1px;
-    background-color: #d3d3d3;
-}
-
