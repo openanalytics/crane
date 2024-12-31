@@ -21,7 +21,7 @@
 
 -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head lang="en">
     <title th:text="${title}"></title>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
@@ -33,6 +33,25 @@
     <div th:insert="~{fragments/navbar.html}"></div>
     <h1>Directory <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
     </code></h1>
+
+    <dialog id="upload-dialog">
+        <form id="upload-form" method="post" th:action="@{${resource}}" enctype="multipart/form-data">
+            <div><h1>Upload file</h1></div>
+            <hr/>
+            <div class="input-field">
+                <label>File name</label>
+                <input id="file-name" type="text" placeholder="Name your file"/>
+            </div>
+            <div class="upload-input-field">
+                <label>File to upload</label>
+                <input id="upload-input-file" type="file" name="file"/>
+            </div>
+            <div class="flex flex-space-between">
+                <button id="upload" type="button" class="button">Upload</button>
+                <button id="cancel" type="button" class="button">Cancel</button>
+            </div>
+        </form>
+    </dialog>
 
     <table>
         <thead>
@@ -58,17 +77,6 @@
 
     </table>
     <div class="container" style="max-width: 500px">
-        <form
-            id="uploadForm"
-            method="post"
-            th:action="@{${resource}}"
-            enctype="multipart/form-data">
-        <input id="input-file" type="file" name="file"/>
-            <input id="file-name" type="text" name="Name your file">
-            <button class="btn btn-sm btn-outline-success float-right" type="submit">
-                Upload
-            </button>
-        </form>
         <div
             th:if="${message != null}"
             class="alert alert-secondary alert-dismissible fade show text-center message mt-3"
@@ -82,25 +90,18 @@
 </div>
 <script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
 <script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
+<script th:src="@{'/__assets/webjars/datatables-buttons/3.1.2/js/dataTables.buttons.min.js'}"></script>
 <script>
-    $(document).ready(function () {
-        $('table').DataTable({
-            aaSorting: [], // apply no sort by default
-            paging: false,
-        });
-        $('table').css("visibility", "visible");
-    });
-    let form = document.getElementById("uploadForm");
-    let fileNameField = document.getElementById("file-name");
+    const upload_dialog = document.getElementById("upload-dialog");
+    const form = document.getElementById("upload-form");
+    const fileNameField = document.getElementById("file-name");
 
-    form.onsubmit = async (e) => {
+    async function upload_action(e) {
         e.preventDefault();
-        const form = e.currentTarget;
         const url = form.action + fileNameField.value;
-        console.log(fileNameField.value)
-        console.log(url)
 
         try {
+            console.log(form);
             const formData = new FormData(form);
             const response = await fetch(url, {
                 method: 'POST',
@@ -111,7 +112,33 @@
         } catch (error) {
             console.error(error);
         }
+        close_dialog()
     }
+
+    function close_dialog() {
+        upload_dialog.close();
+        form.reset()
+    }
+
+    $(document).ready(function () {
+        $('table').DataTable({
+            aaSorting: [], // apply no sort by default
+            paging: false,
+            layout: {
+                topStart: {
+                    buttons: [
+                        {
+                            action: () => upload_dialog.show(),
+                            text: 'Upload'
+                        }
+                    ]
+                }
+            }
+        });
+        $('table').css("visibility", "visible");
+        document.getElementById("cancel").addEventListener("click", close_dialog)
+        document.getElementById("upload").addEventListener("click", upload_action)
+    });
 </script>
 </body>
 

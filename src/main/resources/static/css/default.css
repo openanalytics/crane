@@ -117,3 +117,115 @@ table {
 .slash {
     color: #333;
 }
+
+dialog {
+  top: 0;
+  right: 0;
+  bottom: 30%;
+  left: 0;
+  z-index: 999;
+  position: fixed;
+}
+
+dialog form {
+    width: 500px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 20px;
+    border: solid lightgray 1px;
+    padding-top: 1.25rem;
+}
+
+input#file-name, input#upload-input-file {
+    border-radius: .5rem;
+    border: solid lightgray 1px;
+    width: -moz-available;
+}
+
+input[type="file"]::file-selector-button {
+    font-weight: bold;
+    margin-inline-end: 1rem;
+    margin-inline-start: -1rem;
+    padding: .625rem .7rem .625rem 2rem;
+    border: 0;
+    cursor: pointer;
+    background-color: #e9e9ed;
+    transition: background-color 200ms;
+}
+
+dialog form div h1 {
+    color: rgb(51, 51, 51);
+    text-align: center;
+    font-weight: bolder;
+    font-size: 150%;
+    margin: 0;
+}
+
+dialog form div label {
+    font-weight: bold;
+    font-size: .875rem;
+    line-height: 1.25rem;
+    margin-bottom: .5rem;
+    display: block;
+}
+
+.input-field, .upload-input-field, .flex {
+    margin: .5rem 1rem 1rem 1rem
+}
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.flex.flex-space-between {
+    justify-content: space-between;
+    margin: 1rem;
+}
+
+.button, button.dt-button[tabindex='0'] {
+    text-decoration: none;
+    padding: .5rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+button.dt-button[tabindex='0'] {
+    padding: .3rem 1.5rem !important;
+}
+
+
+.button#upload, button.dt-button[tabindex='0'] {
+    background: #32a6d37a;
+}
+
+.button#upload:hover, button.dt-button[tabindex='0']:hover {
+    background: #32a6d3;
+}
+
+.button#cancel {
+    background: #e523235c;
+}
+
+.button#cancel:hover {
+    background: #e52323;
+}
+
+input#file-name {
+    border: 1px solid #d3d3d3;
+    padding: 5px;
+    background-color: transparent;
+    height: 27px;
+}
+
+hr {
+    margin: .5rem 1rem 1rem 1rem;
+    border: none;
+    height: 1px;
+    background-color: #d3d3d3;
+}
+
