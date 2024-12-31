@@ -25,6 +25,8 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CraneDirectory;
 import eu.openanalytics.crane.model.runtime.CraneFile;
 import eu.openanalytics.crane.model.runtime.CraneResource;
+import eu.openanalytics.crane.upload.PathWriteAccessControlService;
+import eu.openanalytics.crane.upload.PosixWriteAccessControlService;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -42,11 +44,15 @@ public class IndexPageService {
     private final CraneConfig config;
     private final PathReadAccessControlService pathReadAccessControlService;
     private final PosixReadAccessControlService posixReadAccessControlService;
+    private final PathWriteAccessControlService pathWriteAccessControlService;
+    private final PosixWriteAccessControlService posixWriteAccessControlService;
 
-    public IndexPageService(CraneConfig config, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService) {
+    public IndexPageService(CraneConfig config, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
         this.config = config;
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
+        this.pathWriteAccessControlService = pathWriteAccessControlService;
+        this.posixWriteAccessControlService = posixWriteAccessControlService;
     }
 
     public String getTemplateName(Repository repository) {
@@ -76,6 +82,9 @@ public class IndexPageService {
             });
         }
 
+        // check user write access
+        boolean hasWriteAccess = pathWriteAccessControlService.canAccess(repository, path.toString()) && posixWriteAccessControlService.canAccess(repository, path.toString());
+
         // breadcrumbs
         List<CraneResource> breadcrumbs = new ArrayList<>();
         Path current = path;
@@ -90,6 +99,7 @@ public class IndexPageService {
         Map<String, Object> map = new HashMap<>();
         map.put("files", craneFiles);
         map.put("directories", craneDirectories);
+        map.put("hasWriteAccess", hasWriteAccess);
         map.put("breadcrumbs", breadcrumbs);
         return map;
     }

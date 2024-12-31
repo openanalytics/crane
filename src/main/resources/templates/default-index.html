@@ -54,6 +54,7 @@
     </dialog>
 
     <table>
+    <table th:attr="data-has-write-access=${hasWriteAccess}">
         <thead>
         <tr>
             <th>Filename</th>
@@ -122,19 +123,25 @@
 
     $(document).ready(function () {
         $('table').DataTable({
+        let table = $('table');
+        let dataTableOptions = {
             aaSorting: [], // apply no sort by default
-            paging: false,
-            layout: {
+            paging: false
+        };
+
+        if (table.data("has-write-access")) {
+            dataTableOptions["layout"] = {
                 topStart: {
                     buttons: [
-                        {
-                            action: () => upload_dialog.show(),
+                       {
+                            action: () => uploadDialog.showModal(),
                             text: 'Upload'
                         }
                     ]
                 }
             }
-        });
+        }
+        $('table').DataTable(dataTableOptions);
         $('table').css("visibility", "visible");
         document.getElementById("cancel").addEventListener("click", close_dialog)
         document.getElementById("upload").addEventListener("click", upload_action)
