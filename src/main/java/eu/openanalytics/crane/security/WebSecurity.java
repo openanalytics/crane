@@ -28,9 +28,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -71,7 +71,7 @@ public class WebSecurity {
         List<String> repoMatchers = craneConfig.getRepositories().stream().map(r -> "/" + r.getName() + "/**").toList();
 
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(Customizer.withDefaults())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
                                 "/",
