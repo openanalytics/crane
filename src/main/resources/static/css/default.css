@@ -197,12 +197,30 @@ button.dt-button[tabindex='0'] {
     padding: .3rem 1.5rem !important;
 }
 
+@-webkit-keyframes loading-animation {
+  0% {
+    background-color: #32a6d3;
+  }
+
+  50% {
+    background-color: rgb(233, 233, 237);
+  }
+
+  100% {
+    background-color: #32a6d3;
+  }
+}
+
+.uploading {
+    color: black;
+    -webkit-animation: loading-animation 2s infinite;
+}
 
 .button#upload, button.dt-button[tabindex='0'] {
     background: #32a6d37a;
 }
 
-.button#upload:hover, button.dt-button[tabindex='0']:hover {
+.button#upload:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
     background: #32a6d3;
 }
 
@@ -210,7 +228,7 @@ button.dt-button[tabindex='0'] {
     background: #e523235c;
 }
 
-.button#cancel:hover {
+.button#cancel:not([disabled]):hover {
     background: #e52323;
 }
 

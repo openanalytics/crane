@@ -93,6 +93,13 @@
 
     function uploadAction(e) {
         e.preventDefault();
+        const cancel = document.getElementById("cancel");
+        const upload = document.getElementById("upload");
+        cancel.disabled = true;
+        upload.disabled = true;
+        upload.innerHTML = "Uploading...";
+        upload.classList.toggle("uploading");
+
         const url = form.action + fileNameField.value;
 
         const formData = new FormData(form);
