@@ -481,8 +481,7 @@ public class DownloadControllerTest {
             "/../file.txt",
             "/public_repo/../file.txt",
             "/public_repo/%252E%252E%252Ffile.txt", // double encoded
-            "/public_repo/my_file%25%25.txt", // encoded percent character
-            "/public_repo/test%2B.txt" // encoded + character
+            "/public_repo/my_file%25%25.txt" // encoded percent character
         );
 
         for (String path : attackPaths) {

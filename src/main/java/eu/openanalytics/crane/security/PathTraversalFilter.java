@@ -59,10 +59,6 @@ public class PathTraversalFilter extends OncePerRequestFilter {
     }
 
     private boolean check(@Nonnull HttpServletRequest request) {
-        if (request.getRequestURI().contains("%")) {
-            // don't support encoded paths
-            return false;
-        }
         String path = urlPathHelper.getRequestUri(request);
         if (path.contains("%")) {
             // don't support (double) encoded paths
