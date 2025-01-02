@@ -24,11 +24,14 @@ import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.io.FileUtils;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.carlspring.cloud.storage.s3fs.S3FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.stereotype.Component;
@@ -49,7 +52,14 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 
 @Component
 @ConfigurationProperties(prefix = "app")
@@ -91,7 +101,7 @@ public class CraneConfig {
             throw new IllegalArgumentException("Incorrect configuration detected: app.openid-issuer-uri not set");
         }
 
-        if (repositories.size() == 0) {
+        if (checkIfDeprecatedRepositorySyntax() && repositories.size() == 0) {
             throw new IllegalArgumentException("Incorrect configuration detected: no repositories configured");
         }
 
@@ -116,6 +126,22 @@ public class CraneConfig {
             }
         }
         close();
+    }
+
+    private boolean checkIfDeprecatedRepositorySyntax() throws IOException {
+        YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+        InputStream inputStream = FileUtils.openInputStream(FileUtils.getFile("/home/llionakis/Documents/OA/shinyproxy-projects/crane/application.yml"));
+        factoryBean.setResources(new InputStreamResource(inputStream));
+
+        Properties properties = factoryBean.getObject();
+        properties.keys().asIterator().forEachRemaining((key) -> {
+            if (key instanceof String && ((String) key).matches("app\\.repositories\\[[0-9]+\\]\\.name")) {
+                String repository = ((String) key).replaceFirst("app\\.repositories\\[(.+)\\]\\.name", "$1");
+                String valueRepositoryName = (String) properties.get(key);
+                throw new RuntimeException("Misconfiguration found either listing syntax was used instead of a map or the name property was used for repository %s with name %s. Have a look at Crane's documentation.".formatted(repository, valueRepositoryName));
+            }
+        });
+        return false;
     }
 
     private void close() {
