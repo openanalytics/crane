@@ -91,9 +91,8 @@
         console.log(fileNameField.value === "" || fileInputField.files.length === 0)
     }
     function updateFilename() {
-        const fileNameField = document.getElementById("file-name");
-        if (fileNameField.value === "" && fileInputField.files.length > 0) {
-            fileNameField.value = fileInputField.files[0].name;
+        if (fileInputField.files.length > 0) {
+            document.getElementById("file-name").value = fileInputField.files[0].name;
         }
         disableUpload();
     }
