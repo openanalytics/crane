@@ -117,9 +117,18 @@
                 location.reload();
                 return;
             }
+            let error;
+            if (resp.status === 413) {
+                error = await resp.text();
+                let html = $(error);
+                if (html.find("h1").length) {
+                    error = html.find("h1").text() + (error.toLowerCase().includes("nginx") ? "from NGINX" : "");
+                }
+            } else {
+                error = (await resp.json()).data.message;
+            }
             closeDialog();
-            let respJson = await resp.json();
-            alert(respJson.data.message);
+            alert(error);
         });
     }
 

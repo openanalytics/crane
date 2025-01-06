@@ -10,7 +10,7 @@ spec:
     spec:
       initContainers:
         - name: java-trust-store
-          image: openjdk:11-jre-slim-buster
+          image: public.ecr.aws/docker/library/eclipse-temurin:17-jammy
           command:
             - /bin/sh
             - -c
@@ -28,7 +28,7 @@ spec:
         - name: crane
           volumeMounts:
             - name: certs
-              mountPath: /usr/local/openjdk-11/lib/security
+              mountPath: /opt/java/openjdk/lib/security/
       volumes:
         - name: certs
           emptyDir: { }

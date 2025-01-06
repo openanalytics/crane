@@ -2,10 +2,14 @@ app:
   storage-location: /mnt/crane/
   openid-issuer-uri: "${OAUTH2_ISSUER_URI}"
   repositories:
-    - name: project1
-      public: true
-    - name: project2
-      public: false
+    project1:
+      read-access:
+        public: true
+      write-access:
+        public: true
+    project2:
+      read-access:
+        public: false
 
 spring:
   security:
