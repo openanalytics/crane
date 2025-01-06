@@ -20,7 +20,7 @@
  */
 package eu.openanalytics.crane.model.runtime;
 
-import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.model.config.Repository;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,12 +29,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public interface CraneResource {
 
-    public static CraneResource createFromPath(Path path, CraneConfig config) {
+    public static CraneResource createFromPath(Path path, Repository repository) {
         try {
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
 
             if (attributes.isDirectory()) {
-                return new CraneDirectory(path.getFileName().toString(), "/" + config.getRoot().relativize(path));
+                return new CraneDirectory(path.getFileName().toString(), "/" + repository.getStoragePath().relativize(path));
             } else {
                 return new CraneFile(path.getFileName().toString(), attributes.lastModifiedTime().toInstant(), attributes.size());
             }

@@ -42,6 +42,8 @@ app:
         users: [ demo, test ]
       write-access:
         users: [ demo, test ]
+      paths:
+        inaccessible_path:
     restricted_to_group_repo:
       read-access:
         groups: scientists

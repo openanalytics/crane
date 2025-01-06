@@ -58,12 +58,12 @@ public class IndexPageService {
         List<CraneDirectory> craneDirectories = new ArrayList<>();
         try (Stream<Path> dirListing = Files.list(path)) {
             dirListing.forEach(p -> {
-                CraneResource craneResource = CraneResource.createFromPath(p, config);
+                CraneResource craneResource = CraneResource.createFromPath(p, repository);
                 if (craneResource == null) {
                     // TODO
                     return;
                 }
-                String fullPath =  p.toString().substring(repository.getStorageLocation().length());
+                String fullPath = p.toString().substring(repository.getStorageLocation().length());
                 if (pathReadAccessControlService.canAccess(repository, fullPath) && posixReadAccessControlService.canAccess(repository, fullPath)) {
                     if (craneResource instanceof CraneFile craneFile) {
                         craneFiles.add(craneFile);
@@ -79,11 +79,11 @@ public class IndexPageService {
         // breadcrumbs
         List<CraneResource> breadcrumbs = new ArrayList<>();
         Path current = path;
-        CraneResource resource = CraneResource.createFromPath(current, config);;
-        while (resource!= null && current != null && !current.toString().equals(repository.getStoragePath().toString())) {
+        CraneResource resource = CraneResource.createFromPath(current, repository);
+        while (resource != null && current != null && !current.toString().equals(repository.getStoragePath().toString())) {
             breadcrumbs.add(0, resource);
             current = current.getParent();
-            resource = CraneResource.createFromPath(current, config);
+            resource = CraneResource.createFromPath(current, repository);
         }
         breadcrumbs.add(0, resource);
 
