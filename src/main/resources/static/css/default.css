@@ -224,6 +224,10 @@ button.dt-button[tabindex='0'] {
     background: #32a6d3;
 }
 
+.button#upload[disabled] {
+    background: #8ea5ae7a;
+}
+
 .button#cancel {
     background: #e523235c;
 }

@@ -82,23 +82,30 @@
 <script>
     const uploadDialog = document.getElementById("upload-dialog");
     const form = document.getElementById("upload-form");
-    const fileNameField = document.getElementById("file-name");
     const fileInputField = document.getElementById("upload-input-file");
+    const uploadButton = document.getElementById("upload");
 
+    function disableUpload() {
+        const fileNameField = document.getElementById("file-name");
+        uploadButton.disabled = fileNameField.value === "" || fileInputField.files.length === 0;
+        console.log(fileNameField.value === "" || fileInputField.files.length === 0)
+    }
     function updateFilename() {
+        const fileNameField = document.getElementById("file-name");
         if (fileNameField.value === "" && fileInputField.files.length > 0) {
             fileNameField.value = fileInputField.files[0].name;
         }
+        disableUpload();
     }
 
     function uploadAction(e) {
         e.preventDefault();
-        const cancel = document.getElementById("cancel");
-        const upload = document.getElementById("upload");
-        cancel.disabled = true;
-        upload.disabled = true;
-        upload.innerHTML = "Uploading...";
-        upload.classList.toggle("uploading");
+        const fileNameField = document.getElementById("file-name");
+        const cancelButton = document.getElementById("cancel");
+        cancelButton.disabled = true;
+        uploadButton.disabled = true;
+        uploadButton.innerHTML = "Uploading...";
+        uploadButton.classList.toggle("uploading");
 
         const url = form.action + fileNameField.value;
 
@@ -144,8 +151,10 @@
         $('table').DataTable(dataTableOptions);
         $('table').css("visibility", "visible");
         fileInputField.addEventListener("change", updateFilename);
+        document.getElementById("file-name").addEventListener("input", disableUpload);
         document.getElementById("cancel").addEventListener("click", closeDialog);
         document.getElementById("upload").addEventListener("click", uploadAction);
+        disableUpload();
     });
 </script>
 </body>
