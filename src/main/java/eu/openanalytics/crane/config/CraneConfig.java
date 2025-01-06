@@ -123,7 +123,7 @@ public class CraneConfig {
                 r.setCache(defaultCache);
             }
             if (r.getStorageLocation() == null) {
-                Path repositoryStoragePath = root.resolve(r.getName());
+                Path repositoryStoragePath = root.resolve(r.getName() + "/");
                 r.setStoragePath(repositoryStoragePath);
                 r.setStorageLocation(repositoryStoragePath.toString());
             } else {
