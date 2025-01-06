@@ -25,6 +25,7 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.service.UserService;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
@@ -37,6 +38,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
@@ -78,14 +81,12 @@ public class UploadController {
         }
     }
 
+    @PreAuthorize("@uploadAccessControlService.canAccess(#r, #p)")
     @ResponseBody
     @PostMapping(value = "/__file/{repository}/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> createResource(HttpServletRequest request,
                                                                            @P("r") @PathVariable(name = "repository") String stringRepository,
                                                                            @P("p") @PathVariable(name = "path") String stringPath) {
-        if (!uploadAccessControlService.canAccess(stringRepository, stringPath)) {
-            return userService.getUser() instanceof AnonymousAuthenticationToken ? ApiResponse.failUnauthorized() : ApiResponse.failForbidden();
-        }
         boolean isMultipartForm = JakartaServletFileUpload.isMultipartContent(request);
 
         if (!isMultipartForm) {

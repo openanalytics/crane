@@ -95,10 +95,6 @@ public class DownloadController {
                 }
             }
 
-
-            if (request.getUserPrincipal() == null && !repository.getReadAccess().getPublic()) {
-                response.sendRedirect(userService.getLoginPath());
-            }
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND);
             if (handelSpecExpressionService.handleByOnErrorExpression(repository, request, response, HttpStatus.NOT_FOUND.value())) {

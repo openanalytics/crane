@@ -30,6 +30,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,13 +49,13 @@ public class ErrorsController extends BaseUIController implements ErrorControlle
         super(userService, craneConfig);
     }
 
-    @RequestMapping(value = "/error", produces = "text/html")
-    public ModelAndView handleErrorAsHtml(HttpServletRequest request, HttpServletResponse response, ModelMap map) {
+    @RequestMapping(value = "/error", produces = "text/html", method = RequestMethod.GET)
+    public ModelAndView handleErrorAsHtml(HttpServletRequest request, HttpServletResponse response, ModelMap map, Authentication auth) {
+        int status = getStatus(request, response);
+
         setNoCacheHeader(response);
         map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
         map.put("resource", request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH));
-
-        int status = getStatus(request, response);
 
         prepareMap(map);
         if (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value()) {
@@ -70,7 +71,8 @@ public class ErrorsController extends BaseUIController implements ErrorControlle
         int status = getStatus(request, response);
 
         String error = "error";
-        if (request.getMethod().equals(HttpMethod.POST.name()) && status == HttpStatus.FORBIDDEN.value()) {
+        if (request.getMethod().equals(HttpMethod.POST.name()) && (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value())) {
+            // This is an upload request -> always return JSON and forbidden
             error = "forbidden";
             status = 403;
         } else if (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value()) {

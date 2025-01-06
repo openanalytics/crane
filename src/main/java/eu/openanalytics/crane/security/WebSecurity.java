@@ -31,26 +31,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UrlPathHelper;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Supplier;
+import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -81,9 +77,11 @@ public class WebSecurity {
     }
 
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http, SavedRequestAwareAuthenticationSuccessHandler successHandler) throws Exception {
+    protected SecurityFilterChain filterChain(HttpSecurity http, SavedRequestAwareAuthenticationSuccessHandler successHandler, CraneConfig craneConfig) throws Exception {
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setMatchingRequestParameterName(null);
+        List<String> repoMatchers = craneConfig.getRepositories().stream().map(r -> "/" + r.getName() + "/**").toList();
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
@@ -102,7 +100,7 @@ public class WebSecurity {
                                 "/error",
                                 "/logout-success"
                         ).permitAll()
-                        .requestMatchers("/{repoName}/**").access(this::checkAccessWithAuditing)
+                        .requestMatchers(repoMatchers.toArray(new String[0])).permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
                 .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, config))))
@@ -114,19 +112,10 @@ public class WebSecurity {
                 .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
                 .addFilterBefore(new PathTraversalFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new BlockInternalUrlFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new CustomExceptionTranslationFilter(), ExceptionTranslationFilter.class)
                 .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
                 .requestCache((cache) -> cache.requestCache(requestCache));
         return http.build();
-    }
-
-    private AuthorizationDecision checkAccessWithAuditing(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
-        String path = urlPathHelper.getPathWithinApplication(context.getRequest());
-        String repository = Path.of(path).iterator().next().toString();
-        if (config.getRepository(repository) == null) {
-            auditingService.createAuthorizationDeniedEvent(userService.getUser());
-            return new AuthorizationDecision(false);
-        }
-        return new AuthorizationDecision(true);
     }
 
     public LogoutSuccessHandler getLogoutSuccessHandler() {

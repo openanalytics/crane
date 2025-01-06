@@ -158,18 +158,6 @@ public class AuditingServiceTest {
         );
     }
 
-    @ParameterizedTest
-    @MethodSource("instances")
-    public void testAuditingErrorHandlerEventPage(CraneInstance instance) throws IOException, InterruptedException {
-        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/undefined_repository"));
-        checkTwoAuditLogs(
-                "/undefined_repository", "AUTHENTICATION_SUCCESS", "demo",
-                "/undefined_repository", "AUTHORIZATION_FAILURE", "demo"
-        );
-    }
-
     private void checkAuditLog(String path, String type, String username) throws IOException, InterruptedException {
         FileAuditEventRepository.AuditEventData auditEventData = readAuditEventData();
 
