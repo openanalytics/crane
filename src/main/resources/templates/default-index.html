@@ -80,6 +80,32 @@
 <script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
 <script th:src="@{'/__assets/webjars/datatables-buttons/3.1.2/js/dataTables.buttons.min.js'}"></script>
 <script>
+    const statusToText = {
+        '400': 'Bad Request',
+        '401': 'Unauthorized',
+        '403': 'Forbidden',
+        '404': 'Not Found',
+        '405': 'Method Not Allowed',
+        '406': 'Not Acceptable',
+        '407': 'Proxy Authentication Required',
+        '408': 'Request Timeout',
+        '409': 'Conflict',
+        '410': 'Gone',
+        '411': 'Length Required',
+        '412': 'Precondition Required',
+        '413': 'Request Entry Too Large',
+        '414': 'Request-URI Too Long',
+        '415': 'Unsupported Media Type',
+        '416': 'Requested Range Not Satisfiable',
+        '417': 'Expectation Failed',
+        '429': 'Too Many Requests',
+        '500': 'Internal Server Error',
+        '501': 'Not Implemented',
+        '502': 'Bad Gateway',
+        '503': 'Service Unavailable',
+        '504': 'Gateway Timeout',
+        '505': 'HTTP Version Not Supported',
+    };
     const uploadDialog = document.getElementById("upload-dialog");
     const form = document.getElementById("upload-form");
     const fileInputField = document.getElementById("upload-input-file");
@@ -118,14 +144,13 @@
                 return;
             }
             let error;
-            if (resp.status === 413) {
-                error = await resp.text();
-                let html = $(error);
-                if (html.find("h1").length) {
-                    error = html.find("h1").text() + (error.toLowerCase().includes("nginx") ? "from NGINX" : "");
-                }
-            } else {
+            try {
                 error = (await resp.json()).data.message;
+            } catch (e) {
+                error = resp.statusText;
+            }
+            if (error === "") {
+                error = statusToText[resp.status.toString()];
             }
             closeDialog();
             alert(error);
