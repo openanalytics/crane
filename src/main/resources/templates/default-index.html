@@ -133,6 +133,12 @@
     }
 
     function closeDialog() {
+        const cancelButton = document.getElementById("cancel");
+        cancelButton.disabled = false;
+        if (uploadButton.classList.contains("uploading")) {
+            uploadButton.innerHTML = "Upload";
+            uploadButton.classList.remove("uploading");
+        }
         uploadDialog.close();
         form.reset();
     }
