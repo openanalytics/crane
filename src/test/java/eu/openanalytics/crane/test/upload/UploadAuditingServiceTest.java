@@ -106,7 +106,7 @@ public class UploadAuditingServiceTest {
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("unauthorized");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertUnauthorized();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
         checkUnauthenticatedAuditLog(path, "AUTHORIZATION_FAILURE");
 
         path = genericPath.formatted("demo");

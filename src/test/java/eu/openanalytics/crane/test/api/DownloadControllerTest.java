@@ -504,7 +504,7 @@ public class DownloadControllerTest {
             resp.assertUnauthorizedRedirectToLogIn();
 
             resp = apiTestHelper.nativeCallWithoutAuth(apiTestHelper.createNativeJsonRequest(path));
-            resp.assertUnauthorized();
+            resp.assertNotFound();
         }
     }
 
