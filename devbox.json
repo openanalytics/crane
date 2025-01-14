@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.13.4/.schema/devbox.schema.json",
+  "packages": [
+    "vale@latest",
+    "maven@latest",
+    "jdk17@latest",
+    "docker-compose@latest",
+    "hugo@latest",
+    "go@latest",
+    "kustomize@latest",
+    "kubectl@latest",
+    "minikube@latest"
+  ],
+  "shell": {
+    "init_hook": [],
+    "scripts": {
+      "test": [
+        "mvn clean test"
+      ],
+      "build": [
+        "mvn -B -s $MAVEN_SETTINGS_RSB -U clean install deploy"
+      ],
+      "minikube": [
+        "minikube start --kubernetes-version='v1.25.6'  --addons=metrics-server,ingress --container-runtime=containerd",
+        "kustomize build docs/deployment/overlays/crane | kubectl apply -f - --server-side"
+      ]
+    }
+  }
+}
