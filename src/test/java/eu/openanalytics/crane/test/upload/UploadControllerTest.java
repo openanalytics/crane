@@ -263,7 +263,7 @@ public class UploadControllerTest {
     @MethodSource("instances")
     public void testUploadToRepositoryWithMissingDirectory(CraneInstance instance) throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String genericPath = "/public_repo/test_%s_directory/testUpload_%s.txt";
+        String genericPath = "/public_repo/testUpload_%s_directory/testUpload_%s.txt";
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("unauthorized", "unauthorized");
@@ -284,7 +284,7 @@ public class UploadControllerTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        genericPath = "/public_repo/test_%s_nested/directory/path/testUpload_%s.txt";
+        genericPath = "/public_repo/testUpload_%s_nested/directory/path/testUpload_%s.txt";
         path = genericPath.formatted("unauthorized", "unauthorized");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
