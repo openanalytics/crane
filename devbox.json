@@ -9,7 +9,8 @@
     "go@latest",
     "kustomize@latest",
     "kubectl@latest",
-    "minikube@latest"
+    "minikube@latest",
+    "git@latest"
   ],
   "shell": {
     "init_hook": [],
@@ -21,7 +22,7 @@
         "mvn -B -s $MAVEN_SETTINGS_RSB -U clean install deploy"
       ],
       "minikube": [
-        "minikube start --kubernetes-version='v1.25.6'  --addons=metrics-server,ingress --container-runtime=containerd",
+        "minikube start --kubernetes-version='v1.31'  --addons=metrics-server,ingress --container-runtime=containerd",
         "kustomize build docs/deployment/overlays/crane | kubectl apply -f - --server-side"
       ]
     }
