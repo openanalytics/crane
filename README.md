@@ -8,8 +8,6 @@ project assets.
 
 Learn more at https://crane.rdepot.io
 
-**(c) Copyright Open Analytics NV, 2021-2024 - Apache License 2.0**
-
 ## Building from source
 
 Clone this repository and run
@@ -32,3 +30,4 @@ java -jar target/crane-${CRANE_VERSION}-SNAPSHOT-exec.jar
 ## Java Version
 This project requires JDK 17.
 
+**(c) Copyright Open Analytics NV, 2021-2025 - Apache License 2.0**
