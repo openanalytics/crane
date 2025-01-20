@@ -21,20 +21,11 @@
 package eu.openanalytics.crane.security.auditing;
 
 import eu.openanalytics.crane.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
 import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
-import org.springframework.security.authorization.event.AuthorizationDeniedEvent;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.Map;
 
 @Service
 public class AuditingService extends AbstractAuditingService {

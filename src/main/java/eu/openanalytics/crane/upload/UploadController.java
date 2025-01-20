@@ -23,9 +23,7 @@ package eu.openanalytics.crane.upload;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
-import eu.openanalytics.crane.service.UserService;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
@@ -38,9 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,17 +55,14 @@ import java.util.Map;
 
 @Controller
 public class UploadController {
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private S3TransferManager transferManager;
     private final CraneConfig config;
-    private final UploadAccessControlService uploadAccessControlService;
-    private final UserService userService;
     private final UploadAuditing auditingService;
 
-    public UploadController(CraneConfig config, UploadAccessControlService uploadAccessControlService, UserService userService, UploadAuditing auditingService) {
+    public UploadController(CraneConfig config, UploadAuditing auditingService) {
         this.config = config;
-        this.uploadAccessControlService = uploadAccessControlService;
-        this.userService = userService;
         this.auditingService = auditingService;
     }
 
@@ -158,4 +151,5 @@ public class UploadController {
         body.writeInputStream(fileItemInput.getInputStream());
         s3UploadRequest.completionFuture().join();
     }
+
 }

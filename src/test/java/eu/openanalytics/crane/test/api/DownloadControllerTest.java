@@ -43,8 +43,8 @@ import java.util.List;
 public class DownloadControllerTest {
     private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
-    static List<CraneInstance> instances = new ArrayList<>();
-    static List<CraneInstance> instanceWithoutFirewall = new ArrayList<>();
+    private static final List<CraneInstance> instances = new ArrayList<>();
+    private static final List<CraneInstance> instanceWithoutFirewall = new ArrayList<>();
     private static CraneInstance groupsInst;
 
     @BeforeAll
@@ -57,11 +57,11 @@ public class DownloadControllerTest {
         instanceWithoutFirewall.add(new CraneInstance("application-test-api.yml", 7276, new HashMap<>(), true, true));
     }
 
-    static List<CraneInstance> instances() {
+    private static List<CraneInstance> instances() {
         return instances;
     }
 
-    static List<CraneInstance> instanceWithoutFirewall() {
+    private static List<CraneInstance> instanceWithoutFirewall() {
         return instanceWithoutFirewall;
     }
 

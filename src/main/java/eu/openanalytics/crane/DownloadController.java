@@ -25,8 +25,7 @@ import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.security.auditing.AuditingService;
-import eu.openanalytics.crane.service.HandelSpecExpressionService;
-import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.service.HandleSpecExpressionService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,15 +54,13 @@ import java.util.Map;
 @Controller
 public class DownloadController {
     private final ResourceHttpMessageConverter resourceHttpMessageConverter = new ResourceHttpMessageConverter();
-    private final UserService userService;
     private final AuditingService auditingService;
-    private final HandelSpecExpressionService handelSpecExpressionService;
+    private final HandleSpecExpressionService handleSpecExpressionService;
     private final CraneConfig craneConfig;
 
-    public DownloadController(UserService userService, AuditingService auditingService, HandelSpecExpressionService handelSpecExpressionService, CraneConfig craneConfig) {
-        this.userService = userService;
+    public DownloadController(AuditingService auditingService, HandleSpecExpressionService handleSpecExpressionService, CraneConfig craneConfig) {
         this.auditingService = auditingService;
-        this.handelSpecExpressionService = handelSpecExpressionService;
+        this.handleSpecExpressionService = handleSpecExpressionService;
         this.craneConfig = craneConfig;
     }
 
@@ -97,7 +94,7 @@ public class DownloadController {
 
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND);
-            if (handelSpecExpressionService.handleByOnErrorExpression(repository, request, response, HttpStatus.NOT_FOUND.value())) {
+            if (handleSpecExpressionService.handleByOnErrorExpression(repository, request, response, HttpStatus.NOT_FOUND.value())) {
                 return;
             }
             request.getRequestDispatcher("/error").forward(request, response);

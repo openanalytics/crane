@@ -27,8 +27,6 @@ import org.springframework.boot.actuate.audit.AuditEventRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
 @Service
 public class UploadAuditing extends AbstractAuditingService {
     public UploadAuditing(UserService userService, AuditEventRepository auditEventRepository) {

@@ -20,7 +20,6 @@
  */
 package eu.openanalytics.crane.service;
 
-import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CraneDirectory;
 import eu.openanalytics.crane.model.runtime.CraneFile;
@@ -41,14 +40,12 @@ import java.util.stream.Stream;
 @Service
 public class IndexPageService {
 
-    private final CraneConfig config;
     private final PathReadAccessControlService pathReadAccessControlService;
     private final PosixReadAccessControlService posixReadAccessControlService;
     private final PathWriteAccessControlService pathWriteAccessControlService;
     private final PosixWriteAccessControlService posixWriteAccessControlService;
 
-    public IndexPageService(CraneConfig config, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
-        this.config = config;
+    public IndexPageService(PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
         this.pathWriteAccessControlService = pathWriteAccessControlService;

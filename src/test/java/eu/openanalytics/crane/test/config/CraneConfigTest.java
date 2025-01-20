@@ -46,8 +46,8 @@ public class CraneConfigTest {
             () -> new CraneInstance("application-no-storage-location.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
-        Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
-        Assertions.assertEquals(rootCause.getMessage(), "Incorrect configuration detected: app.storage-location not set");
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals("Incorrect configuration detected: app.storage-location not set", rootCause.getMessage());
     }
 
     @Test
@@ -57,8 +57,8 @@ public class CraneConfigTest {
             () -> new CraneInstance("application-invalid-storage-location.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
-        Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
-        Assertions.assertEquals(rootCause.getMessage(), "Incorrect configuration detected: app.storage-location must either start and end with / OR start with s3:// and end with /");
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals("Incorrect configuration detected: app.storage-location must either start and end with / OR start with s3:// and end with /", rootCause.getMessage());
     }
 
     @Test
@@ -68,8 +68,8 @@ public class CraneConfigTest {
             () -> new CraneInstance("application-invalid-repository-storage-location.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
-        Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
-        Assertions.assertEquals(rootCause.getMessage(), "Incorrect configuration detected: app.repositories[repository_with_invalid_storage_location].storage-location must either start and end with / OR start with s3:// and end with /");
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals("Incorrect configuration detected: app.repositories[repository_with_invalid_storage_location].storage-location must either start and end with / OR start with s3:// and end with /", rootCause.getMessage());
     }
 
     @Test
@@ -79,8 +79,8 @@ public class CraneConfigTest {
             () -> new CraneInstance("application-no-openid-issuer-uri.yml", false)
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
-        Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
-        Assertions.assertEquals(rootCause.getMessage(), "Incorrect configuration detected: app.openid-issuer-uri not set");
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals("Incorrect configuration detected: app.openid-issuer-uri not set", rootCause.getMessage());
     }
 
     @Test
@@ -90,17 +90,15 @@ public class CraneConfigTest {
             () -> new CraneInstance("application-no-repositories.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
-        Assertions.assertEquals(rootCause.getClass(), IllegalArgumentException.class);
-        Assertions.assertEquals(rootCause.getMessage(), "Incorrect configuration detected: no repositories configured");
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertEquals("Incorrect configuration detected: no repositories configured", rootCause.getMessage());
     }
 
     @Test
     public void testConfigurationWithAPublicRepositoryWithAPrivateParent() {
         TestHelperException exception = Assertions.assertThrows(
             TestHelperException.class,
-            () -> {
-                new CraneInstance("application-with-public-repository-in-private-parent.yml");
-            }
+            () -> new CraneInstance("application-with-public-repository-in-private-parent.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
@@ -114,9 +112,7 @@ public class CraneConfigTest {
     public void testConfigurationWithAPublicRepositoryWithAPrivateParentDeeperNesting() {
         TestHelperException exception = Assertions.assertThrows(
             TestHelperException.class,
-            () -> {
-                new CraneInstance("application-with-public-repository-in-private-parent-deeper-nesting.yml");
-            }
+            () -> new CraneInstance("application-with-public-repository-in-private-parent-deeper-nesting.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
@@ -126,13 +122,11 @@ public class CraneConfigTest {
         );
     }
 
-    
+    @Test
     public void testConfigurationWithReadPublicRepoAndPosixEnabled() {
         TestHelperException exception = Assertions.assertThrows(
             TestHelperException.class,
-            () -> {
-                new CraneInstance("application-with-posix-and-read-public-repo.yml");
-            }
+            () -> new CraneInstance("application-with-posix-and-read-public-repo.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
@@ -146,9 +140,7 @@ public class CraneConfigTest {
     public void testConfigurationWithWritePublicRepoAndPosixEnabled() {
         TestHelperException exception = Assertions.assertThrows(
             TestHelperException.class,
-            () -> {
-                new CraneInstance("application-with-posix-and-write-public-repo.yml");
-            }
+            () -> new CraneInstance("application-with-posix-and-write-public-repo.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
@@ -163,9 +155,7 @@ public class CraneConfigTest {
     public void testConfigurationWithNoAccessToS3Bucket() {
         TestHelperException exception = Assertions.assertThrows(
                 TestHelperException.class,
-                () -> {
-                    new CraneInstance("application-test-no-s3-access.yml");
-                }
+                () -> new CraneInstance("application-test-no-s3-access.yml")
         );
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(S3Exception.class, rootCause.getClass());

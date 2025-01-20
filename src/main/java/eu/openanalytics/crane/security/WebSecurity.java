@@ -22,13 +22,10 @@ package eu.openanalytics.crane.security;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.security.auditing.AuditingService;
-import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -43,7 +40,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.web.util.UrlPathHelper;
 
 import java.io.IOException;
 import java.util.List;
@@ -55,25 +51,17 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class WebSecurity {
 
     private final CraneConfig config;
-
     private final OpenIdReAuthorizeFilter openIdReAuthorizeFilter;
-
     private final SpecExpressionResolver specExpressionResolver;
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final AuditingService auditingService;
     private final TokenParser tokenParser;
-    private final UrlPathHelper urlPathHelper = new UrlPathHelper();
-    private final UserService userService;
 
-    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, AuditingService auditingService, UserService userService) {
+    public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, AuditingService auditingService) {
         this.config = config;
         this.openIdReAuthorizeFilter = openIdReAuthorizeFilter;
         this.specExpressionResolver = specExpressionResolver;
         this.auditingService = auditingService;
         this.tokenParser = new TokenParser(config);
-        this.userService = userService;
     }
 
     @Bean
@@ -154,6 +142,5 @@ public class WebSecurity {
         });
         return savedRequestAwareAuthenticationSuccessHandler;
     }
-
 
 }

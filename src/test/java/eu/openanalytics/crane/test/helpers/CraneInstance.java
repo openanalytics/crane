@@ -112,9 +112,7 @@ public class CraneInstance {
             client = new CraneClient(port);
             AtomicReference<Throwable> exception = new AtomicReference<>();
             thread = new Thread(() -> app = application.run());
-            thread.setUncaughtExceptionHandler((thread, ex) -> {
-                exception.set(ex);
-            });
+            thread.setUncaughtExceptionHandler((thread, ex) -> exception.set(ex));
             thread.start();
 
             boolean available = false;

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.openanalytics.crane.security.auditing.FileAuditEventRepository;
-import eu.openanalytics.crane.test.api.DownloadControllerTest;
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
@@ -53,13 +52,13 @@ public class UploadAuditingServiceTest {
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final String ANONYMOUS_USER = "anonymousUser";
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
-    private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(UploadAuditingServiceTest.class);
     private static BufferedReader bufferedReader;
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
-    static List<CraneInstance> instances = new ArrayList<>();
+    private static final List<CraneInstance> instances = new ArrayList<>();
 
     @BeforeAll
     public static void beforeAll() {
@@ -76,7 +75,7 @@ public class UploadAuditingServiceTest {
         CraneInstance.addInstanceWithAwsAccess(instances, "application-test-upload-api-with-s3.yml", 7275, logger, properties);
     }
 
-    static List<CraneInstance> instances() {
+    private static List<CraneInstance> instances() {
         return instances;
     }
 

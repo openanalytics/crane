@@ -50,7 +50,7 @@ public class NativeResponse {
         Assertions.assertEquals(302, code());
         Assertions.assertTrue(response.headers().firstValue("location").isPresent());
         Assertions.assertTrue(response.headers().firstValue("location").get().endsWith("/oauth2/authorization/crane"));
-        Assertions.assertEquals(response.body(), "");
+        Assertions.assertEquals("", response.body());
     }
 
     public void assertUnauthorized() {

@@ -40,8 +40,8 @@ public class AuditingConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public AuditEventRepository noAuditEventRepository(CraneConfig craneConfig) {
-        return new NoAuditEventRepository(craneConfig);
+    public AuditEventRepository noAuditEventRepository() {
+        return new NoAuditEventRepository();
     }
 
 }

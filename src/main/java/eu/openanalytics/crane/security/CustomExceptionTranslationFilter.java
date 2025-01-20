@@ -33,7 +33,6 @@ import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.util.ThrowableAnalyzer;
 import org.springframework.web.filter.GenericFilterBean;
-import org.springframework.web.util.UrlPathHelper;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,7 +45,6 @@ import java.util.List;
  */
 public class CustomExceptionTranslationFilter extends GenericFilterBean {
 
-    private final UrlPathHelper urlPathHelper = new UrlPathHelper();
     private final ThrowableAnalyzer throwableAnalyzer = new DefaultThrowableAnalyzer();
     private final AccessDeniedHandler accessDeniedHandler = new AccessDeniedHandlerImpl();
 

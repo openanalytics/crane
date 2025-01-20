@@ -28,7 +28,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.UrlPathHelper;
 
 import java.io.IOException;
 
@@ -36,8 +35,6 @@ import java.io.IOException;
  * Filter that blocks direct access to internal URLs.
  */
 public class BlockInternalUrlFilter extends OncePerRequestFilter {
-
-    private final UrlPathHelper urlPathHelper = new UrlPathHelper();
 
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain chain) throws ServletException, IOException {

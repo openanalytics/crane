@@ -34,7 +34,7 @@ import java.time.Duration;
 
 public class KeycloakAuthTokenInterceptor implements Interceptor {
 
-    public static OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+    private static final OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
     private final String credentials;
     private final String user;
 

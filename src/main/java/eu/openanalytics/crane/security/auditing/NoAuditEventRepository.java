@@ -20,7 +20,6 @@
  */
 package eu.openanalytics.crane.security.auditing;
 
-import eu.openanalytics.crane.config.CraneConfig;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
 
@@ -29,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NoAuditEventRepository implements AuditEventRepository {
-    public NoAuditEventRepository(CraneConfig craneConfig) {
+    public NoAuditEventRepository() {
     }
 
     @Override

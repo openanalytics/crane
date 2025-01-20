@@ -32,8 +32,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.services.sts.StsClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +40,8 @@ import java.util.Map;
 public class ControllerTest {
     private static final Logger logger = LoggerFactory.getLogger(ControllerTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
-    private static CraneInstance inst;
-    private static CraneInstance s3Inst;
     private static CraneInstance redisInst;
-    static List<CraneInstance> instances = new ArrayList<>();
+    private static final List<CraneInstance> instances = new ArrayList<>();
 
     @BeforeAll
     public static void beforeAll() {
@@ -55,7 +51,7 @@ public class ControllerTest {
         redisInst = new CraneInstance("application-test-api.yml", 7071, Map.of("spring.session.store-type", "redis"), true, false);
     }
 
-    static List<CraneInstance> instances() {
+    private static List<CraneInstance> instances() {
         return instances;
     }
 

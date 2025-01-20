@@ -69,21 +69,6 @@ public class PosixUploadAccessControlServiceTest {
                 .withEnv("CRANE_PORT", String.valueOf(cranePort))
                 .withNetwork(keycloakInstance.getNetwork())
                 .withExposedPorts(cranePort);
-//                .withCreateContainerCmdModifier(
-//                        cmd -> cmd.withHostConfig(
-//                                HostConfig.newHostConfig()
-//                                        .withCapDrop(Capability.ALL)
-//                                        .withCapAdd(Capability.CHOWN, Capability.FOWNER, Capability.DAC_OVERRIDE)
-//                                        .withNetworkMode(keycloakInstance.getNetwork().getId())
-//                                        .withAutoRemove(true)
-//                        )
-//                )
-//                .withNetwork(keycloakInstance.getNetwork());
-//                .waitingFor(
-//                        Wait.forHttp("/").forStatusCode(200)
-//                ).withStartupCheckStrategy(
-//                        new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(1))
-//                );;
         craneApp.setPortBindings(List.of(String.format("%s:%s", cranePort, cranePort)));
         craneApp.withLogConsumer(new Slf4jLogConsumer(logger));
         craneApp.start();

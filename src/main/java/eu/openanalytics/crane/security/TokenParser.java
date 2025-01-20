@@ -122,10 +122,10 @@ public class TokenParser {
     private List<String> parseGroupsClaim(Object claimValue) {
         String groupsClaimName = config.getOpenidGroupsClaim();
         if (claimValue == null) {
-            logger.debug(String.format("No groups claim with name %s found", groupsClaimName));
+            logger.debug("No groups claim with name {} found", groupsClaimName);
             return new ArrayList<>();
         } else {
-            logger.debug(String.format("Matching claim found: %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
+            logger.debug("Matching claim found: {} -> {} ({})", groupsClaimName, claimValue, claimValue.getClass());
         }
 
         if (claimValue instanceof Collection) {
@@ -135,7 +135,7 @@ public class TokenParser {
                     result.add(object.toString());
                 }
             }
-            logger.debug(String.format("Parsed groups claim as Java Collection: %s -> %s (%s)", groupsClaimName, result, result.getClass()));
+            logger.debug("Parsed groups claim as Java Collection: {} -> {} ({})", groupsClaimName, result, result.getClass());
             return result;
         }
 
@@ -148,13 +148,13 @@ public class TokenParser {
                 }
             } catch (ParseException e) {
                 // Unable to parse JSON
-                logger.debug(String.format("Unable to parse claim as JSON: %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
+                logger.debug("Unable to parse claim as JSON: {} ->{} {})", groupsClaimName, claimValue, claimValue.getClass());
             }
-            logger.debug(String.format("Parsed groups claim as JSON: %s -> %s (%s)", groupsClaimName, result, result.getClass()));
+            logger.debug("Parsed groups claim as JSON: {} -> {} ({})", groupsClaimName, result, result.getClass());
             return result;
         }
 
-        logger.debug(String.format("No parser found for groups claim (unsupported type): %s -> %s (%s)", groupsClaimName, claimValue, claimValue.getClass()));
+        logger.debug("No parser found for groups claim (unsupported type): {} -> {} ({})", groupsClaimName, claimValue, claimValue.getClass());
         return new ArrayList<>();
     }
 

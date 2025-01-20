@@ -21,7 +21,6 @@
 package eu.openanalytics.crane.test.upload;
 
 import com.google.common.io.Files;
-import eu.openanalytics.crane.test.api.DownloadControllerTest;
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
@@ -42,7 +41,6 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -50,14 +48,15 @@ import java.util.List;
 
 @Testcontainers
 public class UploadControllerTest {
-    private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(UploadControllerTest.class);
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
-    private static List<CraneInstance> instances = new ArrayList<>();
+    private static final List<CraneInstance> instances = new ArrayList<>();
     private static S3Client client;
     private static final String bucket = "oa-test-crane-bucket";
 
     @BeforeAll
-    public static void beforeAll() throws URISyntaxException, IOException {
+    public static void beforeAll() {
         keycloakInstance.start();
         instances.add(new CraneInstance("application-test-upload-api.yml"));
         if (CraneInstance.addInstanceWithAwsAccess(instances, "application-test-upload-api-with-s3.yml", 7275, logger)) {
@@ -77,7 +76,7 @@ public class UploadControllerTest {
     }
 
 
-    static List<CraneInstance> instances() {
+    private static List<CraneInstance> instances() {
         return instances;
     }
 

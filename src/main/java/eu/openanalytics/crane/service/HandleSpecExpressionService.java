@@ -29,11 +29,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
-public class HandelSpecExpressionService {
+public class HandleSpecExpressionService {
     private final UserService userService;
     private final SpecExpressionResolver specExpressionResolver;
 
-    public HandelSpecExpressionService(UserService userService, SpecExpressionResolver specExpressionResolver) {
+    public HandleSpecExpressionService(UserService userService, SpecExpressionResolver specExpressionResolver) {
         this.userService = userService;
         this.specExpressionResolver = specExpressionResolver;
     }

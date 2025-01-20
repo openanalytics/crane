@@ -23,7 +23,6 @@ package eu.openanalytics.crane.config;
 import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.carlspring.cloud.storage.s3fs.S3FileSystem;
 import org.slf4j.Logger;
@@ -92,7 +91,7 @@ public class CraneConfig {
     }
 
     @PostConstruct
-    public void init() throws IOException, URISyntaxException {
+    public void init() throws URISyntaxException {
         logoUrl = resolveImageURI(logoUrl);
         if (storageLocation == null) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location not set");
@@ -106,7 +105,7 @@ public class CraneConfig {
             throw new IllegalArgumentException("Listing syntax was used instead of a map for listing repositories. Have a look at Crane's documentation.");
         }
 
-        if (repositories.size() == 0) {
+        if (repositories.isEmpty()) {
             throw new IllegalArgumentException("Incorrect configuration detected: no repositories configured");
         }
 
@@ -139,7 +138,7 @@ public class CraneConfig {
         }
     }
 
-    private Path storageLocationToPath(String storageLocation) throws IOException, URISyntaxException {
+    private Path storageLocationToPath(String storageLocation) throws URISyntaxException {
         if (storageLocation.startsWith("s3://")) {
             checkStsAuthentication();
 
@@ -178,7 +177,7 @@ public class CraneConfig {
             if (callerIdentityArn == null) {
                 callerIdentityArn = stsClient.getCallerIdentity().arn();
             }
-            logger.info("Using AWS identity: " + callerIdentityArn);
+            logger.info("Using AWS identity: {}", callerIdentityArn);
         } catch (StsException exception) {
             logger.info("Not authenticated with AWS, enable debug logs in case this unexpected.");
             logger.debug("Not authenticated with AWS", exception);
@@ -194,14 +193,14 @@ public class CraneConfig {
         if (resourceURI.toLowerCase().startsWith("file://")) {
             String mimetype = URLConnection.guessContentTypeFromName(resourceURI);
             if (mimetype == null) {
-                logger.warn("Cannot determine mimetype for resource: " + resourceURI);
+                logger.warn("Cannot determine mimetype for resource: {}", resourceURI);
             } else {
                 try (InputStream input = new URL(resourceURI).openConnection().getInputStream()) {
                     byte[] data = StreamUtils.copyToByteArray(input);
                     String encoded = Base64.getEncoder().encodeToString(data);
                     resolvedValue = String.format("data:%s;base64,%s", mimetype, encoded);
                 } catch (IOException e) {
-                    logger.warn("Failed to convert file URI to data URI: " + resourceURI, e);
+                    logger.warn("Failed to convert file URI to data URI: {}", resourceURI, e);
                 }
             }
         }
@@ -271,20 +270,6 @@ public class CraneConfig {
 
     public Repository getRepository(String name) {
         return repositories.get(name);
-    }
-
-    public Repository getRepository(HttpServletRequest request) {
-        String stringPath = request.getRequestURI().replaceFirst("/__file", "");
-        int endOfRepoName = stringPath.length();
-        if (stringPath.indexOf("/", 1) != -1) {
-            endOfRepoName = stringPath.indexOf("/", 1);
-        }
-        String repoName = stringPath.substring(stringPath.indexOf("/") + 1, endOfRepoName);
-        Repository repository = (Repository) request.getAttribute("repo");
-        if (repository == null || !repository.getName().equalsIgnoreCase(repoName)) {
-            repository = getRepository(repoName);
-        }
-        return repository;
     }
 
     public boolean hasOpenidGroupsClaim() {
