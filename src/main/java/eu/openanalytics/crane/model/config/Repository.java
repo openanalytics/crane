@@ -32,6 +32,7 @@ public class Repository extends PathComponent {
     private Path storagePath;
     private String onErrorExpression;
     private boolean posixAccessControl;
+    private List<RewriteRule> rewrites;
 
     public String getIndexFileName() {
         return indexFileName;
@@ -114,4 +115,11 @@ public class Repository extends PathComponent {
         this.onErrorExpression = onErrorExpression;
     }
 
+    public List<RewriteRule> getRewrites() {
+        return rewrites;
+    }
+
+    public void setRewrites(List<RewriteRule> redirects) {
+        this.rewrites = redirects;
+    }
 }

@@ -24,13 +24,19 @@ import com.google.common.collect.Streams;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.model.config.RewriteRule;
 import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.HandleSpecExpressionService;
+import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.service.spel.SpecExpressionContext;
+import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.tika.Tika;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -38,30 +44,39 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.parameters.P;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 public class DownloadController {
+
     private final ResourceHttpMessageConverter resourceHttpMessageConverter = new ResourceHttpMessageConverter();
     private final AuditingService auditingService;
     private final HandleSpecExpressionService handleSpecExpressionService;
     private final CraneConfig craneConfig;
+    private final SpecExpressionResolver specExpressionResolver;
+    private final UserService userService;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public DownloadController(AuditingService auditingService, HandleSpecExpressionService handleSpecExpressionService, CraneConfig craneConfig) {
+    public DownloadController(AuditingService auditingService, HandleSpecExpressionService handleSpecExpressionService, CraneConfig craneConfig, SpecExpressionResolver specExpressionResolver, UserService userService) {
         this.auditingService = auditingService;
         this.handleSpecExpressionService = handleSpecExpressionService;
         this.craneConfig = craneConfig;
+        this.specExpressionResolver = specExpressionResolver;
+        this.userService = userService;
     }
 
     @PreAuthorize("@readAccessControlService.canAccess(#r, #p)")
@@ -69,12 +84,18 @@ public class DownloadController {
     public void read(HttpServletRequest request,
                      HttpServletResponse response,
                      @P("r") @PathVariable(name = "repository") String stringRepository,
-                     @P("p") @PathVariable(name = "path") String stringPath) throws ServletException, IOException {
+                     @P("p") @PathVariable(name = "path") String stringPath, RedirectAttributes redirectAttributes) throws ServletException, IOException {
         Repository repository = craneConfig.getRepository(stringRepository);
-        String relativePath = String.join("/", Streams.stream(Path.of(stringPath).iterator()).map(Path::toString).toList());
+        String relativePath = String.join("/", Streams.stream(Path.of(stringPath).iterator()).map(Path::toString).toList()); // TODO
         Path path = repository.getStoragePath().resolve(relativePath);
         if (!stringPath.endsWith("/") && Files.isDirectory(path)) {
             response.sendRedirect(request.getRequestURI().replaceFirst("/__file", "") + "/");
+            return;
+        }
+        Optional<String> redirect = checkRewriteRules(repository, Path.of(stringPath), request, response);
+        if (redirect.isPresent()) {
+            logger.debug("Rewriting '{}' to '{}'", stringPath, redirect.get());
+            request.getRequestDispatcher("/__file" + redirect.get()).forward(request, response);
             return;
         }
         if (Files.isDirectory(path)) {
@@ -135,12 +156,26 @@ public class DownloadController {
         if (repository.getCache() != null) {
             for (CacheRule cache : repository.getCache()) {
                 cacheRules.put(
-                        new AntPathRequestMatcher(cache.getPattern()),
-                        CacheControl.maxAge(cache.getMaxAge()).getHeaderValue()
+                    new AntPathRequestMatcher(cache.getPattern()),
+                    CacheControl.maxAge(cache.getMaxAge()).getHeaderValue()
                 );
             }
         }
         return cacheRules;
+    }
+
+    private Optional<String> checkRewriteRules(Repository repository, Path path, HttpServletRequest request, HttpServletResponse response) {
+        Authentication auth = userService.getUser();
+        if (repository.getRewrites() == null) {
+            return Optional.empty();
+        }
+        for (RewriteRule redirectRule : repository.getRewrites()) {
+            SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), repository, request, response, path);
+            if (specExpressionResolver.evaluateToBoolean(redirectRule.getMatcher(), context)) {
+                return Optional.of(specExpressionResolver.evaluateToString(redirectRule.getDestination(), context));
+            }
+        }
+        return Optional.empty();
     }
 
 }

@@ -52,7 +52,11 @@ public abstract class AbstractPathAccessControlService {
     protected abstract AccessControl getAccessControl(PathComponent pathComponent);
 
     public boolean canAccess(String repository, String path) {
-        return canAccess(craneConfig.getRepository(repository), path);
+        Repository repositoryObject = craneConfig.getRepository(repository);
+        if (repositoryObject == null) {
+            return false;
+        }
+        return canAccess(repositoryObject, path);
     }
 
     public boolean canAccess(Repository repository, String fullPath) {

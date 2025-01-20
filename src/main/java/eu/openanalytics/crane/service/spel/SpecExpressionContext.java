@@ -29,7 +29,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SpecExpressionContext {
@@ -38,11 +41,15 @@ public class SpecExpressionContext {
 
     private HttpServletResponse response;
 
+    private Path path;
+
     private Repository repository;
 
     private List<String> groups;
 
     private Map<String, Object> claims;
+
+    private final List<Matcher> parsed = new ArrayList<>();
 
     public static SpecExpressionContext create(Object... objects) {
         SpecExpressionContext ctx = new SpecExpressionContext();
@@ -63,6 +70,9 @@ public class SpecExpressionContext {
             if (o instanceof HttpServletResponse) {
                 ctx.response = (HttpServletResponse) o;
             }
+            if (o instanceof Path) {
+                ctx.path = (Path) o;
+            }
         }
         return ctx;
     }
@@ -77,6 +87,21 @@ public class SpecExpressionContext {
 
     public Map<String, Object> getClaims() {
         return claims;
+    }
+
+    public List<Matcher> getParsed() {
+        return parsed;
+    }
+
+    public Path getPath() {
+        return path;
+    }
+
+    public boolean parse(String pattern, String input) {
+        Pattern compiledPattern = Pattern.compile(pattern);
+        Matcher matcher = compiledPattern.matcher(input);
+        parsed.add(matcher);
+        return matcher.matches();
     }
 
     /**
@@ -163,4 +188,5 @@ public class SpecExpressionContext {
         }
         return groups;
     }
+
 }
