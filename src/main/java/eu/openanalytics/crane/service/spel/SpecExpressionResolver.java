@@ -20,10 +20,18 @@
  */
 package eu.openanalytics.crane.service.spel;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Scheduler;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.expression.*;
+import org.springframework.context.expression.BeanExpressionContextAccessor;
+import org.springframework.context.expression.BeanFactoryAccessor;
+import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.context.expression.EnvironmentAccessor;
+import org.springframework.context.expression.MapAccessor;
+import org.springframework.context.expression.StandardBeanExpressionResolver;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -34,8 +42,7 @@ import org.springframework.expression.spel.support.StandardTypeConverter;
 import org.springframework.expression.spel.support.StandardTypeLocator;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Note: inspired by org.springframework.context.expression.StandardBeanExpressionResolver
@@ -45,7 +52,10 @@ public class SpecExpressionResolver {
 
     private final ApplicationContext appContext;
     private final ExpressionParser expressionParser;
-    private final Map<SpecExpressionContext, StandardEvaluationContext> evaluationCache = new ConcurrentHashMap<>(8);
+    private final Cache<SpecExpressionContext, StandardEvaluationContext> evaluationCache = Caffeine.newBuilder()
+        .scheduler(Scheduler.systemScheduler())
+        .expireAfterAccess(1, TimeUnit.MINUTES)
+        .build();
 
     private final ParserContext beanExpressionParserContext = new ParserContext() {
         @Override
@@ -77,20 +87,19 @@ public class SpecExpressionResolver {
 
         ConfigurableBeanFactory beanFactory = ((ConfigurableApplicationContext) appContext).getBeanFactory();
 
-        StandardEvaluationContext sec = evaluationCache.get(context);
-        if (sec == null) {
-            sec = new StandardEvaluationContext();
-            sec.setRootObject(context);
-            sec.addPropertyAccessor(new BeanExpressionContextAccessor());
-            sec.addPropertyAccessor(new BeanFactoryAccessor());
-            sec.addPropertyAccessor(new MapAccessor());
-            sec.addPropertyAccessor(new EnvironmentAccessor());
-            sec.setBeanResolver(new BeanFactoryResolver(appContext));
-            sec.setTypeLocator(new StandardTypeLocator(beanFactory.getBeanClassLoader()));
+        StandardEvaluationContext sec = evaluationCache.get(context, k -> {
+            StandardEvaluationContext result = new StandardEvaluationContext();
+            result.setRootObject(context);
+            result.addPropertyAccessor(new BeanExpressionContextAccessor());
+            result.addPropertyAccessor(new BeanFactoryAccessor());
+            result.addPropertyAccessor(new MapAccessor());
+            result.addPropertyAccessor(new EnvironmentAccessor());
+            result.setBeanResolver(new BeanFactoryResolver(appContext));
+            result.setTypeLocator(new StandardTypeLocator(beanFactory.getBeanClassLoader()));
             ConversionService conversionService = beanFactory.getConversionService();
-            if (conversionService != null) sec.setTypeConverter(new StandardTypeConverter(conversionService));
-            evaluationCache.put(context, sec);
-        }
+            if (conversionService != null) result.setTypeConverter(new StandardTypeConverter(conversionService));
+            return result;
+        });
 
         return expr.getValue(sec);
     }
