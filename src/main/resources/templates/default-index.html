@@ -25,6 +25,8 @@
 <head lang="en">
     <title th:text="${title}"></title>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
     <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
 </head>
@@ -52,7 +54,7 @@
         </form>
     </dialog>
 
-    <table th:attr="data-has-write-access=${hasWriteAccess},data-csrf-token=${_csrf.token}">
+    <table th:attr="data-has-write-access=${hasWriteAccess}">
         <thead>
         <tr>
             <th>Filename</th>
@@ -133,12 +135,13 @@
         uploadButton.classList.toggle("uploading");
 
         const url = form.action + fileNameField.value;
-        const csrfToken = $('table').data("csrf-token");
+        const csrfToken = $("meta[name='_csrf']").attr("content");
+        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
         const formData = new FormData(form);
         const response = fetch(url, {
             method: 'POST',
             body: formData,
-            headers: {"X-CSRF-TOKEN": csrfToken}
+            headers: {[csrfHeader]: csrfToken}
         }).then(async (resp) => {
             if (resp.ok) {
                 location.reload();
