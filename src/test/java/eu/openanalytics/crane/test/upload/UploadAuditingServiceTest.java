@@ -104,7 +104,7 @@ public class UploadAuditingServiceTest {
         String genericPath = "/private_repo/testUpload_private_%s.txt";
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
-        String path = genericPath.formatted("unauthorized");
+        String path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
         checkUnauthenticatedAuditLog(path, "AUTHORIZATION_FAILURE");
 
@@ -130,12 +130,14 @@ public class UploadAuditingServiceTest {
         String genericPath = "/public_repo/testUpload_public_%s.txt";
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
-        String path = genericPath.formatted("unauthorized");
+        String path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         checkUnauthenticatedAuditLog(path, "UPLOAD");
 
         path = genericPath.formatted("demo");
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        readAuditEventData();
+        readAuditEventData();
         checkTwoAuditLogs(
                 path, "AUTHENTICATION_SUCCESS", "demo",
                 path, "UPLOAD", "demo"
@@ -178,6 +180,11 @@ public class UploadAuditingServiceTest {
     }
 
     private void checkUnauthenticatedAuditLog(String path, String type) throws IOException, InterruptedException {
-        checkAuditLog(path, type, ANONYMOUS_USER);
+        if (!type.equals("AUTHORIZATION_FAILURE")) {
+            checkAuditLog(path.substring(0, path.lastIndexOf("/") + 1), "REPOSITORY_HANDLER", ANONYMOUS_USER);
+            checkAuditLog(path, type, ANONYMOUS_USER);
+        } else {
+            checkAuditLog(path.substring(0, path.lastIndexOf("/") + 1), type, ANONYMOUS_USER);
+        }
     }
 }

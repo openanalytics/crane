@@ -113,7 +113,7 @@ public class PosixUploadAccessControlServiceTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
 
@@ -133,7 +133,7 @@ public class PosixUploadAccessControlServiceTest {
         String path = genericPath.formatted("demo");
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -152,7 +152,7 @@ public class PosixUploadAccessControlServiceTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -174,7 +174,7 @@ public class PosixUploadAccessControlServiceTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -193,7 +193,7 @@ public class PosixUploadAccessControlServiceTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -212,7 +212,7 @@ public class PosixUploadAccessControlServiceTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
@@ -234,7 +234,7 @@ public class PosixUploadAccessControlServiceTest {
         String path = genericPath.formatted("demo");
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -253,7 +253,7 @@ public class PosixUploadAccessControlServiceTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -275,7 +275,7 @@ public class PosixUploadAccessControlServiceTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -294,7 +294,7 @@ public class PosixUploadAccessControlServiceTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -310,7 +310,7 @@ public class PosixUploadAccessControlServiceTest {
         String path = genericPath.formatted("demo");
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");

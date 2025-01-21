@@ -46,6 +46,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Testcontainers
 public class UploadControllerTest {
 
@@ -98,7 +99,7 @@ public class UploadControllerTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
@@ -120,7 +121,7 @@ public class UploadControllerTest {
         String path = genericPath.formatted("demo");
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -140,7 +141,7 @@ public class UploadControllerTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -160,7 +161,7 @@ public class UploadControllerTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
@@ -195,7 +196,7 @@ public class UploadControllerTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
@@ -221,8 +222,9 @@ public class UploadControllerTest {
         response.assertSuccess();
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
-        path = genericPath.formatted("unauthorized");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        path = genericPath.formatted("unauthenticated");
+        // Cannot upload to this repo since user cannot get csrf token
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
 
         path = genericPath.formatted("test");
@@ -242,7 +244,7 @@ public class UploadControllerTest {
         String path = genericPath.formatted("demo");
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
-        path = genericPath.formatted("unauthorized");
+        path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
 
         path = genericPath.formatted("test");
