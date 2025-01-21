@@ -34,7 +34,8 @@ import java.time.Duration;
 
 public class KeycloakAuthTokenInterceptor implements Interceptor {
 
-    private static final OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+    public static final OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+    private static final CsrfTokenInterceptor csrfTokenInterceptor = new CsrfTokenInterceptor();
     private final String credentials;
     private final String user;
 
@@ -58,7 +59,7 @@ public class KeycloakAuthTokenInterceptor implements Interceptor {
         Request request = chain.request();
         // Adding username for test messages
         Request authenticatedRequest = request.newBuilder().header("Authorization", credentials).header("user", user).build();
-        return chain.proceed(authenticatedRequest);
+        return chain.proceed(csrfTokenInterceptor.addCsrfToken(authenticatedRequest));
     }
 
     public HttpRequest.Builder intercept(HttpRequest.Builder request) {

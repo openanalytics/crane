@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.test.helpers;
 
+import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 
@@ -150,5 +151,12 @@ public class Response {
 
     public void assertForbidden() {
         checkResponseCode(403, code());
+    }
+
+    public void setCookies(Request.Builder builder) {
+        String cookies = response.header("Set-Cookie");
+        if (cookies!= null) {
+            builder.addHeader("Cookie", cookies);
+        }
     }
 }
