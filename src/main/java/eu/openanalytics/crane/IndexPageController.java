@@ -32,9 +32,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
@@ -73,7 +75,7 @@ public class IndexPageController extends BaseUIController {
 
     @ResponseBody
     @GetMapping(value = "/__index", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Map<String, Object>>> mainJson(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> mainJson(HttpServletRequest request, HttpServletResponse response, CsrfToken csrfToken) throws IOException, ServletException {
         Path path = (Path) request.getAttribute("path");
         Repository repo = (Repository) request.getAttribute("repo");
 
@@ -84,6 +86,7 @@ public class IndexPageController extends BaseUIController {
         }
         Map<String, Object> variables = indexPageService.getTemplateVariables(repo, path);
         variables.keySet().retainAll(List.of("directories", "files"));
+        variables.put(csrfToken.getHeaderName(), csrfToken.getToken());
         return ApiResponse.success(variables);
     }
 }
