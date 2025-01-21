@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.opentest4j.AssertionFailedError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,25 +93,16 @@ public class ControllerTest {
     @MethodSource("instances")
     public void testLogout(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
-        resp.assertSuccessWithRedirect();
-        resp.assertRedirectedTo("/logout-success");
-
-
-        resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/logout"));
-        resp.assertSuccessWithRedirect();
-        resp.assertRedirectedTo("/logout-success");
+        apiTestHelper.performLogoutRoutine(apiTestHelper::callWithTokenAuthDemoUser);
+        apiTestHelper.performLogoutRoutine(apiTestHelper::callWithoutAuth);
     }
 
     @Test
     public void testRedis() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(redisInst);
-
         Response resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/private_repo/"));
         resp.assertSuccess();
-        resp = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
-        resp.assertSuccessWithRedirect();
-        resp.assertRedirectedTo("/logout-success");
+        apiTestHelper.performLogoutRoutine(apiTestHelper::callWithTokenAuthDemoUser);
     }
 
     @ParameterizedTest

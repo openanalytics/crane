@@ -33,9 +33,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.opentest4j.AssertionFailedError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -143,16 +145,17 @@ public class AuditingServiceTest {
     public void testAuditingLogoutEventPage(CraneInstance instance) throws IOException, InterruptedException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
 
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest("/logout"));
+        apiTestHelper.performLogoutRoutine(apiTestHelper::callWithoutAuth);
         checkUnauthenticatedAuditLog("/logout", "LOGOUT");
 
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest("/logout"));
+        apiTestHelper.performLogoutRoutine(apiTestHelper::callWithTokenAuthDemoUser);
         checkTwoAuditLogs(
                 "/logout", "LOGOUT", ANONYMOUS_USER,
                 "/logout-success", "AUTHENTICATION_SUCCESS", "demo"
         );
 
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest("/logout"));
+        apiTestHelper.performLogoutRoutine(apiTestHelper::callWithTokenAuthTestUser);
+
         checkTwoAuditLogs("/logout", "LOGOUT", ANONYMOUS_USER,
                 "/logout-success", "AUTHENTICATION_SUCCESS", "test"
         );

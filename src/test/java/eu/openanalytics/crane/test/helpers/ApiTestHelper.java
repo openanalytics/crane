@@ -20,10 +20,12 @@
  */
 package eu.openanalytics.crane.test.helpers;
 
+import eu.openanalytics.crane.test.helpers.auth.CsrfTokenInterceptor;
 import eu.openanalytics.crane.test.helpers.auth.KeycloakAuthOidcInterceptor;
 import eu.openanalytics.crane.test.helpers.auth.KeycloakAuthTokenInterceptor;
 import okhttp3.CookieJar;
 import okhttp3.JavaNetCookieJar;
+import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -38,6 +40,9 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ApiTestHelper {
 
@@ -53,7 +58,7 @@ public class ApiTestHelper {
             throw new TestHelperException(String.format("The passed url '%s' does not start with 'http://' or 'https://'", baseUrl));
         }
         this.baseUrl = baseUrl;
-        clientWithoutAuth = new OkHttpClient.Builder().callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+        clientWithoutAuth = new OkHttpClient.Builder().addInterceptor(new CsrfTokenInterceptor()).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
         clientTokenDemo = new OkHttpClient.Builder().addInterceptor(new KeycloakAuthTokenInterceptor("demo", "demo")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
         clientTokenTest = new OkHttpClient.Builder().addInterceptor(new KeycloakAuthTokenInterceptor("test", "test")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
         CookieJar demoCookieJar = new JavaNetCookieJar(new CookieManager());
@@ -73,6 +78,30 @@ public class ApiTestHelper {
     public Request.Builder createHtmlRequest(String path) {
         return new Request.Builder().url(baseUrl + path).addHeader("Accept", "text/html");
     }
+
+    public Request.Builder createLogoutRequest(Response response) {
+        String responseBody = response.body().toString();
+        Pattern pattern = Pattern.compile("<input name=\"_csrf\" type=\"hidden\" value=\"(.*)\"");
+        Matcher matcher = pattern.matcher(responseBody);
+        String csrfToken = "";
+        if (matcher.find())
+        {
+            csrfToken = matcher.group(1);
+        }
+        RequestBody requestBody = RequestBody.create("_csrf=%s".formatted(csrfToken), MediaType.get("application/x-www-form-urlencoded"));
+        Request.Builder builder = new Request.Builder().url(baseUrl + "/logout").post(requestBody);
+        response.setCookies(builder);
+        return builder;
+    }
+
+    public void performLogoutRoutine(Function<Request.Builder, Response> callAsUser) {
+        Response resp = callAsUser.apply(createHtmlRequest("/logout"));
+        resp.assertSuccess();
+        resp = callAsUser.apply(createLogoutRequest(resp));
+        resp.assertSuccessWithRedirect();
+        resp.assertRedirectedTo("/logout-success");
+    }
+
 
     public Request.Builder createMultiPartRequest(String path, Path fileToUpload) throws IOException {
         return createMultiPartRequest(path, fileToUpload, "file", "file.txt");
