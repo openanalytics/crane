@@ -31,6 +31,7 @@ import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ public class UploadAuditingServiceTest {
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
     private static final Logger logger = LoggerFactory.getLogger(UploadAuditingServiceTest.class);
     private static BufferedReader bufferedReader;
-    private final ObjectMapper objectMapper = new ObjectMapper()
+    private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
@@ -125,6 +126,7 @@ public class UploadAuditingServiceTest {
 
     @ParameterizedTest
     @MethodSource("instances")
+    @Order(1)
     public void testAuditingEventUploadToPublicRepo(CraneInstance instance) throws IOException, InterruptedException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/public_repo/testUpload_public_%s.txt";
@@ -150,7 +152,7 @@ public class UploadAuditingServiceTest {
                 path, "UPLOAD", "test"
         );
     }
-    private FileAuditEventRepository.AuditEventData readAuditEventData() throws IOException, InterruptedException {
+    private static FileAuditEventRepository.AuditEventData readAuditEventData() throws IOException, InterruptedException {
         Thread.sleep(50);
         String line = bufferedReader.readLine();
         return objectMapper.readValue(line, FileAuditEventRepository.AuditEventData.class);
