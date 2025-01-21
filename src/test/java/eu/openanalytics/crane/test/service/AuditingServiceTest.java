@@ -33,11 +33,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.opentest4j.AssertionFailedError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -56,7 +54,8 @@ public class AuditingServiceTest {
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
     private static final Logger logger = LoggerFactory.getLogger(AuditingServiceTest.class);
     private static BufferedReader bufferedReader;
-    private final ObjectMapper objectMapper = new ObjectMapper()
+    private static final List<FileAuditEventRepository.AuditEventData> events = new ArrayList<>();
+    private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
@@ -119,10 +118,13 @@ public class AuditingServiceTest {
         );
     }
 
-    private FileAuditEventRepository.AuditEventData readAuditEventData() throws IOException, InterruptedException {
+    private static void readAuditEventData() throws InterruptedException, IOException {
         Thread.sleep(50);
         String line = bufferedReader.readLine();
-        return objectMapper.readValue(line, FileAuditEventRepository.AuditEventData.class);
+        while (line != null) {
+            events.add(objectMapper.readValue(line, FileAuditEventRepository.AuditEventData.class));
+            line = bufferedReader.readLine();
+        }
     }
 
     @ParameterizedTest
@@ -162,7 +164,8 @@ public class AuditingServiceTest {
     }
 
     private void checkAuditLog(String path, String type, String username) throws IOException, InterruptedException {
-        FileAuditEventRepository.AuditEventData auditEventData = readAuditEventData();
+        readAuditEventData();
+        FileAuditEventRepository.AuditEventData auditEventData = events.get(events.size()-1);
 
         Assertions.assertEquals(username, auditEventData.getPrincipal());
         Assertions.assertEquals(path, auditEventData.getData().get("request_path"));
@@ -170,10 +173,9 @@ public class AuditingServiceTest {
     }
 
     private void checkTwoAuditLogs(String path1, String type1, String username1, String path2, String type2, String username2) throws IOException, InterruptedException {
-        // Reading two lines to prevent next tests from failing in case a previous tests fails
-        // at a request logging two audit events
-        FileAuditEventRepository.AuditEventData firstAuditEvent = readAuditEventData();
-        FileAuditEventRepository.AuditEventData secondAuditEvent = readAuditEventData();
+        readAuditEventData();
+        FileAuditEventRepository.AuditEventData firstAuditEvent = events.get(events.size() - 2);
+        FileAuditEventRepository.AuditEventData secondAuditEvent = events.get(events.size() - 1);
 
         Assertions.assertEquals(username1, firstAuditEvent.getPrincipal());
         Assertions.assertEquals(path1, firstAuditEvent.getData().get("request_path"));

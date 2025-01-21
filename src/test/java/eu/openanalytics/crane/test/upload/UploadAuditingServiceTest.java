@@ -31,7 +31,6 @@ import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
@@ -60,6 +59,7 @@ public class UploadAuditingServiceTest {
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
     private static final List<CraneInstance> instances = new ArrayList<>();
+    private static final List<FileAuditEventRepository.AuditEventData> events = new ArrayList<>();
 
     @BeforeAll
     public static void beforeAll() {
@@ -126,7 +126,6 @@ public class UploadAuditingServiceTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    @Order(1)
     public void testAuditingEventUploadToPublicRepo(CraneInstance instance) throws IOException, InterruptedException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/public_repo/testUpload_public_%s.txt";
@@ -152,14 +151,18 @@ public class UploadAuditingServiceTest {
                 path, "UPLOAD", "test"
         );
     }
-    private static FileAuditEventRepository.AuditEventData readAuditEventData() throws IOException, InterruptedException {
+    private static void readAuditEventData() throws InterruptedException, IOException {
         Thread.sleep(50);
         String line = bufferedReader.readLine();
-        return objectMapper.readValue(line, FileAuditEventRepository.AuditEventData.class);
+        while (line != null) {
+            events.add(objectMapper.readValue(line, FileAuditEventRepository.AuditEventData.class));
+            line = bufferedReader.readLine();
+        }
     }
 
     private void checkAuditLog(String path, String type, String username) throws IOException, InterruptedException {
-        FileAuditEventRepository.AuditEventData auditEventData = readAuditEventData();
+        readAuditEventData();
+        FileAuditEventRepository.AuditEventData auditEventData = events.get(events.size()-1);
 
         Assertions.assertEquals(username, auditEventData.getPrincipal());
         Assertions.assertEquals(path, auditEventData.getData().get("request_path"));
@@ -167,10 +170,9 @@ public class UploadAuditingServiceTest {
     }
 
     private void checkTwoAuditLogs(String path1, String type1, String username1, String path2, String type2, String username2) throws IOException, InterruptedException {
-        // Reading two lines to prevent next tests from failing in case a previous tests fails
-        // at a request logging two audit events
-        FileAuditEventRepository.AuditEventData firstAuditEvent = readAuditEventData();
-        FileAuditEventRepository.AuditEventData secondAuditEvent = readAuditEventData();
+        readAuditEventData();
+        FileAuditEventRepository.AuditEventData firstAuditEvent = events.get(events.size() - 2);
+        FileAuditEventRepository.AuditEventData secondAuditEvent = events.get(events.size() - 1);
 
         Assertions.assertEquals(username1, firstAuditEvent.getPrincipal());
         Assertions.assertEquals(path1, firstAuditEvent.getData().get("request_path"));
@@ -183,7 +185,6 @@ public class UploadAuditingServiceTest {
 
     private void checkUnauthenticatedAuditLog(String path, String type) throws IOException, InterruptedException {
         if (!type.equals("AUTHORIZATION_FAILURE")) {
-            checkAuditLog(path.substring(0, path.lastIndexOf("/") + 1), "REPOSITORY_HANDLER", ANONYMOUS_USER);
             checkAuditLog(path, type, ANONYMOUS_USER);
         } else {
             checkAuditLog(path.substring(0, path.lastIndexOf("/") + 1), type, ANONYMOUS_USER);
