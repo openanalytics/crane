@@ -50,7 +50,7 @@ public class CsrfTokenInterceptor implements Interceptor {
         }
         if (request.method().equals("POST") && !request.url().uri().getPath().equals("/logout")) {
             String url = request.url().toString();
-            url = url.substring(0, url.lastIndexOf("/") + 1);
+            url = url.substring(0, url.indexOf("/", url.lastIndexOf(":") + 6) + 1);
             Request indexToIndexPage = request.newBuilder().url(url).get().build();
             Response response = client.newCall(indexToIndexPage).execute();
             ResponseBody responseBody = response.body();
