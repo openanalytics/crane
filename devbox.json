@@ -21,6 +21,9 @@
       "build": [
         "mvn -B -s $MAVEN_SETTINGS_RSB -U clean install deploy"
       ],
+      "update-license": [
+        "mvn license:format"
+      ],
       "minikube": [
         "minikube start --kubernetes-version='v1.31'  --addons=metrics-server,ingress --container-runtime=containerd",
         "kustomize build docs/deployment/overlays/crane | kubectl apply -f - --server-side"
