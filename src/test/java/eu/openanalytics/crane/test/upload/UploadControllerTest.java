@@ -268,7 +268,7 @@ public class UploadControllerTest {
         String genericPath = "/public_repo/testUpload_%s_directory/testUpload_%s.txt";
         Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
-        String path = genericPath.formatted("unauthorized", "unauthorized");
+        String path = genericPath.formatted("unauthenticated", "unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
@@ -287,7 +287,7 @@ public class UploadControllerTest {
         Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
 
         genericPath = "/public_repo/testUpload_%s_nested/directory/path/testUpload_%s.txt";
-        path = genericPath.formatted("unauthorized", "unauthorized");
+        path = genericPath.formatted("unauthenticated", "unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
