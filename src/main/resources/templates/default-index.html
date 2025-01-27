@@ -116,7 +116,6 @@
     function disableUpload() {
         const fileNameField = document.getElementById("file-name");
         uploadButton.disabled = fileNameField.value === "" || fileInputField.files.length === 0;
-        console.log(fileNameField.value === "" || fileInputField.files.length === 0)
     }
     function updateFilename() {
         if (fileInputField.files.length > 0) {
