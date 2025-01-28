@@ -12,7 +12,6 @@ app:
         any-authenticated-user: true
       posix-access-control: true
       paths:
-        private:
         only_owner_demo:
           read-access:
             users: [ demo ]

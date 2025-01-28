@@ -9,4 +9,4 @@ app:
       read-access:
         public: true
       write-access:
-        public: true
+        any-authenticated-user: true

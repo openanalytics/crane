@@ -6,6 +6,8 @@ app:
   openid-groups-claim: realm_roles
   repositories:
     private_repo:
+      read-access:
+        any-authenticated-user: true
       paths:
         public_repo:
           read-access:

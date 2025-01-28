@@ -3,4 +3,6 @@ app:
   storage-location: /tmp/
   repositories:
     repository_with_invalid_storage_location:
+      read-access:
+        public: true
       storage-location: invalid-location

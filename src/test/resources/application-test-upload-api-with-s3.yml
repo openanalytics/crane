@@ -44,6 +44,8 @@ app:
         users: [ demo, test ]
       paths:
         inaccessible_path:
+          read-access:
+            any-authenticated-user: false
     restricted_to_group_repo:
       read-access:
         groups: scientists

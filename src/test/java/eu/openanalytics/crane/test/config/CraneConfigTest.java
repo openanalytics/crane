@@ -195,7 +195,7 @@ public class CraneConfigTest {
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
         Assertions.assertTrue(
-            rootCause.getMessage().contains("should not have write access defined when the `only-public` property is `true`.")
+            rootCause.getMessage().contains("should not have write access defined (or public) when the `only-public` property is `true`.")
         );
     }
 
@@ -208,7 +208,7 @@ public class CraneConfigTest {
         Throwable rootCause = ExceptionUtils.getRootCause(exception);
         Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
         Assertions.assertTrue(
-            rootCause.getMessage().contains("should not have write access defined when the `only-public` property is `true`.")
+            rootCause.getMessage().contains("should not have write access defined (or public) when the `only-public` property is `true`.")
         );
     }
 

@@ -6,3 +6,5 @@ app:
       read-access:
         public: true
     private_repo:
+      read-access:
+        any-authenticated-user: true

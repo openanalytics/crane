@@ -11,3 +11,5 @@ app:
             public: true
           paths:
             private_repo:
+              read-access:
+                any-authenticated-user: true
