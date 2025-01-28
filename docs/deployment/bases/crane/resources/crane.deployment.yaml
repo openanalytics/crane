@@ -22,7 +22,7 @@ spec:
           ports:
             - containerPort: 8080
               name: http-crane
-          image: openanalytics/crane-snapshot:0.2.0-SNAPSHOT-20240206.10073
+          image: openanalytics/crane:1.0.0
           imagePullPolicy: Always
           volumeMounts:
             - mountPath: /opt/crane/application.yml
