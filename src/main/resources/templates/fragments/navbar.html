@@ -47,9 +47,10 @@
             <p class="header-field">
                 Logged in as <b th:text="${username}"></b>
             </p>
-            <a class="header-field header-button" th:href="@{/logout}">
-                Logout
-            </a>
+            <form class="logout-form" method="post" th:action="@{/logout}">
+                <input name="_csrf" type="hidden" th:value="${_csrf.token}">
+                <button class="header-field header-button" type="submit">Logout</button>
+            </form>
         </div>
     </div>
 </header>

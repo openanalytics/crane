@@ -51,16 +51,22 @@ header {
 }
 
 .header-button {
+    background: transparent;
     text-decoration: none;
     padding: 10px;
     border-radius: 10px;
     border: 1px solid transparent;
     margin: 0 10px 0 10px;
+    cursor: pointer;
 }
 
 .header-button:hover {
     border: 1px solid lightgray;
     background: #e6e6e6;
+}
+
+.logout-form {
+    display: flex;
 }
 
 h1 {
