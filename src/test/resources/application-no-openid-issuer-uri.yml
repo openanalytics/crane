@@ -1,0 +1,17 @@
+app:
+  storage-location: /tmp/repository/
+  openid-groups-claim: realm_roles
+  repositories:
+    public_repo:
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          crane:
+            client-id: crane_client
+            client-secret: secret
+            scope: openid
+        provider:
+          crane:
+            issuer-uri: http://localhost:9189/realms/crane

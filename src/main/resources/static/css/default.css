@@ -1,0 +1,250 @@
+/**
+ * Crane
+ *
+ * Copyright (C) 2021-2025 Open Analytics
+ *
+ * ===========================================================================
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Apache License as published by
+ * The Apache Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * Apache License for more details.
+ *
+ * You should have received a copy of the Apache License
+ * along with this program.  If not, see <http://www.apache.org/licenses/>
+ */
+a.logo {
+    display: flex;
+    width: 250px;
+}
+
+header {
+    padding-bottom: 5px;
+    display: flex;
+    height: 50px;
+    border-bottom: 2px solid #e8e8e8;
+}
+
+.crane {
+    color: #000;
+    font-size: 6px;
+    line-height: 7px;
+    margin: 5px 0 0 5px;
+}
+
+.nav {
+    display: flex;
+    flex: auto;
+    justify-content: space-between;
+}
+
+.header-field {
+    align-self: center;
+    font-size: 16px;
+    line-height: 18px;
+    color: black;
+}
+
+.header-button {
+    background: transparent;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    margin: 0 10px 0 10px;
+    cursor: pointer;
+}
+
+.header-button:hover {
+    border: 1px solid lightgray;
+    background: #e6e6e6;
+}
+
+.logout-form {
+    display: flex;
+}
+
+h1 {
+    margin-bottom: 20px;
+    margin-top: 20px;
+    font-size: 30px;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+}
+
+.container {
+    width: 1170px;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+    background-color: #fff;
+}
+
+a {
+    color: #337ab7;
+    text-decoration: none;
+}
+
+code {
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+}
+
+code a {
+    color: inherit;
+}
+
+code a:hover {
+    text-decoration: underline;
+}
+
+table {
+    visibility: hidden;
+}
+
+.slash {
+    color: #333;
+}
+
+dialog {
+    top: 0;
+    right: 0;
+    bottom: 30%;
+    left: 0;
+    z-index: 999;
+    width: 500px;
+    position: absolute;
+    background: white;
+    border-radius: 20px;
+    border: solid lightgray 1px;
+    padding-top: 1.25rem;
+}
+
+dialog::backdrop {
+    backdrop-filter: blur(10px);
+}
+
+input#file-name, input#upload-input-file {
+    border-radius: .5rem;
+    border: solid lightgray 1px;
+    width: -moz-available;
+}
+
+input[type="file"]::file-selector-button {
+    font-weight: bold;
+    margin-inline-end: 1rem;
+    margin-inline-start: -1rem;
+    padding: .625rem .7rem .625rem 2rem;
+    border: 0;
+    cursor: pointer;
+    background-color: #e9e9ed;
+    transition: background-color 200ms;
+}
+
+dialog form div h1 {
+    color: rgb(51, 51, 51);
+    text-align: center;
+    font-weight: bolder;
+    font-size: 150%;
+    margin: 0;
+    border-bottom: solid #d3d3d3 1px;
+    padding-bottom: .5rem;
+}
+
+dialog form div label {
+    font-weight: bold;
+    font-size: .875rem;
+    line-height: 1.25rem;
+    margin-bottom: .5rem;
+    display: block;
+}
+
+.input-field, .upload-input-field, .flex {
+    margin: .5rem 1rem 1rem 1rem
+}
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.flex.flex-space-between {
+    justify-content: space-between;
+    margin: 1rem;
+}
+
+.button, button.dt-button[tabindex='0'] {
+    text-decoration: none;
+    padding: .5rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+button.dt-button[tabindex='0'] {
+    padding: .3rem 1.5rem !important;
+}
+
+@-webkit-keyframes loading-animation {
+  0% {
+    background-color: #32a6d3;
+  }
+
+  50% {
+    background-color: rgb(233, 233, 237);
+  }
+
+  100% {
+    background-color: #32a6d3;
+  }
+}
+
+.uploading {
+    color: black;
+    -webkit-animation: loading-animation 2s infinite;
+}
+
+.button#upload, button.dt-button[tabindex='0'] {
+    background: #32a6d37a;
+}
+
+.button#upload:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
+    background: #32a6d3;
+}
+
+.button#upload[disabled] {
+    background: #8ea5ae7a;
+}
+
+.button#cancel {
+    background: #e523235c;
+}
+
+.button#cancel:not([disabled]):hover {
+    background: #e52323;
+}
+
+input#file-name {
+    border: 1px solid #d3d3d3;
+    padding: 5px;
+    background-color: transparent;
+    height: 27px;
+}

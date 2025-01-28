@@ -1,0 +1,1 @@
+public in public repo should be public and allowed

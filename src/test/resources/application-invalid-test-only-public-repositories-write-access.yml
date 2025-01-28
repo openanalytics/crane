@@ -1,0 +1,12 @@
+app:
+  storage-location: /tmp/repository/
+  only-public: true
+  repositories:
+    public_repo:
+      read-access:
+        public: true
+    private_repo:
+      read-access:
+        public: true
+      write-access:
+        any-authenticated-user: true

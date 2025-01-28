@@ -1,0 +1,12 @@
+app:
+  storage-location: /tmp/repository/
+  openid-groups-claim: groups
+  repositories:
+    restricted_to_group_repo:
+      read-access:
+        groups: scientists
+    restricted_to_groups_repo:
+      read-access:
+        groups:
+          - scientists
+          - mathematicians

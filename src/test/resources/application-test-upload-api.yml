@@ -1,0 +1,77 @@
+app:
+  default-cache:
+    - pattern: "/**/default_cached_file.html"
+      max-age: "PT66M"
+  storage-location: /tmp/repository/
+  openid-groups-claim: realm_roles
+  repositories:
+    public_repo:
+      read-access:
+        public: true
+      write-access:
+        public: true
+      paths:
+        public_in_public_repo:
+          read-access:
+            public: true
+          write-access:
+            public: true
+        private_repo:
+          read-access:
+            any-authenticated-user: true
+        restricted_repo:
+          read-access:
+            users: demo
+          write-access:
+            users: demo
+        restricted_to_users_repo:
+          read-access:
+            users: [ demo, test ]
+          write-access:
+            users: [ demo, test ]
+    private_repo:
+      read-access:
+        any-authenticated-user: true
+    restricted_repo:
+      read-access:
+        users: demo
+      write-access:
+        users: demo
+    restricted_to_users_repo:
+      read-access:
+        users: [ demo, test ]
+      write-access:
+        users: [ demo, test ]
+      paths:
+        inaccessible_path:
+          read-access:
+            any-authenticated-user: false
+    restricted_to_group_repo:
+      read-access:
+        groups: scientists
+      write-access:
+        groups: scientists
+    restricted_to_groups_repo:
+      read-access:
+        groups:
+          - scientists
+          - mathematicians
+      write-access:
+        groups:
+          - scientists
+          - mathematicians
+    restricted_simple_expression_repo:
+      read-access:
+        expression: "#{groups.contains('MATHEMATICIANS')}"
+      write-access:
+        expression: "#{groups.contains('MATHEMATICIANS')}"
+    restricted_expression_using_and_repo:
+      read-access:
+        expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
+      write-access:
+        expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
+    write_public_repo:
+      write-access:
+        public: true
+      read-access:
+        any-authenticated-user: true

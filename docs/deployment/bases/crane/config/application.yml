@@ -1,0 +1,25 @@
+app:
+  storage-location: /mnt/crane/
+  openid-issuer-uri: "${OAUTH2_ISSUER_URI}"
+  repositories:
+    project1:
+      read-access:
+        public: true
+      write-access:
+        public: true
+    project2:
+      read-access:
+        public: false
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          crane:
+            client-secret: "${OAUTH2_CLIENT_SECRET}"
+            client-id: "${OAUTH2_CLIENT_ID}"
+            scope: openid
+        provider:
+          crane:
+            issuer-uri: "${OAUTH2_ISSUER_URI}"

@@ -1,0 +1,3 @@
+app:
+  storage-location: /tmp/repository/
+  openid-groups-claim: realm_roles

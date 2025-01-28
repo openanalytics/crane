@@ -5,16 +5,42 @@ metadata:
   labels:
     ci: crane-build
 spec:
+  volumes:
+    - name: docker-socket
+      emptyDir: { }
   containers:
-   - name: builder
-     image: maven:3-openjdk-11
-     command:
-     - cat
-     tty: true
-     resources:
-       requests:
-         memory: "2Gi"
-         cpu: "1.0"
-       limits:
-         memory: "4Gi"
-         cpu: "1.5"
+    - name: builder
+      image: registry.openanalytics.eu/proxy/library/maven:3-openjdk-17
+      command:
+        - cat
+      tty: true
+      env:
+        - name: DOCKER_HOST
+          value: unix:///var/run/docker/docker.sock
+      volumeMounts:
+        - mountPath: /var/run/docker
+          name: docker-socket
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1.0"
+        limits:
+          memory: "4Gi"
+          cpu: "1.5"
+    - name: docker
+      image: docker:dind
+      securityContext:
+        privileged: true
+      env:
+        - name: DOCKER_HOST
+          value: unix:///var/run/docker/docker.sock
+      volumeMounts:
+        - mountPath: /var/run/docker
+          name: docker-socket
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1.0"
+        limits:
+          memory: "4Gi"
+          cpu: "1.5"

@@ -1,0 +1,170 @@
+{
+  "realm": "crane",
+  "accessTokenLifespan": 18000,
+  "enabled": true,
+  "users": [
+    {
+      "username": "demo",
+      "firstName": "demo",
+      "lastName": "demo",
+      "email": "demo@demo.demo",
+      "enabled": true,
+      "attributes": {
+        "uid": [1001],
+        "gids": [9998]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo"
+        }
+      ],
+      "realmRoles": [
+        "crane_public",
+        "mathematicians",
+        "scientists"
+      ],
+      "groups": [
+        "/crane_public",
+        "/mathematicians",
+        "/scientists"
+      ]
+    },
+    {
+      "username": "test",
+      "firstName": "Test",
+      "lastName": "Tester",
+      "email": "test@email.com",
+      "enabled": true,
+      "attributes": {
+        "uid": ["1002"],
+        "gids": ["9998", "2000", "5000", "invalid-id"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test"
+        }
+      ],
+      "realmRoles": [
+        "crane_public",
+        "mathematicians"
+      ],
+      "groups": [
+        "/crane_public",
+        "/mathematicians"
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "scientists",
+        "description": "Scientists doing science things"
+      },
+      {
+        "name": "mathematicians",
+        "description": "Mathematicians doing math things"
+      },
+      {
+        "name": "crane_public",
+        "description": "Everyone is part of the crane_public group"
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "mathematicians",
+      "path": "/mathematicians"
+    },
+    {
+      "name": "scientists",
+      "path": "/scientists"
+    },
+    {
+      "name": "crane_public",
+      "path": "/crane_public"
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "crane_client",
+      "enabled": true,
+      "adminUrl": "",
+      "baseUrl": "",
+      "bearerOnly": false,
+      "redirectUris": [
+        "http://localhost*"
+      ],
+      "secret": "secret",
+      "authorizationServicesEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "realm_roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "false",
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "realm_roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "groups"
+          }
+        },
+        {
+          "name": "uid",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "uid",
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "uid",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "gids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "gids",
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "gids",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        }
+      ]
+    }
+  ]
+}

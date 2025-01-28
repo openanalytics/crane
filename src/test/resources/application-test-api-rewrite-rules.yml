@@ -1,0 +1,35 @@
+app:
+  storage-location: /tmp/repository/
+  openid-groups-claim: realm_roles
+  repositories:
+    public_repo:
+      rewrites:
+        - matcher: "#{parse('/rewrite1/([^/]+)/some-path/([^/]+)', path.toString())}"
+          destination: "/public_repo/rewrite1/#{parsed[0].group(1)}/#{parsed[0].group(2)}/"
+        - matcher: "#{parse('/nested1/(.+)', path.toString())}"
+          destination: "/public_repo/nested2/#{parsed[0].group(1)}"
+        - matcher: "#{parse('/nested2/(.+)', path.toString())}"
+          destination: "/public_repo/nested3/#{parsed[0].group(1)}"
+        - matcher: "#{parse('/invalid-rewrite1/(.+)', path.toString())}"
+          destination: "/repo-does-not-exist/#{parsed[0].group(1)}"
+        - matcher: "#{parse('/invalid-rewrite2/(.+)', path.toString())}"
+          destination: "/public/directory-does-not-exist/#{parsed[0].group(1)}"
+        - matcher: "#{parse('/to-private/(.+)', path.toString())}"
+          destination: "/private_repo/#{parsed[0].group(1)}"
+        - matcher: "#{parse('/to-restricted/(.+)', path.toString())}"
+          destination: "/restricted_repo/#{parsed[0].group(1)}"
+      read-access:
+        public: true
+      paths:
+        private_path:
+          read-access:
+            any-authenticated-user: true
+    private_repo:
+      rewrites:
+        - matcher: "#{parse('/rewrite1/([^/]+)/some-path/([^/]+)', path.toString())}"
+          destination: "/private_repo/rewrite1/#{parsed[0].group(1)}/#{parsed[0].group(2)}/"
+      read-access:
+        any-authenticated-user: true
+    restricted_repo:
+      read-access:
+        users: demo

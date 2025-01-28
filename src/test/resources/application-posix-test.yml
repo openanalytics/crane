@@ -1,0 +1,64 @@
+server:
+  port: ${CRANE_PORT}
+app:
+  storage-location: /tmp/posix_repository/
+  openid-issuer-uri: "${OPENID_URL}"
+  openid-groups-claim: realm_roles
+  openid-posix-uid-claim: "uid"
+  openid-posix-gids-claim: "gids"
+  repositories:
+    repository_with_paths:
+      read-access:
+        any-authenticated-user: true
+      posix-access-control: true
+      paths:
+        only_owner_demo:
+          read-access:
+            users: [ demo ]
+        only_group_scientists:
+          read-access:
+            groups: [ scientists ]
+        only_group_mathematicians_gid:
+          read-access:
+            groups: [ mathematicians ]
+        no_path_access:
+          read-access:
+            users: [ undefined users ]
+    private:
+      read-access:
+        any-authenticated-user: true
+      posix-access-control: true
+    only_owner_demo:
+      posix-access-control: true
+      read-access:
+        users: [ demo ]
+    only_group_scientists:
+      posix-access-control: true
+      read-access:
+        groups: [ scientists ]
+    only_group_mathematicians_gid:
+      posix-access-control: true
+      read-access:
+        groups: [ mathematicians ]
+    no_posix_access:
+      read-access:
+        public: true
+    no_path_access:
+      posix-access-control: true
+      read-access:
+        users: [ undefined users ]
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          crane:
+            client-id: crane_client
+            client-secret: secret
+            scope: openid
+        provider:
+          crane:
+            issuer-uri: "${OPENID_URL}"
+logging:
+  level:
+    eu: DEBUG

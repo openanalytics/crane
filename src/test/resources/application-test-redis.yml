@@ -1,0 +1,10 @@
+app:
+  storage-location: /tmp/repository/
+  openid-groups-claim: groups
+  repositories:
+    private_repo:
+      read-access:
+        any-authenticated-user: true
+spring:
+  session:
+    store-type: redis

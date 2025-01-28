@@ -1,0 +1,41 @@
+<!--
+
+    Crane
+
+    Copyright (C) 2021-2025 Open Analytics
+
+    ===========================================================================
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the Apache License as published by
+    The Apache Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Apache License for more details.
+
+    You should have received a copy of the Apache License
+    along with this program.  If not, see <http://www.apache.org/licenses/>
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crane</title>
+    <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
+</head>
+<body>
+<div class="container">
+    <div th:insert="~{fragments/navbar.html}"></div>
+    <h1>Repositories</h1>
+    <p th:if="${repositories.isEmpty()}">You do not have access to any repository.</p>
+    <ul>
+        <li th:each="repository: ${repositories}">
+            <a th:href="@{${repository} + '/'}" th:text="${repository}"></a>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

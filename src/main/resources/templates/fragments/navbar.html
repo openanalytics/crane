@@ -1,0 +1,58 @@
+<!--
+
+    Crane
+
+    Copyright (C) 2021-2025 Open Analytics
+
+    ===========================================================================
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the Apache License as published by
+    The Apache Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Apache License for more details.
+
+    You should have received a copy of the Apache License
+    along with this program.  If not, see <http://www.apache.org/licenses/>
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<header>
+    <a class="logo" th:href="@{'/'}">
+        <img class="logo" th:src="${logo}">
+        <pre class="crane"> ██████╗██████╗  █████╗ ███╗   ██╗███████╗
+██╔════╝██╔══██╗██╔══██╗████╗  ██║██╔════╝
+██║     ██████╔╝███████║██╔██╗ ██║█████╗
+██║     ██╔══██╗██╔══██║██║╚██╗██║██╔══╝
+╚██████╗██║  ██║██║  ██║██║ ╚████║███████╗
+ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝
+</pre>
+    </a>
+    <div class="nav">
+        <a class="header-field header-button" th:href="@{'/'}">Home</a>
+        <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!isOnlyPublic} and ${!authenticated}">
+            Login to see all repositories.
+        </a>
+        <div style="display:flex;" th:if="${!isOnlyPublic} and ${authenticated}">
+            <p class="header-field">
+                Logged in as <b th:text="${username}"></b>
+            </p>
+            <form class="logout-form" method="post" th:action="@{/logout}">
+                <input name="_csrf" type="hidden" th:value="${_csrf.token}">
+                <button class="header-field header-button" type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+</header>
+</body>
+</html>

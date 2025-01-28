@@ -1,0 +1,11 @@
+app:
+  storage-location: /tmp/repository/
+  openid-issuer-uri: "${OPENID_URL}"
+  openid-groups-claim: realm_roles
+  openid-posix-uid-claim: "uid"
+  openid-posix-gids-claim: "gids"
+  repositories:
+    public_and_posix:
+      read-access:
+        public: true
+      posix-access-control: true

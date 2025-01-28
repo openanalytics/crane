@@ -1,0 +1,4 @@
+app:
+  openid-groups-claim: realm_roles
+  repositories:
+    public_repo:

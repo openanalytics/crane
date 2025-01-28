@@ -1,0 +1,75 @@
+app:
+  default-cache:
+    - pattern: "/**/default_cached_file.html"
+      max-age: "PT66M"
+  storage-location: /tmp/repository/
+  openid-groups-claim: realm_roles
+  repositories:
+    public_repo:
+      read-access:
+        public: true
+      paths:
+        public_in_public_repo:
+          read-access:
+            public: true
+        private_repo:
+          read-access:
+            any-authenticated-user: true
+        restricted_repo:
+          read-access:
+            users: demo
+        restricted_to_users_repo:
+          read-access:
+            users: [ demo, test ]
+    private_repo:
+      read-access:
+        any-authenticated-user: true
+    restricted_repo:
+      read-access:
+        users: demo
+    restricted_to_users_repo:
+      read-access:
+        users: [ demo, test ]
+    restricted_to_group_repo:
+      read-access:
+        groups: scientists
+    restricted_to_groups_repo:
+      read-access:
+        groups:
+          - scientists
+          - mathematicians
+    restricted_simple_expression_repo:
+      read-access:
+        expression: "#{groups.contains('MATHEMATICIANS')}"
+    restricted_expression_using_and_repo:
+      read-access:
+        expression: "#{groups.contains('SCIENTISTS') and groups.contains('MATHEMATICIANS')}"
+    mime_types:
+      read-access:
+        public: true
+    cache_txt_repo:
+      read-access:
+        public: true
+      cache:
+        - pattern: "/**/*.txt"
+          max-age: "P1D"
+    cache_txt_and_csv_repo:
+      read-access:
+        public: true
+      cache:
+        - pattern: "/**/*.txt"
+          max-age: "PT1M"
+        - pattern: "/**/*.csv"
+          max-age: "PT50S"
+    on_error_expression:
+      read-access:
+        public: true
+      on-error-expression: "#{response.status == 404 ? eval(true, request.getAttributeNames(), request.setAttribute('test-attribute', 'test-value'), response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 4)[3])) : false}"
+    on_error_expression_return_false:
+      read-access:
+        public: true
+      on-error-expression: "#{response.status != 404 ? eval(true, response.sendRedirect('http://localhost:7271/public_repo/' + request.getRequestURI().split('/', 4)[3])) : false}"
+    custom_storage_location:
+      read-access:
+        any-authenticated-user: true
+      storage-location: /tmp/repository/custom_storage_location/

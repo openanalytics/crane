@@ -1,0 +1,10 @@
+app:
+  default-cache:
+    - pattern: "/**/default_cached_file.html"
+      max-age: "PT66M"
+  storage-location: s3://oa-test-crane-no-access/
+  openid-groups-claim: realm_roles
+  repositories:
+    public_repo:
+      read-access:
+        public: true

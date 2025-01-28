@@ -1,0 +1,207 @@
+<!--
+
+    Crane
+
+    Copyright (C) 2021-2025 Open Analytics
+
+    ===========================================================================
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the Apache License as published by
+    The Apache Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Apache License for more details.
+
+    You should have received a copy of the Apache License
+    along with this program.  If not, see <http://www.apache.org/licenses/>
+
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head lang="en">
+    <title th:text="${title}"></title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
+    <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
+</head>
+<body>
+<div class="container">
+    <div th:insert="~{fragments/navbar.html}"></div>
+    <h1>Directory <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
+    </code></h1>
+
+    <dialog id="upload-dialog">
+        <form id="upload-form" method="post" th:action="@{${resource}}" enctype="multipart/form-data">
+            <div><h1>Upload file</h1></div>
+            <div class="upload-input-field">
+                <label>File to upload</label>
+                <input id="upload-input-file" type="file" name="file"/>
+            </div>
+            <div class="input-field">
+                <label>File name</label>
+                <input id="file-name" type="text" placeholder="Name your file"/>
+            </div>
+            <div class="flex flex-space-between">
+                <button id="cancel" type="button" class="button">Cancel</button>
+                <button id="upload" type="button" class="button">Upload</button>
+            </div>
+        </form>
+    </dialog>
+
+    <table th:attr="data-has-write-access=${hasWriteAccess}">
+        <thead>
+        <tr>
+            <th>Filename</th>
+            <th>Last Modified time</th>
+            <th>Size</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="directory : ${directories}">
+            <td><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
+            <td></td>
+            <td></td>
+        </tr>
+
+        <tr th:each="file : ${files}">
+            <td><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
+            <td th:text="${file.lastModifiedTime}"></td>
+            <td th:text="${file.formattedSize}"></td>
+        </tr>
+        </tbody>
+
+    </table>
+</div>
+<script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
+<script th:src="@{'/__assets/webjars/datatables-buttons/3.1.2/js/dataTables.buttons.min.js'}"></script>
+<script>
+    const statusToText = {
+        '400': 'Bad Request',
+        '401': 'Unauthorized',
+        '403': 'Forbidden',
+        '404': 'Not Found',
+        '405': 'Method Not Allowed',
+        '406': 'Not Acceptable',
+        '407': 'Proxy Authentication Required',
+        '408': 'Request Timeout',
+        '409': 'Conflict',
+        '410': 'Gone',
+        '411': 'Length Required',
+        '412': 'Precondition Required',
+        '413': 'Request Entry Too Large',
+        '414': 'Request-URI Too Long',
+        '415': 'Unsupported Media Type',
+        '416': 'Requested Range Not Satisfiable',
+        '417': 'Expectation Failed',
+        '429': 'Too Many Requests',
+        '500': 'Internal Server Error',
+        '501': 'Not Implemented',
+        '502': 'Bad Gateway',
+        '503': 'Service Unavailable',
+        '504': 'Gateway Timeout',
+        '505': 'HTTP Version Not Supported',
+    };
+    const uploadDialog = document.getElementById("upload-dialog");
+    const form = document.getElementById("upload-form");
+    const fileInputField = document.getElementById("upload-input-file");
+    const uploadButton = document.getElementById("upload");
+
+    function disableUpload() {
+        const fileNameField = document.getElementById("file-name");
+        uploadButton.disabled = fileNameField.value === "" || fileInputField.files.length === 0;
+    }
+    function updateFilename() {
+        if (fileInputField.files.length > 0) {
+            document.getElementById("file-name").value = fileInputField.files[0].name;
+        }
+        disableUpload();
+    }
+
+    function uploadAction(e) {
+        e.preventDefault();
+        const fileNameField = document.getElementById("file-name");
+        const cancelButton = document.getElementById("cancel");
+        cancelButton.disabled = true;
+        uploadButton.disabled = true;
+        uploadButton.innerHTML = "Uploading...";
+        uploadButton.classList.toggle("uploading");
+
+        const url = form.action + fileNameField.value;
+        const csrfToken = $("meta[name='_csrf']").attr("content");
+        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        const formData = new FormData(form);
+        const response = fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {[csrfHeader]: csrfToken}
+        }).then(async (resp) => {
+            if (resp.ok) {
+                location.reload();
+                return;
+            }
+            let error;
+            try {
+                error = (await resp.json()).data.message;
+            } catch (e) {
+                error = resp.statusText;
+            }
+            if (error === "") {
+                error = statusToText[resp.status.toString()];
+            }
+            closeDialog();
+            alert(error);
+        }).catch((error) => {
+            closeDialog();
+            alert(error);
+        });
+    }
+
+    function closeDialog() {
+        const cancelButton = document.getElementById("cancel");
+        cancelButton.disabled = false;
+        if (uploadButton.classList.contains("uploading")) {
+            uploadButton.innerHTML = "Upload";
+            uploadButton.classList.remove("uploading");
+        }
+        uploadDialog.close();
+        form.reset();
+    }
+
+    $(document).ready(function () {
+        let table = $('table');
+        let dataTableOptions = {
+            aaSorting: [], // apply no sort by default
+            paging: false
+        };
+
+        if (table.data("has-write-access")) {
+            dataTableOptions["layout"] = {
+                topStart: {
+                    buttons: [
+                       {
+                            action: () => uploadDialog.showModal(),
+                            text: 'Upload'
+                        }
+                    ]
+                }
+            }
+        }
+        $('table').DataTable(dataTableOptions);
+        $('table').css("visibility", "visible");
+        fileInputField.addEventListener("change", updateFilename);
+        document.getElementById("file-name").addEventListener("input", disableUpload);
+        document.getElementById("cancel").addEventListener("click", closeDialog);
+        document.getElementById("upload").addEventListener("click", uploadAction);
+        disableUpload();
+    });
+</script>
+</body>
+
+</html>
