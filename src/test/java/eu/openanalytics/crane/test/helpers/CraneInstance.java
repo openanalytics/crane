@@ -58,8 +58,8 @@ public class CraneInstance {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Thread thread;
     private final boolean isRunningRedis;
-    private ConfigurableApplicationContext app;
     private final String configName;
+    private ConfigurableApplicationContext app;
 
     public CraneInstance(String configFileName) {
         this(configFileName, 7271, new HashMap<>(), true, false);
@@ -95,10 +95,10 @@ public class CraneInstance {
             if (setupKeycloak) {
                 allProperties.put("app.openid-issuer-uri", KeycloakInstance.getURI());
                 allProperties.put("spring.security.oauth2.client.provider.crane.issuer-uri", KeycloakInstance.getURI());
+                allProperties.put("spring.security.oauth2.client.registration.crane.client-id", "crane_client");
+                allProperties.put("spring.security.oauth2.client.registration.crane.client-secret", "secret");
+                allProperties.put("spring.security.oauth2.client.registration.crane.scope", "openid");
             }
-            allProperties.put("spring.security.oauth2.client.registration.crane.client-id", "crane_client");
-            allProperties.put("spring.security.oauth2.client.registration.crane.client-secret", "secret");
-            allProperties.put("spring.security.oauth2.client.registration.crane.scope", "openid");
             allProperties.putAll(properties);
             isRunningRedis = allProperties.get("spring.session.store-type").equals("redis");
             if (isRunningRedis) {

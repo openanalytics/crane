@@ -79,6 +79,7 @@ public class CraneConfig {
     private URI s3Endpoint;
     private Map<String, Repository> repositories = new HashMap<>();
     private Path root;
+    private boolean onlyPublic;
 
     private List<CacheRule> defaultCache;
     private StsClient stsClient;
@@ -97,7 +98,7 @@ public class CraneConfig {
             throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location not set");
         }
 
-        if (openidIssuerUri == null) {
+        if (openidIssuerUri == null && !onlyPublic) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.openid-issuer-uri not set");
         }
 
@@ -116,7 +117,7 @@ public class CraneConfig {
 
         root = storageLocationToPath(storageLocation);
 
-        repositories.values().forEach(Repository::validate);
+        repositories.values().forEach(r -> r.validate(onlyPublic));
         for (Repository r : repositories.values()) {
             if (defaultCache != null && r.getCache() == null) {
                 r.setCache(defaultCache);
@@ -376,5 +377,13 @@ public class CraneConfig {
             }
         }
         return false;
+    }
+
+    public void setOnlyPublic(boolean onlyPublic) {
+        this.onlyPublic = onlyPublic;
+    }
+
+    public boolean isOnlyPublic() {
+        return onlyPublic;
     }
 }

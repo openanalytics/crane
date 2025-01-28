@@ -26,6 +26,7 @@ import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -48,16 +49,17 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@ConditionalOnProperty(value = "app.only-public", matchIfMissing = true, havingValue = "false")
 public class WebSecurity {
 
-    private final CraneConfig config;
+    private final CraneConfig craneConfig;
     private final OpenIdReAuthorizeFilter openIdReAuthorizeFilter;
     private final SpecExpressionResolver specExpressionResolver;
     private final AuditingService auditingService;
     private final TokenParser tokenParser;
 
     public WebSecurity(CraneConfig config, OpenIdReAuthorizeFilter openIdReAuthorizeFilter, SpecExpressionResolver specExpressionResolver, AuditingService auditingService) {
-        this.config = config;
+        this.craneConfig = config;
         this.openIdReAuthorizeFilter = openIdReAuthorizeFilter;
         this.specExpressionResolver = specExpressionResolver;
         this.auditingService = auditingService;
@@ -91,10 +93,11 @@ public class WebSecurity {
                         .requestMatchers(repoMatchers.toArray(new String[0])).permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
-                .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(config.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, config))))
+                .requestCache((cache) -> cache.requestCache(requestCache))
+                .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(craneConfig.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, craneConfig))))
                 .oauth2Login(login -> login
-                        .userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(new CraneOidcUserService(tokenParser, config)))
-                        .successHandler(successHandler)
+                    .userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(new NullAuthoritiesMapper()).oidcUserService(new CraneOidcUserService(tokenParser, craneConfig)))
+                    .successHandler(successHandler)
                 )
                 .oauth2Client(withDefaults())
                 .logout(logout -> logout.logoutSuccessHandler(getLogoutSuccessHandler()))
@@ -109,12 +112,12 @@ public class WebSecurity {
     public LogoutSuccessHandler getLogoutSuccessHandler() {
         return (httpServletRequest, httpServletResponse, authentication) -> {
             String resolvedLogoutUrl = "/logout-success";
-            if (config.getOpenidLogoutUrl() != null) {
+            if (craneConfig.getOpenidLogoutUrl() != null) {
                 if (authentication != null) {
                     SpecExpressionContext context = SpecExpressionContext.create(authentication.getPrincipal(), authentication.getCredentials());
-                    resolvedLogoutUrl = specExpressionResolver.evaluateToString(config.getOpenidLogoutUrl(), context);
+                    resolvedLogoutUrl = specExpressionResolver.evaluateToString(craneConfig.getOpenidLogoutUrl(), context);
                 } else {
-                    resolvedLogoutUrl = config.getOpenidLogoutUrl();
+                    resolvedLogoutUrl = craneConfig.getOpenidLogoutUrl();
                 }
             }
             auditingService.createLogoutHandlerAuditEvent(httpServletRequest);

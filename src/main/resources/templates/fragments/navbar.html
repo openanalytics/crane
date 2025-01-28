@@ -40,10 +40,10 @@
     </a>
     <div class="nav">
         <a class="header-field header-button" th:href="@{'/'}">Home</a>
-        <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!authenticated}">
+        <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!isOnlyPublic} and ${!authenticated}">
             Login to see all repositories.
         </a>
-        <div style="display:flex;" th:if="${authenticated}">
+        <div style="display:flex;" th:if="${!isOnlyPublic} and ${authenticated}">
             <p class="header-field">
                 Logged in as <b th:text="${username}"></b>
             </p>

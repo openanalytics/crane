@@ -67,8 +67,8 @@ public class Repository extends PathComponent {
         }
     }
 
-    public void validate() {
-        super.validate();
+    public void validate(boolean onlyPublic) {
+        super.validate(onlyPublic);
 
         validateRepositoryName();
 

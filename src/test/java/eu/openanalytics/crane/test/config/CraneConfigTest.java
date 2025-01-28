@@ -151,6 +151,68 @@ public class CraneConfigTest {
     }
 
     @Test
+    public void testConfigurationWithOnlyPublicRepositoriesAndNoAuth() {
+        Assertions.assertDoesNotThrow(
+            () -> {
+                CraneInstance instance = new CraneInstance("application-test-only-public-repositories.yml", false);
+                instance.close();
+            }
+        );
+    }
+
+    @Test
+    public void testInvalidConfigurationWithOnlyPublicRepositoriesAndNoAuth() {
+        TestHelperException exception = Assertions.assertThrows(
+            TestHelperException.class,
+            () -> new CraneInstance("application-invalid-test-only-public-repositories.yml", false)
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertTrue(
+            rootCause.getMessage().contains("should have public read access when the `only-public` property is `true`.")
+        );
+    }
+
+    @Test
+    public void testInvalidConfigurationWithOnlyPublicRepositoriesAndNoAuthNested() {
+        TestHelperException exception = Assertions.assertThrows(
+            TestHelperException.class,
+            () -> new CraneInstance("application-invalid-test-only-public-repositories-nested.yml", false)
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertTrue(
+            rootCause.getMessage().contains("should have public read access when the `only-public` property is `true`.")
+        );
+    }
+
+    @Test
+    public void testInvalidConfigurationWithOnlyPublicRepositoriesAndNoAuthWriteAccess() {
+        TestHelperException exception = Assertions.assertThrows(
+            TestHelperException.class,
+            () -> new CraneInstance("application-invalid-test-only-public-repositories-write-access.yml", false)
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertTrue(
+            rootCause.getMessage().contains("should not have write access defined when the `only-public` property is `true`.")
+        );
+    }
+
+    @Test
+    public void testInvalidConfigurationWithOnlyPublicRepositoriesAndNoAuthNestedWriteAccess() {
+        TestHelperException exception = Assertions.assertThrows(
+            TestHelperException.class,
+            () -> new CraneInstance("application-invalid-test-only-public-repositories-nested-write-access.yml", false)
+        );
+        Throwable rootCause = ExceptionUtils.getRootCause(exception);
+        Assertions.assertEquals(IllegalArgumentException.class, rootCause.getClass());
+        Assertions.assertTrue(
+            rootCause.getMessage().contains("should not have write access defined when the `only-public` property is `true`.")
+        );
+    }
+
+    @Test
     @EnabledIfEnvironmentVariable(named = "AWS_PROFILE", matches = "oa-poc")
     public void testConfigurationWithNoAccessToS3Bucket() {
         TestHelperException exception = Assertions.assertThrows(

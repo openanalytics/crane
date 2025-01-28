@@ -39,6 +39,7 @@ public class BaseUIController {
         map.put("loginUrl", userService.getLoginUrl());
         map.put("logo", config.getLogoUrl());
         map.put("authenticated", authenticated);
+        map.put("isOnlyPublic", config.isOnlyPublic());
         if (authenticated) {
             map.put("username", userService.getUser().getName());
         }

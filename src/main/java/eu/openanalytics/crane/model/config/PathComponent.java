@@ -38,8 +38,8 @@ public class PathComponent {
     private String name;
     private Map<String, PathComponent> components;
 
-    private AccessControl readAccess = new AccessControl();
-    private AccessControl writeAccess = new AccessControl();
+    private AccessControl readAccess = null;
+    private AccessControl writeAccess = null;
 
     public String getName() {
         return name;
@@ -77,7 +77,7 @@ public class PathComponent {
         return Optional.ofNullable(components.get(name));
     }
 
-    public void validate() {
+    public void validate(boolean onlyPublic) {
         if (getName() == null) {
             throw new RuntimeException("PathComponent has no name");
         }
@@ -87,11 +87,19 @@ public class PathComponent {
             throw new RuntimeException(String.format("PathComponent name %s contains invalid characters", name));
         }
 
+        if (readAccess == null && writeAccess == null) {
+            throw new IllegalArgumentException(String.format("PathComponent %s is invalid: no access control specified", name));
+        }
+
+        validateReadAccess(onlyPublic);
+        validateWriteAccess(onlyPublic);
+
         try {
             readAccess.validate();
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException(String.format("PathComponent %s has invalid read access control: %s", name, ex.getMessage()));
         }
+
         try{
             writeAccess.validate();
         } catch (IllegalArgumentException ex) {
@@ -99,6 +107,7 @@ public class PathComponent {
         }
         if (components != null) {
             for (PathComponent component : components.values()) {
+                component.validate(onlyPublic);
                 if (component.readAccess.getPublic() && !readAccess.getPublic()) {
                     throw new IllegalArgumentException(String.format("PathComponent %s has invalid read access control: cannot have a public PathComponent (%s) in a private parent (%s)", component.name, component.name, name));
                 }
@@ -106,8 +115,25 @@ public class PathComponent {
                 if (component.writeAccess.getPublic() && !writeAccess.getPublic()) {
                     throw new IllegalArgumentException(String.format("PathComponent %s has invalid write access control: cannot have a public PathComponent (%s) in a private parent (%s)", component.name, component.name, name));
                 }
-                component.validate();
             }
+        }
+    }
+
+    protected void validateReadAccess(boolean onlyPublic) {
+        if (onlyPublic && readAccess != null && !readAccess.getPublic()) {
+            throw new IllegalArgumentException("The repository `%s` should have public read access when the `only-public` property is `true`.".formatted(name));
+        }
+        if (readAccess == null) {
+            readAccess = new AccessControl();
+        }
+    }
+
+    protected void validateWriteAccess(boolean onlyPublic) {
+        if (onlyPublic && writeAccess != null && !writeAccess.getPublic()) {
+            throw new IllegalArgumentException("The repository `%s` should not have write access defined (or public) when the `only-public` property is `true`.".formatted(name));
+        }
+        if (writeAccess == null) {
+            writeAccess = new AccessControl();
         }
     }
 

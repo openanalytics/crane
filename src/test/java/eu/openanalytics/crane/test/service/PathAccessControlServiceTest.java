@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.test.service;
 
+import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
@@ -60,8 +61,9 @@ public class PathAccessControlServiceTest {
         String allowed_ip = "192.168.18.123";
         PathComponent repository = new Repository();
         repository.setName("network_restricted_repo");
+        repository.setReadAccess(new AccessControl());
         repository.getReadAccess().setNetwork(List.of(allowed_ip));
-        repository.validate();
+        repository.validate(false);
 
         Authentication mockedAuthentication = mock(AnonymousAuthenticationToken.class);
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails(allowed_ip, null));
@@ -86,9 +88,10 @@ public class PathAccessControlServiceTest {
 
         PathComponent repository = new Repository();
         repository.setName("network_restricted_repo");
+        repository.setReadAccess(new AccessControl());
         repository.getReadAccess().setNetwork(List.of(allowed_ip));
         repository.getReadAccess().setUsers(List.of("demo"));
-        repository.validate();
+        repository.validate(false);
 
         Authentication mockedAuthentication = mock(Authentication.class);
         when(mockedAuthentication.getName()).thenReturn("demo");
@@ -111,6 +114,7 @@ public class PathAccessControlServiceTest {
 
         PathComponent repository = new Repository();
         repository.setName("network_restricted_repo");
+        repository.setReadAccess(new AccessControl());
         repository.getReadAccess().setNetwork(List.of(allowed_ip));
         repository.getReadAccess().setAnyAuthenticatedUser(true);
 

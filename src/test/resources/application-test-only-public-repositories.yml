@@ -1,0 +1,21 @@
+app:
+  storage-location: /tmp/repository/
+  only-public: true
+  repositories:
+    public_repo:
+      read-access:
+        public: true
+      paths:
+        public_in_public:
+          read-access:
+            public: true
+          paths:
+            nested:
+              read-access:
+                public: true
+            other_nested:
+              read-access:
+                public: true
+        other_public_in_public:
+          read-access:
+            public: true

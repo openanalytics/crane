@@ -35,6 +35,7 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedCli
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 
 @Configuration
+@ConditionalOnProperty(value = "app.only-public", matchIfMissing = true, havingValue = "false")
 public class OpenIDConfiguration {
 
     @Bean

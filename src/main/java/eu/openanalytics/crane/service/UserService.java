@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,8 +35,12 @@ public class UserService {
 
     private final String clientRegistrationId;
 
-    public UserService(InMemoryClientRegistrationRepository clientRegistrationRepository) {
-        clientRegistrationId = clientRegistrationRepository.iterator().next().getRegistrationId();
+    public UserService(@Autowired(required = false) InMemoryClientRegistrationRepository clientRegistrationRepository) {
+        if (clientRegistrationRepository != null) {
+            clientRegistrationId = clientRegistrationRepository.iterator().next().getRegistrationId();
+        } else {
+            clientRegistrationId = null;
+        }
     }
 
     public String getLoginPath() {
