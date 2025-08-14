@@ -1,7 +1,7 @@
 # We use a builder image which fully prepares the /opt/crane directory.
 # This directory can then be copied in *one step* to the final image.
 # In addition we also need unzip during build but not during runtime.
-FROM public.ecr.aws/docker/library/debian:buster as builder
+FROM public.ecr.aws/docker/library/ubuntu:noble as builder
 
 # can be snapshots or releases
 ARG NEXUS_REPOSITORY=releases
