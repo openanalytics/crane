@@ -281,6 +281,14 @@
         document.getElementById("create-directory").addEventListener("click", createDirectory);
         disableUpload();
         disableCreateDirectory();
+        $(document).ready(function() {
+          $(window).keydown(function(event){
+            if(event.code == 'Enter') {
+              event.preventDefault();
+              return false;
+            }
+          });
+        });
     });
 </script>
 </body>
