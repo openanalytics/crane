@@ -44,10 +44,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.Upload;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,8 +85,7 @@ public class UploadController {
         boolean isMultipartForm = JakartaServletFileUpload.isMultipartContent(request);
 
         if (!isMultipartForm) {
-            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
-            return ApiResponse.fail(Map.of("message", "Request wasn't a multipart form"));
+            return createDirectory(request, stringRepository, stringPath);
         }
 
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
@@ -108,14 +109,7 @@ public class UploadController {
             } else if (path.toString().startsWith("/")) {
                 FileUtils.copyInputStreamToFile(fileItemInput.getInputStream(), path.toFile());
                 if (repository.hasPosixAccessControl()) {
-                    Map<String, Object> pathAttributes = Files.readAttributes(path.getParent(), "unix:owner,uid,gid,permissions");
-                    for (String attr : pathAttributes.keySet()) {
-                        try {
-                            Files.setAttribute(path, "unix:" + attr, pathAttributes.get(attr));
-                        } catch (IOException e) {
-                            logger.warn("Crane could not set '{}' unix attribute of '{}'", attr, path);
-                        }
-                    }
+                    setPathAttribute(path.getParent(), path);
                 }
             } else {
                 throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
@@ -125,6 +119,17 @@ public class UploadController {
         } catch (IOException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File upload failed"));
+        }
+    }
+
+    private void setPathAttribute(Path parent, Path path) throws IOException {
+        Map<String, Object> pathAttributes = Files.readAttributes(parent, "unix:owner,uid,gid,permissions");
+        for (String attr : pathAttributes.keySet()) {
+            try {
+                Files.setAttribute(path, "unix:" + attr, pathAttributes.get(attr));
+            } catch (IOException e) {
+                logger.warn("Crane could not set '{}' unix attribute of '{}'", attr, path);
+            }
         }
     }
 
@@ -152,4 +157,41 @@ public class UploadController {
         s3UploadRequest.completionFuture().join();
     }
 
+    private void createS3Folder(Path path) {
+        S3Path s3Path = (S3Path) path;
+        Upload s3UploadRequest = transferManager.upload(builder -> builder
+            .requestBody(AsyncRequestBody.empty())
+            .putObjectRequest(req -> req.bucket(s3Path.getBucketName()).key(s3Path.getKey()))
+            .build());
+        s3UploadRequest.completionFuture().join();
+    }
+
+    private ResponseEntity<ApiResponse<Map<String, Object>>> createDirectory(HttpServletRequest request, String stringRepository, String stringPath) {
+        Repository repository = config.getRepository(stringRepository);
+        Path path = repository.getStoragePath().resolve(stringPath.substring(1));
+
+        if (Files.exists(path)) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "Directory %s already exists".formatted(stringRepository + stringPath)));
+        }
+        try {
+            if (path.toString().startsWith("s3://")) {
+                createS3Folder(path);
+            } else if (path.toString().startsWith("/")) {
+                boolean createdDirectory = path.toFile().mkdirs();
+                if (!createdDirectory) {
+                    auditingService.createUploadAuditEvent(request);
+                    return ApiResponse.success(Map.of("message", "Directory creation failed"));
+                }
+                if (repository.hasPosixAccessControl()) {
+                    setPathAttribute(repository.getStoragePath(), path);
+                }
+            }
+        } catch (IOException | SecurityException e) {
+            auditingService.createUploadAuditEvent(request);
+            return ApiResponse.success(Map.of("message", "Directory creation failed"));
+        }
+        auditingService.createUploadAuditEvent(request);
+        return ApiResponse.success(Map.of("message", "Directory creation succeeded"));
+    }
 }
