@@ -29,6 +29,7 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
     <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"/>
 </head>
 <body>
 <div class="container">
@@ -48,8 +49,22 @@
                 <input id="file-name" type="text" placeholder="Name your file"/>
             </div>
             <div class="flex flex-space-between">
-                <button id="cancel" type="button" class="button">Cancel</button>
-                <button id="upload" type="button" class="button">Upload</button>
+                <button id="cancel-upload-file" type="button" class="button">Cancel</button>
+                <button id="upload-file" type="button" class="button">Upload</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="create-directory-dialog">
+        <form id="create-directory-form" method="post" th:action="@{${resource}}">
+            <div><h1>Create directory</h1></div>
+            <div class="input-field">
+                <label>Directory name</label>
+                <input id="directory-name" type="text" placeholder="Name your directory"/>
+            </div>
+            <div class="flex flex-space-between">
+                <button id="cancel-create-directory" type="button" class="button">Cancel</button>
+                <button id="create-directory" type="button" class="button">Create</button>
             </div>
         </form>
     </dialog>
@@ -78,7 +93,7 @@
 
     </table>
 </div>
-<script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
 <script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
 <script th:src="@{'/__assets/webjars/datatables-buttons/3.1.2/js/dataTables.buttons.min.js'}"></script>
 <script>
@@ -111,7 +126,7 @@
     const uploadDialog = document.getElementById("upload-dialog");
     const form = document.getElementById("upload-form");
     const fileInputField = document.getElementById("upload-input-file");
-    const uploadButton = document.getElementById("upload");
+    const uploadButton = document.getElementById("upload-file");
 
     function disableUpload() {
         const fileNameField = document.getElementById("file-name");
@@ -127,7 +142,7 @@
     function uploadAction(e) {
         e.preventDefault();
         const fileNameField = document.getElementById("file-name");
-        const cancelButton = document.getElementById("cancel");
+        const cancelButton = document.getElementById("cancel-upload-file");
         cancelButton.disabled = true;
         uploadButton.disabled = true;
         uploadButton.innerHTML = "Uploading...";
@@ -164,7 +179,7 @@
     }
 
     function closeDialog() {
-        const cancelButton = document.getElementById("cancel");
+        const cancelButton = document.getElementById("cancel-upload-file");
         cancelButton.disabled = false;
         if (uploadButton.classList.contains("uploading")) {
             uploadButton.innerHTML = "Upload";
@@ -172,6 +187,64 @@
         }
         uploadDialog.close();
         form.reset();
+    }
+
+    const createDirectoryDialog = document.getElementById("create-directory-dialog");
+    const createDirectoryForm = document.getElementById("create-directory-form");
+    const createDirectoryButton = document.getElementById("create-directory");
+
+    function closeCreateDirectoryDialog() {
+        const cancelButton = document.getElementById("cancel-create-directory");
+        cancelButton.disabled = false;
+        if (createDirectoryButton.classList.contains("uploading")) {
+            createDirectoryButton.innerHTML = "Create";
+            createDirectoryButton.classList.remove("uploading");
+        }
+        createDirectoryDialog.close();
+        createDirectoryForm.reset();
+    }
+
+    function createDirectory(e) {
+        e.preventDefault();
+        const dirNameField = document.getElementById("directory-name");
+        const cancelButton = document.getElementById("cancel-create-directory");
+        cancelButton.disabled = true;
+        createDirectoryButton.disabled = true;
+        createDirectoryButton.innerHTML = "Creating...";
+        createDirectoryButton.classList.toggle("uploading");
+
+        const url = form.action + dirNameField.value;
+        const csrfToken = $("meta[name='_csrf']").attr("content");
+        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        const response = fetch(url, {
+            method: 'POST',
+            body: '',
+            headers: {[csrfHeader]: csrfToken}
+        }).then(async (resp) => {
+            if (resp.ok) {
+                location.reload();
+                return;
+            }
+            let error;
+            try {
+                error = (await resp.json()).data.message;
+            } catch (e) {
+                error = resp.statusText;
+            }
+            if (error === "") {
+                error = statusToText[resp.status.toString()];
+            }
+            closeCreateDirectoryDialog();
+            alert(error);
+        }).catch((error) => {
+            closeCreateDirectoryDialog();
+            alert(error);
+        });
+    }
+
+    function disableCreateDirectory() {
+        const dirNameField = document.getElementById("directory-name");
+        createDirectoryButton.disabled = dirNameField.value === "";
     }
 
     $(document).ready(function () {
@@ -187,8 +260,12 @@
                     buttons: [
                        {
                             action: () => uploadDialog.showModal(),
-                            text: 'Upload'
-                        }
+                            text: "Upload"
+                       },
+                        {
+                            action: () => createDirectoryDialog.showModal(),
+                            text: "Create directory"
+                       }
                     ]
                 }
             }
@@ -197,9 +274,14 @@
         $('table').css("visibility", "visible");
         fileInputField.addEventListener("change", updateFilename);
         document.getElementById("file-name").addEventListener("input", disableUpload);
-        document.getElementById("cancel").addEventListener("click", closeDialog);
-        document.getElementById("upload").addEventListener("click", uploadAction);
+        document.getElementById("cancel-upload-file").addEventListener("click", closeDialog);
+        document.getElementById("upload-file").addEventListener("click", uploadAction);
+
+        document.getElementById("directory-name").addEventListener("input", disableCreateDirectory);
+        document.getElementById("cancel-create-directory").addEventListener("click", closeCreateDirectoryDialog);
+        document.getElementById("create-directory").addEventListener("click", createDirectory);
         disableUpload();
+        disableCreateDirectory();
     });
 </script>
 </body>
