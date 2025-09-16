@@ -142,7 +142,7 @@ dialog::backdrop {
     backdrop-filter: blur(10px);
 }
 
-input#file-name, input#upload-input-file {
+input#file-name, input#upload-input-file, input#directory-name {
     border-radius: .5rem;
     border: solid lightgray 1px;
     width: -moz-available;
@@ -242,7 +242,7 @@ button.dt-button[tabindex='0'] {
     background: #e52323;
 }
 
-input#file-name {
+dialog form div input[type="text"] {
     border: 1px solid #d3d3d3;
     padding: 5px;
     background-color: transparent;

@@ -29,7 +29,7 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
     <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
- </head>
+</head>
 <body>
 <div class="container">
     <div th:insert="~{fragments/navbar.html}"></div>
@@ -92,7 +92,7 @@
 
     </table>
 </div>
-    <script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
 <script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
 <script th:src="@{'/__assets/webjars/datatables-buttons/3.1.2/js/dataTables.buttons.min.js'}"></script>
 <script>
@@ -232,6 +232,9 @@
             }
             if (error === "") {
                 error = statusToText[resp.status.toString()];
+            }
+            if (error === "Forbidden") {
+                error = "You are not allowed to create this directory";
             }
             closeCreateDirectoryDialog();
             alert(error);
