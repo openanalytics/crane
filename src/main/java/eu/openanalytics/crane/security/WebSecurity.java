@@ -82,6 +82,7 @@ public class WebSecurity {
                                 "/__file/**",
                                 "/__index",
                                 "/__assets/css/**",
+                                "/__assets/svg/**",
                                 "/__assets/webjars/**",
                                 "/actuator/health",
                                 "/actuator/health/liveness",

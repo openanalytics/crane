@@ -199,6 +199,21 @@ dialog form div label {
     font-size: 14px;
 }
 
+button .danger {
+    font-size: 0;
+}
+
+button.danger img {
+    width: 18px;
+    height: 18px;
+    filter: invert(1);
+}
+
+.danger {
+   background-color: #e52323;
+   padding: 3px;
+}
+
 button.dt-button[tabindex='0'] {
     padding: .3rem 1.5rem !important;
 }
@@ -234,12 +249,8 @@ button.dt-button[tabindex='0'] {
     background: #8ea5ae7a;
 }
 
-.button#cancel {
-    background: #e523235c;
-}
-
-.button#cancel:not([disabled]):hover {
-    background: #e52323;
+button.danger:hover {
+    background: #af1616;
 }
 
 dialog form div input[type="text"] {

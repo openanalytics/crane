@@ -58,6 +58,15 @@ public class WebConfig implements WebMvcConfigurer {
             .setCacheControl(CacheControl.maxAge(Duration.ofDays(1)))
             .resourceChain(true)
             .addResolver(resolver);
+
+        registry
+            .addResourceHandler("/__assets/svg/**")
+            .addResourceLocations("classpath:/static/svg/")
+            .setOptimizeLocations(true)
+            .setUseLastModified(false)
+            .setCacheControl(CacheControl.maxAge(Duration.ofDays(1)))
+            .resourceChain(true)
+            .addResolver(resolver);
     }
 
     /**

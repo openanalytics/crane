@@ -39,13 +39,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.Upload;
 
@@ -60,6 +67,7 @@ public class UploadController {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private S3TransferManager transferManager;
+    private S3Client client;
     private final CraneConfig config;
     private final UploadAuditing auditingService;
 
@@ -73,6 +81,7 @@ public class UploadController {
         if (config.usesS3()) {
             S3AsyncClient s3AsyncClient = S3AsyncClient.builder().multipartEnabled(true).build();
             transferManager = S3TransferManager.builder().s3Client(s3AsyncClient).build();
+            client = S3Client.create();
         }
     }
 
@@ -122,6 +131,39 @@ public class UploadController {
         }
     }
 
+    @PreAuthorize("@uploadAccessControlService.canAccess(#r, #p)")
+    @ResponseBody
+    @DeleteMapping(value = "/__file/{repository}/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteResource(HttpServletRequest request,
+                                                                           @P("r") @PathVariable(name = "repository") String stringRepository,
+                                                                           @P("p") @PathVariable(name = "path") String stringPath) {
+        Repository repository = config.getRepository(stringRepository);
+        Path path = repository.getStoragePath().resolve(stringPath.substring(1));
+
+        if (!Files.exists(path)) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
+        }
+
+        try {
+            if (path.toString().startsWith("s3://")) {
+                deleteS3Object(path);
+            } else if (path.toString().startsWith("/")) {
+                boolean deleted = path.toFile().delete();
+                if (!deleted) {
+                    throw new IOException();
+                }
+            } else {
+                throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
+            }
+            auditingService.createUploadAuditEvent(request);
+            return ApiResponse.success(Map.of("message", "File deletion succeeded"));
+        } catch (IOException e) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "File deletion failed"));
+        }
+    }
+    
     private void setPathAttribute(Path parent, Path path) throws IOException {
         Map<String, Object> pathAttributes = Files.readAttributes(parent, "unix:owner,uid,gid,permissions");
         for (String attr : pathAttributes.keySet()) {
@@ -141,6 +183,16 @@ public class UploadController {
             }
         }
         return null;
+    }
+
+    private void deleteS3Object(Path path) throws AwsServiceException, SdkClientException {
+        S3Path s3Path = (S3Path) path;
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+            .bucket(s3Path.getBucketName())
+            .key(s3Path.getKey())
+            .build();
+
+        client.deleteObject(deleteObjectRequest);
     }
 
     private void writeFileToS3(FileItemInput fileItemInput, Path path) throws IOException {

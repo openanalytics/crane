@@ -74,11 +74,13 @@
             <th>Filename</th>
             <th>Last Modified time</th>
             <th>Size</th>
+            <td>Action</td>
         </tr>
         </thead>
         <tbody>
         <tr th:each="directory : ${directories}">
             <td><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
+            <td></td>
             <td></td>
             <td></td>
         </tr>
@@ -87,6 +89,7 @@
             <td><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
             <td th:text="${file.lastModifiedTime}"></td>
             <td th:text="${file.formattedSize}"></td>
+            <td><button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button"><img th:src="@{'/__assets/svg/trash-can.svg'}"></button></td>
         </tr>
         </tbody>
 
@@ -249,6 +252,33 @@
         createDirectoryButton.disabled = dirNameField.value === "";
     }
 
+    function deleteObject(fileName) {
+        const url = document.URL + fileName;
+        const csrfToken = $("meta[name='_csrf']").attr("content");
+        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        const response = fetch(url, {
+            method: 'DELETE',
+            headers: {[csrfHeader]: csrfToken}
+        }).then(async (resp) => {
+            if (resp.ok) {
+                location.reload();
+                return;
+            }
+            let error;
+            try {
+                error = (await resp.json()).data.message;
+            } catch (e) {
+                error = resp.statusText;
+            }
+            if (error === "") {
+                error = statusToText[resp.status.toString()];
+            }
+            alert(error);
+        }).catch((error) => {
+            alert(error);
+        });
+    }
+    
     $(document).ready(function () {
         let table = $('table');
         let dataTableOptions = {
@@ -283,6 +313,15 @@
         document.getElementById("cancel-create-directory").addEventListener("click", closeCreateDirectoryDialog);
         document.getElementById("create-directory").addEventListener("click", createDirectory);
         disableUpload();
+
+        const deleteButtons = document.querySelectorAll("button.delete-button");
+        for (let deleteButton of deleteButtons) {
+            deleteButton.addEventListener("click", () => {
+                if (window.confirm(`Are you sure you want to delete the file ${deleteButton.dataset.filename}?`)){
+                    deleteObject(deleteButton.dataset.filename);
+                }
+            });
+        }
         disableCreateDirectory();
         $(document).ready(function() {
           $(window).keydown(function(event){
