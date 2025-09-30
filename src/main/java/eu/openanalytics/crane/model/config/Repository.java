@@ -20,12 +20,19 @@
  */
 package eu.openanalytics.crane.model.config;
 
+import eu.openanalytics.crane.upload.UploadController;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Repository extends PathComponent {
-
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private String indexFileName = "index.html";
     private List<CacheRule> cache;
     private String storageLocation;
@@ -64,6 +71,21 @@ public class Repository extends PathComponent {
                     String.format(
                             "Repository name %s is invalid, repository names should not start with '__' and should be different from: %s",
                             getName(), invalidRepositoryNames.stream().map(name -> "'" + name + "'").collect(Collectors.joining(", "))));
+        }
+    }
+
+    public void init() {
+        Path path = Path.of(storageLocation);
+        if (!path.toFile().isDirectory()) {
+            createDirectory(path);
+            if (hasPosixAccessControl()) {
+                logger.warn("Repository '{}' was created no posix access control configured", getName());
+            }
+        }
+        if (hasPaths()) {
+            for (PathComponent pathComponent : getPaths()) {
+                pathComponent.init(storageLocation);
+            }
         }
     }
 

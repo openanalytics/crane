@@ -21,6 +21,13 @@
 package eu.openanalytics.crane.model.config;
 
 
+import eu.openanalytics.crane.upload.UploadController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +41,7 @@ import java.util.regex.Pattern;
  */
 public class PathComponent {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
     private String name;
     private Map<String, PathComponent> components;
@@ -139,6 +147,27 @@ public class PathComponent {
 
     public AccessControl getWriteAccess() {
         return writeAccess;
+    }
+
+    public void init(String storageLocation) {
+        Path path = Path.of(storageLocation).resolve(getName());
+        if (!path.toFile().isDirectory()) {
+            createDirectory(path);
+        }
+        if (hasPaths()) {
+            for (PathComponent pathComponent : getPaths()) {
+                pathComponent.init(path.toString());
+            }
+        }
+    }
+
+    protected void createDirectory(Path path) {
+         if (path.toString().startsWith("/")) {
+            boolean createdDirectory = path.toFile().mkdirs();
+            if (!createdDirectory) {
+                logger.warn("Could not create '{}'", path);
+            }
+        }
     }
 
     public void setWriteAccess(AccessControl writeAccess) {

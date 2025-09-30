@@ -209,7 +209,7 @@ public class UploadController {
         s3UploadRequest.completionFuture().join();
     }
 
-    private void createS3Folder(Path path) {
+    public static void createS3Folder(Path path, S3TransferManager transferManager) {
         S3Path s3Path = (S3Path) path;
         Upload s3UploadRequest = transferManager.upload(builder -> builder
             .requestBody(AsyncRequestBody.empty())
@@ -228,7 +228,7 @@ public class UploadController {
         }
         try {
             if (path.toString().startsWith("s3://")) {
-                createS3Folder(path);
+                createS3Folder(path, transferManager);
             } else if (path.toString().startsWith("/")) {
                 boolean createdDirectory = path.toFile().mkdirs();
                 if (!createdDirectory) {

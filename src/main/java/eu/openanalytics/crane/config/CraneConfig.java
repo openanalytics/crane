@@ -129,6 +129,7 @@ public class CraneConfig {
             } else {
                 r.setStoragePath(storageLocationToPath(validateRepositoryStorageLocation(r.getStorageLocation(), r.getName())));
             }
+            r.init();
         }
         close();
     }
