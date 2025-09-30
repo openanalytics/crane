@@ -209,15 +209,6 @@ public class UploadController {
         s3UploadRequest.completionFuture().join();
     }
 
-    public static void createS3Folder(Path path, S3TransferManager transferManager) {
-        S3Path s3Path = (S3Path) path;
-        Upload s3UploadRequest = transferManager.upload(builder -> builder
-            .requestBody(AsyncRequestBody.empty())
-            .putObjectRequest(req -> req.bucket(s3Path.getBucketName()).key(s3Path.getKey()))
-            .build());
-        s3UploadRequest.completionFuture().join();
-    }
-
     private ResponseEntity<ApiResponse<Map<String, Object>>> createDirectory(HttpServletRequest request, String stringRepository, String stringPath) {
         Repository repository = config.getRepository(stringRepository);
         Path path = repository.getStoragePath().resolve(stringPath.substring(1));
@@ -228,7 +219,8 @@ public class UploadController {
         }
         try {
             if (path.toString().startsWith("s3://")) {
-                createS3Folder(path, transferManager);
+                logger.warn("S3 Directory creation is not supported");
+                return ApiResponse.fail(Map.of("message", "S3 Directory creation is not supported"));
             } else if (path.toString().startsWith("/")) {
                 boolean createdDirectory = path.toFile().mkdirs();
                 if (!createdDirectory) {
