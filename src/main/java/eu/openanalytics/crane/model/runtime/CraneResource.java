@@ -34,7 +34,7 @@ public interface CraneResource {
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
 
             if (attributes.isDirectory()) {
-                return new CraneDirectory(path.getFileName().toString(), "/" + repository.getStoragePath().relativize(path));
+                return new CraneDirectory(path.getFileName().toString(), "/" + repository.getStoragePath().getParent().relativize(path));
             } else {
                 return new CraneFile(path.getFileName().toString(), attributes.lastModifiedTime().toInstant(), attributes.size());
             }
