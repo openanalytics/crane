@@ -28,6 +28,7 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
+    <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/uppy/5.1.1/dist/uppy.min.css'}"/>
     <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
 </head>
 <body>
@@ -35,23 +36,12 @@
     <div th:insert="~{fragments/navbar.html}"></div>
     <h1>Directory <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
     </code></h1>
-
-    <dialog id="upload-dialog">
-        <form id="upload-form" method="post" th:action="@{${resource}}" enctype="multipart/form-data">
-            <div><h1>Upload file</h1></div>
-            <div class="upload-input-field">
-                <label>File to upload</label>
-                <input id="upload-input-file" type="file" name="file"/>
-            </div>
-            <div class="input-field">
-                <label>File name</label>
-                <input id="file-name" type="text" placeholder="Name your file"/>
-            </div>
-            <div class="flex flex-space-between">
-                <button id="cancel-upload-file" type="button" class="button">Cancel</button>
-                <button id="upload-file" type="button" class="button">Upload</button>
-            </div>
-        </form>
+    <dialog id="uppy-dialog">
+        <div id="uppy" th:action="@{${resource}}"></div>
+        <div class="flex flex-space-between">
+            <button id="cancel-uppy-upload" type="button" class="button cancel">Cancel</button>
+            <button id="uppy-upload" type="button" class="button create">Upload</button>
+        </div>
     </dialog>
 
     <dialog id="create-directory-dialog">
@@ -62,8 +52,8 @@
                 <input id="directory-name" type="text" placeholder="Name your directory"/>
             </div>
             <div class="flex flex-space-between">
-                <button id="cancel-create-directory" type="button" class="button">Cancel</button>
-                <button id="create-directory" type="button" class="button">Create</button>
+                <button id="cancel-create-directory" type="button" class="button cancel">Cancel</button>
+                <button id="create-directory" type="button" class="button create">Create</button>
             </div>
         </form>
     </dialog>
@@ -98,100 +88,10 @@
 <script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
 <script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
 <script th:src="@{'/__assets/webjars/datatables-buttons/3.1.2/js/dataTables.buttons.min.js'}"></script>
+<script th:src="@{'/__assets/webjars/uppy/5.1.1/dist/uppy.min.js'}"></script>
 <script>
-    const statusToText = {
-        '400': 'Bad Request',
-        '401': 'Unauthorized',
-        '403': 'Forbidden',
-        '404': 'Not Found',
-        '405': 'Method Not Allowed',
-        '406': 'Not Acceptable',
-        '407': 'Proxy Authentication Required',
-        '408': 'Request Timeout',
-        '409': 'Conflict',
-        '410': 'Gone',
-        '411': 'Length Required',
-        '412': 'Precondition Required',
-        '413': 'Request Entry Too Large',
-        '414': 'Request-URI Too Long',
-        '415': 'Unsupported Media Type',
-        '416': 'Requested Range Not Satisfiable',
-        '417': 'Expectation Failed',
-        '429': 'Too Many Requests',
-        '500': 'Internal Server Error',
-        '501': 'Not Implemented',
-        '502': 'Bad Gateway',
-        '503': 'Service Unavailable',
-        '504': 'Gateway Timeout',
-        '505': 'HTTP Version Not Supported',
-    };
-    const uploadDialog = document.getElementById("upload-dialog");
-    const form = document.getElementById("upload-form");
-    const fileInputField = document.getElementById("upload-input-file");
-    const uploadButton = document.getElementById("upload-file");
-
-    function disableUpload() {
-        const fileNameField = document.getElementById("file-name");
-        uploadButton.disabled = fileNameField.value === "" || fileInputField.files.length === 0;
-    }
-    function updateFilename() {
-        if (fileInputField.files.length > 0) {
-            document.getElementById("file-name").value = fileInputField.files[0].name;
-        }
-        disableUpload();
-    }
-
-    function uploadAction(e) {
-        e.preventDefault();
-        const fileNameField = document.getElementById("file-name");
-        const cancelButton = document.getElementById("cancel-upload-file");
-        cancelButton.disabled = true;
-        uploadButton.disabled = true;
-        uploadButton.innerHTML = "Uploading...";
-        uploadButton.classList.toggle("uploading");
-
-        const url = form.action + fileNameField.value;
-        const csrfToken = $("meta[name='_csrf']").attr("content");
-        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
-        const formData = new FormData(form);
-        const response = fetch(url, {
-            method: 'POST',
-            body: formData,
-            headers: {[csrfHeader]: csrfToken}
-        }).then(async (resp) => {
-            if (resp.ok) {
-                location.reload();
-                return;
-            }
-            let error;
-            try {
-                error = (await resp.json()).data.message;
-            } catch (e) {
-                error = resp.statusText;
-            }
-            if (error === "") {
-                error = statusToText[resp.status.toString()];
-            }
-            closeDialog();
-            alert(error);
-        }).catch((error) => {
-            closeDialog();
-            alert(error);
-        });
-    }
-
-    function closeDialog() {
-        const cancelButton = document.getElementById("cancel-upload-file");
-        cancelButton.disabled = false;
-        if (uploadButton.classList.contains("uploading")) {
-            uploadButton.innerHTML = "Upload";
-            uploadButton.classList.remove("uploading");
-        }
-        uploadDialog.close();
-        form.reset();
-    }
-
     const createDirectoryDialog = document.getElementById("create-directory-dialog");
+    const uppyDialog = document.getElementById("uppy-dialog");
     const createDirectoryForm = document.getElementById("create-directory-form");
     const createDirectoryButton = document.getElementById("create-directory");
 
@@ -215,7 +115,7 @@
         createDirectoryButton.innerHTML = "Creating...";
         createDirectoryButton.classList.toggle("uploading");
 
-        const url = form.action + dirNameField.value;
+        const url = createDirectoryForm.action + dirNameField.value;
         const csrfToken = $("meta[name='_csrf']").attr("content");
         const csrfHeader = $("meta[name='_csrf_header']").attr("content");
         const response = fetch(url, {
@@ -285,15 +185,14 @@
             aaSorting: [], // apply no sort by default
             paging: false
         };
-
         if (table.data("has-write-access")) {
             dataTableOptions["layout"] = {
                 topStart: {
                     buttons: [
-                       {
-                            action: () => uploadDialog.showModal(),
-                            text: "Upload"
-                       },
+                        {
+                            action: () => uppyDialog.showModal(),
+                            text: 'Upload'
+                        },
                         {
                             action: () => createDirectoryDialog.showModal(),
                             text: "Create directory"
@@ -302,17 +201,107 @@
                 }
             }
         }
-        $('table').DataTable(dataTableOptions);
+        const datatable = $('table').DataTable(dataTableOptions);
         $('table').css("visibility", "visible");
-        fileInputField.addEventListener("change", updateFilename);
-        document.getElementById("file-name").addEventListener("input", disableUpload);
-        document.getElementById("cancel-upload-file").addEventListener("click", closeDialog);
-        document.getElementById("upload-file").addEventListener("click", uploadAction);
+
+        if (table.data("has-write-access")) {
+            datatable.button(0)[0].node.id = "upload-button";
+            const uppy = new Uppy.Uppy();
+            uppy.use(Uppy.Dashboard, { 
+                    inline: true,
+                    target: '#uppy',
+                    showProgressDetails: true,
+                    hideUploadButton: true,
+                    hideCancelButton: true,
+                    fileManagerSelectionType: "both",
+                }).use(Uppy.XHRUpload, {
+                    endpoint: (file) => {
+                        const uppy = document.getElementById("uppy")
+                        if (file.meta.relativePath) {
+                           return uppy.attributes.action.value + file.meta.relativePath;
+                        }
+                        return uppy.attributes.action.value + file.name;
+                    },
+                    headers: () => {
+                        const csrfToken = $("meta[name='_csrf']").attr("content");
+                        const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+                        return {[csrfHeader]: csrfToken}
+                    },
+                    onAfterResponse(response) {
+                        if (response.status == 200) {
+                            return
+                        }
+
+                        if (JSON.parse(response.responseText).data?.message) {
+                            throw new Error(JSON.parse(response.responseText).data.message)
+                        }
+                    }
+                })
+            function uppyUploadButtonDisable() {
+                const uploadButton = document.getElementById("uppy-upload");
+                uploadButton.disabled = uppy.getFiles().length === 0;
+            }
+
+            uppy.on("complete", (result) => {
+                if (result.failed.length === 0) {
+                    document.location.reload();
+                }
+            });
+            uppy.on("file-added", uppyUploadButtonDisable);
+            uppy.on("files-added", uppyUploadButtonDisable);
+            uppy.on("file-removed", uppyUploadButtonDisable);
+            uppy.on("upload-error", () => {
+                const uploadButton = document.getElementById("uppy-upload");
+                uploadButton.innerText = "Retry";
+                uploadButton.classList.remove("uploading");
+                uploadButton.classList.add("retry");
+
+                const addMore = document.getElementsByClassName("uppy-DashboardContent-addMore")[0];
+                addMore.disabled = true;
+            })
+
+            document.getElementById("cancel-uppy-upload").addEventListener("click", () => {
+                const uploadButton = document.getElementById("uppy-upload");
+                uploadButton.classList.remove("uploading");
+                uploadButton.classList.remove("retry");
+                uploadButton.innerText = "Upload";
+
+                const files = uppy.getState().files;
+                for (key in files) {
+                    const file = files[key];
+                    if (file.response?.status === 200) {
+                        document.location.reload();
+                        return;
+                    }
+                }
+                
+                const addMore = document.getElementsByClassName("uppy-DashboardContent-addMore")[0];
+                if (addMore) {
+                    addMore.disabled = false;
+                }
+                uppyDialog.close();
+                uppy.cancelAll();
+            });
+
+            document.getElementById("uppy-upload").addEventListener("click", () => {
+                const button = document.getElementById("uppy-upload");
+                button.classList.add("uploading");
+                button.innerText = "Uploading...";
+                if (!button.classList.contains("retry")) {
+                    uppy.upload();
+                } else {
+                    button.classList.remove("retry");
+                    uppy.retryAll();
+                }
+            });
+            uppyUploadButtonDisable();
+        }
 
         document.getElementById("directory-name").addEventListener("input", disableCreateDirectory);
         document.getElementById("cancel-create-directory").addEventListener("click", closeCreateDirectoryDialog);
         document.getElementById("create-directory").addEventListener("click", createDirectory);
-        disableUpload();
+
+        disableCreateDirectory();
 
         const deleteButtons = document.querySelectorAll("button.delete-button");
         for (let deleteButton of deleteButtons) {
@@ -322,7 +311,7 @@
                 }
             });
         }
-        disableCreateDirectory();
+
         $(document).ready(function() {
           $(window).keydown(function(event){
             if(event.code == 'Enter') {

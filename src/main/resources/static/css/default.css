@@ -127,14 +127,17 @@ table {
 dialog {
     top: 0;
     right: 0;
-    bottom: 30%;
     left: 0;
     z-index: 999;
-    width: 500px;
     position: absolute;
     background: white;
     border-radius: 20px;
     border: solid lightgray 1px;
+}
+
+dialog#create-directory-dialog {
+    bottom: 30%;
+    width: 500px;
     padding-top: 1.25rem;
 }
 
@@ -190,13 +193,14 @@ dialog form div label {
     margin: 1rem;
 }
 
-.button, button.dt-button[tabindex='0'] {
+.button, button.dt-button[tabindex='0'], button.uppy-DashboardContent-back, .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload, button.uppy-DashboardContent-addMore {
     text-decoration: none;
     padding: .5rem 1.5rem;
     border-radius: 10px;
     border: 1px solid transparent;
     font-weight: bold;
     font-size: 14px;
+    color: rgb(0, 0, 0);
 }
 
 button .danger {
@@ -237,16 +241,28 @@ button.dt-button[tabindex='0'] {
     -webkit-animation: loading-animation 2s infinite;
 }
 
-.button#upload, button.dt-button[tabindex='0'] {
-    background: #32a6d37a;
+button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
+    background-color: #32a6d37a;
 }
 
-.button#upload:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
-    background: #32a6d3;
+button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
+    color: rgb(0, 0, 0);
+    background-color: #32a6d3;
 }
 
-.button#upload[disabled] {
-    background: #8ea5ae7a;
+button.cancel, button.retry{
+    background-color: #e523235c;
+}
+
+button.cancel:not([disabled]):hover, button.retry:not([disabled]):hover {
+    color: rgb(0, 0, 0);
+    background-color: #e52323;
+}
+
+button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardContent-addMore:disabled {
+    background-color: #e5e5e5;
+    color: rgb(0, 0, 0);
+    cursor: default;
 }
 
 button.danger:hover {
