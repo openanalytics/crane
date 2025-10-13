@@ -20,7 +20,9 @@
  */
 package eu.openanalytics.crane.service;
 
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.security.auditing.AbstractAuditingService;
+import org.springframework.security.core.Authentication;
 
 public abstract class AbstractAccessControlService {
     protected AbstractPathAccessControlService pathAccessControlService;
@@ -32,6 +34,14 @@ public abstract class AbstractAccessControlService {
         boolean canAccess = pathAccessControlService.canAccess(repository, path) && posixAccessControlService.canAccess(repository, path);
         if (!canAccess) {
             auditingService.createAuthorizationDeniedEvent(userService.getUser());
+        }
+        return canAccess;
+    }
+
+    public boolean canAccess(Repository repository, String path, Authentication auth) {
+        boolean canAccess = pathAccessControlService.canAccess(auth, path, repository) && posixAccessControlService.canAccess(auth, path, repository);
+        if (!canAccess) {
+            auditingService.createAuthorizationDeniedEvent(auth);
         }
         return canAccess;
     }

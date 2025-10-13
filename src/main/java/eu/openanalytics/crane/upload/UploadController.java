@@ -23,12 +23,14 @@ package eu.openanalytics.crane.upload;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
+import eu.openanalytics.crane.service.DeletionService;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.carlspring.cloud.storage.s3fs.S3Path;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -67,13 +69,14 @@ public class UploadController {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private S3TransferManager transferManager;
-    private S3Client client;
     private final CraneConfig config;
     private final UploadAuditing auditingService;
+    private final DeletionService deletionService;
 
-    public UploadController(CraneConfig config, UploadAuditing auditingService) {
+    public UploadController(CraneConfig config, UploadAuditing auditingService, DeletionService deletionService) {
         this.config = config;
         this.auditingService = auditingService;
+        this.deletionService = deletionService;
     }
 
     @PostConstruct
@@ -81,7 +84,6 @@ public class UploadController {
         if (config.usesS3()) {
             S3AsyncClient s3AsyncClient = S3AsyncClient.builder().multipartEnabled(true).build();
             transferManager = S3TransferManager.builder().s3Client(s3AsyncClient).build();
-            client = S3Client.create();
         }
     }
 
@@ -144,20 +146,13 @@ public class UploadController {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
         }
-
         try {
-            if (path.toString().startsWith("s3://")) {
-                deleteS3Object(path);
-            } else if (path.toString().startsWith("/")) {
-                boolean deleted = path.toFile().delete();
-                if (!deleted) {
-                    throw new IOException();
-                }
-            } else {
-                throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
-            }
+            Map<String, Object> progress = deletionService.initDeletion(repository, path);
             auditingService.createUploadAuditEvent(request);
-            return ApiResponse.success(Map.of("message", "File deletion succeeded"));
+            return ApiResponse.success(progress);
+        } catch (InterruptedException e) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "Directory deletion was interrupted"));
         } catch (IOException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File deletion failed"));
@@ -183,16 +178,6 @@ public class UploadController {
             }
         }
         return null;
-    }
-
-    private void deleteS3Object(Path path) throws AwsServiceException, SdkClientException {
-        S3Path s3Path = (S3Path) path;
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-            .bucket(s3Path.getBucketName())
-            .key(s3Path.getKey())
-            .build();
-
-        client.deleteObject(deleteObjectRequest);
     }
 
     private void writeFileToS3(FileItemInput fileItemInput, Path path) throws IOException {

@@ -63,6 +63,10 @@ public abstract class AbstractPathAccessControlService {
         return canAccess(userService.getUser(), fullPath, repository, Path.of(fullPath).iterator());
     }
 
+    public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
+        return canAccess(auth, fullPath, repository, Path.of(fullPath).iterator());
+    }
+
     public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
         String accessPath = pathComponent.getName() + fullPath;
         if (!canAccess(auth, getAccessControl(pathComponent))) {

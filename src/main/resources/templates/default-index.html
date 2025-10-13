@@ -72,7 +72,7 @@
             <td><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
             <td></td>
             <td></td>
-            <td></td>
+            <td><button th:if="${hasWriteAccess}" th:data-filename="${directory.name}" type="button" class="delete-button danger button"><img th:src="@{'/__assets/svg/trash-can.svg'}"></button></td>
         </tr>
 
         <tr th:each="file : ${files}">
