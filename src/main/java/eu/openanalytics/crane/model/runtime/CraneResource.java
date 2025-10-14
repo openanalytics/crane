@@ -24,6 +24,7 @@ import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.upload.PathWriteAccessControlService;
 import eu.openanalytics.crane.upload.PosixWriteAccessControlService;
+import eu.openanalytics.crane.upload.UploadAccessControlService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,27 +36,25 @@ import java.util.Optional;
 public interface CraneResource {
 
     public static boolean isPathComponent(Path path, Repository repository) {
-        Path relativePath = repository.getStoragePath().getParent().relativize(path);
-        Iterator<Path> pathIterator = relativePath.iterator();
-        pathIterator.next();
-        Optional<PathComponent> parentPathComponent = Optional.of(repository);
-        while (pathIterator.hasNext() && parentPathComponent.isPresent()) {
+        Iterator<Path> pathIterator = repository.getStoragePath().relativize(path).iterator();
+        Optional<PathComponent> pathComponent = Optional.of(repository);
+        while (pathIterator.hasNext() && pathComponent.isPresent()) {
             Path nextPath = pathIterator.next();
-            parentPathComponent = parentPathComponent.get().getPath(nextPath.toString());
+            pathComponent = pathComponent.get().getPath(nextPath.toString());
         }
-        return !pathIterator.hasNext() && parentPathComponent.isPresent();
+        return !pathIterator.hasNext() && pathComponent.isPresent();
     }
 
-    public static CraneResource createFromPath(Path path, Repository repository, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
+    public static CraneResource createFromPath(Path path, Repository repository, UploadAccessControlService uploadAccessControlService) {
         try {
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
 
             if (attributes.isDirectory()) {
                 boolean isPathComponent = isPathComponent(path, repository);
-                String relativePath = "/" + repository.getStoragePath().getParent().relativize(path);
-                String subPathString = repository.getStoragePath().relativize(path).toString();
-                boolean hasWriteAccess = pathWriteAccessControlService.canAccess(repository, subPathString) && posixWriteAccessControlService.canAccess(repository, subPathString);
-                return new CraneDirectory(path.getFileName().toString(), relativePath, isPathComponent, hasWriteAccess);
+                String pathRelativeToRoot = "/" + repository.getStoragePath().getParent().relativize(path);
+                String pathRelativeToRepository = repository.getStoragePath().relativize(path).toString();
+                boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, pathRelativeToRepository);
+                return new CraneDirectory(path.getFileName().toString(), pathRelativeToRoot, isPathComponent, hasWriteAccess);
             } else {
                 return new CraneFile(path.getFileName().toString(), attributes.lastModifiedTime().toInstant(), attributes.size());
             }

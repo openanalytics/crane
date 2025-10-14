@@ -24,8 +24,7 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CraneDirectory;
 import eu.openanalytics.crane.model.runtime.CraneFile;
 import eu.openanalytics.crane.model.runtime.CraneResource;
-import eu.openanalytics.crane.upload.PathWriteAccessControlService;
-import eu.openanalytics.crane.upload.PosixWriteAccessControlService;
+import eu.openanalytics.crane.upload.UploadAccessControlService;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -40,17 +39,12 @@ import java.util.stream.Stream;
 @Service
 public class IndexPageService {
 
-    private final PathReadAccessControlService pathReadAccessControlService;
-    private final PosixReadAccessControlService posixReadAccessControlService;
-    private final PathWriteAccessControlService pathWriteAccessControlService;
-    private final PosixWriteAccessControlService posixWriteAccessControlService;
+    private final ReadAccessControlService readAccessControlService;
+    private final UploadAccessControlService uploadAccessControlService;
 
-    public IndexPageService(PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, PathWriteAccessControlService pathWriteAccessControlService,
-                            PosixWriteAccessControlService posixWriteAccessControlService) {
-        this.pathReadAccessControlService = pathReadAccessControlService;
-        this.posixReadAccessControlService = posixReadAccessControlService;
-        this.pathWriteAccessControlService = pathWriteAccessControlService;
-        this.posixWriteAccessControlService = posixWriteAccessControlService;
+    public IndexPageService(ReadAccessControlService readAccessControlService, UploadAccessControlService uploadAccessControlService) {
+        this.readAccessControlService = readAccessControlService;
+        this.uploadAccessControlService = uploadAccessControlService;
     }
 
     public String getTemplateName(Repository repository) {
@@ -62,13 +56,13 @@ public class IndexPageService {
         List<CraneDirectory> craneDirectories = new ArrayList<>();
         try (Stream<Path> dirListing = Files.list(path)) {
             dirListing.forEach(p -> {
-                CraneResource craneResource = CraneResource.createFromPath(p, repository, pathWriteAccessControlService, posixWriteAccessControlService);
+                CraneResource craneResource = CraneResource.createFromPath(p, repository, uploadAccessControlService);
                 if (craneResource == null) {
                     // TODO
                     return;
                 }
                 String fullPath = p.toString().substring(repository.getStorageLocation().length());
-                if (pathReadAccessControlService.canAccess(repository, fullPath) && posixReadAccessControlService.canAccess(repository, fullPath)) {
+                if (readAccessControlService.canAccess(repository, fullPath)) {
                     if (craneResource instanceof CraneFile craneFile) {
                         craneFiles.add(craneFile);
                     } else if (craneResource instanceof CraneDirectory craneDirectory) {
@@ -81,16 +75,16 @@ public class IndexPageService {
         }
 
         // check user write access
-        boolean hasWriteAccess = pathWriteAccessControlService.canAccess(repository, path.toString()) && posixWriteAccessControlService.canAccess(repository, path.toString());
+        boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, path.toString());
 
         // breadcrumbs
         List<CraneResource> breadcrumbs = new ArrayList<>();
         Path current = path;
-        CraneResource resource = CraneResource.createFromPath(current, repository, pathWriteAccessControlService, posixWriteAccessControlService);
+        CraneResource resource = CraneResource.createFromPath(current, repository, uploadAccessControlService);
         while (resource != null && current != null && !current.toString().equals(repository.getStoragePath().toString())) {
             breadcrumbs.add(0, resource);
             current = current.getParent();
-            resource = CraneResource.createFromPath(current, repository, pathWriteAccessControlService, posixWriteAccessControlService);
+            resource = CraneResource.createFromPath(current, repository, uploadAccessControlService);
         }
         breadcrumbs.add(0, resource);
 

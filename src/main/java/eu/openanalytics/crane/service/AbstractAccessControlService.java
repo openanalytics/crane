@@ -30,6 +30,14 @@ public abstract class AbstractAccessControlService {
     protected AbstractAuditingService auditingService;
     protected UserService userService;
 
+    public boolean canAccess(Repository repository, String path) {
+        boolean canAccess = pathAccessControlService.canAccess(repository, path) && posixAccessControlService.canAccess(repository, path);
+        if (!canAccess) {
+            auditingService.createAuthorizationDeniedEvent(userService.getUser());
+        }
+        return canAccess;
+    }
+
     public boolean canAccess(String repository, String path) {
         boolean canAccess = pathAccessControlService.canAccess(repository, path) && posixAccessControlService.canAccess(repository, path);
         if (!canAccess) {

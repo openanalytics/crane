@@ -24,11 +24,10 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.DeleteTask;
 import eu.openanalytics.crane.upload.UploadAccessControlService;
 import eu.openanalytics.crane.util.ExecutorServiceFactory;
-import org.carlspring.cloud.storage.s3fs.S3Path;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -44,9 +43,8 @@ import java.util.concurrent.ExecutorService;
 @Service
 public class DeletionService {
     private final ExecutorService executor = ExecutorServiceFactory.create("DeletionService");
-    private record StateEntry(String initiator, long totalFiles) {}
     private final UploadAccessControlService uploadAccessControlService;
-    protected UserService userService;
+    private final UserService userService;
     private final Map<Path, StateEntry> state;
 
     public DeletionService(UploadAccessControlService uploadAccessControlService, UserService userService) {
@@ -58,7 +56,7 @@ public class DeletionService {
     public Map<String, Object> initDeletion(Repository repository, Path path) throws InterruptedException, IOException, IllegalAccessException {
         if (!Files.isDirectory(path)) {
             if (path.toString().startsWith("s3://")) {
-                deleteS3Object(path);
+                throw new NotImplementedException("S3 deletion not implemented yet");
             } else if (path.toString().startsWith("/")) {
                 boolean deleted = path.toFile().delete();
                 if (!deleted) {
@@ -69,11 +67,11 @@ public class DeletionService {
             }
             return Map.of("message", "File deletion succeeded");
         } else if (Files.isDirectory(path) && !state.containsKey(path)) {
-            CountFiles countFiles = new CountFiles(repository);
+            CountFiles countFiles = new CountFiles(repository, uploadAccessControlService);
             Files.walkFileTree(path, countFiles);
             Authentication authentication = userService.getUser();
             DeleteTask deleteTask = new DeleteTask(uploadAccessControlService, repository, path, authentication);
-            executor.execute(deleteTask::start);
+            executor.execute(deleteTask::startDeletion);
             StateEntry stateEntry = new StateEntry(authentication.getName(), countFiles.count);
             state.put(path, stateEntry);
         } else if (state.containsKey(path) && !state.get(path).initiator.equals(userService.getUser().getName())) {
@@ -84,7 +82,7 @@ public class DeletionService {
 
     public Map<String, Object> getProgress(Repository repository, Path path) throws IOException {
         long totalFiles = state.get(path).totalFiles;
-        CountFiles remainingFiles = new CountFiles(repository);
+        CountFiles remainingFiles = new CountFiles(repository, uploadAccessControlService);
         Files.walkFileTree(path, remainingFiles);
         long todo = remainingFiles.count;
         long deleted = totalFiles - remainingFiles.count;
@@ -94,11 +92,13 @@ public class DeletionService {
         return Map.of("todo", Map.of("files", todo), "deleted", Map.of("files", deleted));
     }
 
-    private class CountFiles extends SimpleFileVisitor<Path> {
+    private static class CountFiles extends SimpleFileVisitor<Path> {
         private final Repository repository;
+        private final UploadAccessControlService uploadAccessControlService;
         private long count = 0;
-        public CountFiles(Repository repository) {
+        public CountFiles(Repository repository, UploadAccessControlService uploadAccessControlService) {
             this.repository = repository;
+            this.uploadAccessControlService = uploadAccessControlService;
         }
 
         private void count() {
@@ -107,7 +107,7 @@ public class DeletionService {
 
         @Override
         public @NotNull FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attributes) {
-            if (!uploadAccessControlService.canAccess(repository.getName(), dir.toString())) {
+            if (!uploadAccessControlService.canAccess(repository, dir.toString())) {
                 return FileVisitResult.SKIP_SUBTREE;
             }
             return FileVisitResult.CONTINUE;
@@ -115,7 +115,7 @@ public class DeletionService {
 
         @Override
         public @NotNull FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attributes) {
-            if (!uploadAccessControlService.canAccess(repository.getName(), file.toString())) {
+            if (!uploadAccessControlService.canAccess(repository, file.toString())) {
                 return FileVisitResult.CONTINUE;
             }
             count();
@@ -128,13 +128,5 @@ public class DeletionService {
             return FileVisitResult.CONTINUE;
         }
     }
-    private void deleteS3Object(Path path) {
-        S3Path s3Path = (S3Path) path;
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(s3Path.getBucketName())
-                .key(s3Path.getKey())
-                .build();
-
-//        client.deleteObject(deleteObjectRequest);
-    }
+    private record StateEntry(String initiator, long totalFiles) {}
 }
