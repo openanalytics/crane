@@ -266,6 +266,10 @@ button.dt-button[tabindex='0'] {
 }
 
 
+button:not([disabled]) {
+    cursor: pointer;
+}
+
 button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
     background-color: #32a6d37a;
 }
@@ -287,7 +291,6 @@ button.cancel:not([disabled]):hover, button.retry:not([disabled]):hover {
 button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardContent-addMore:disabled {
     background-color: #b7b7b7;
     color: rgb(0, 0, 0);
-    cursor: default;
 }
 
 button.danger:hover {
