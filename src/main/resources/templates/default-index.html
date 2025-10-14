@@ -72,14 +72,23 @@
             <td><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
             <td></td>
             <td></td>
-            <td><button th:if="${hasWriteAccess}" th:data-filename="${directory.name}" type="button" class="delete-button danger button"><img th:src="@{'/__assets/svg/trash-can.svg'}"></button></td>
+            <td>
+            <button th:if="${directory.hasWriteAccess && !directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.hasWriteAccess}" type="button" class="delete-button danger button" title="Delete directory">
+                <img th:src="@{'/__assets/svg/trash-can.svg'}" >
+            </button>
+            <button th:if="${directory.hasWriteAccess && directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.hasWriteAccess}" type="button" class="delete-button danger button" title="Clean directory">
+                <img th:src="@{'/__assets/svg/broom.svg'}">
+            </button>
+        </td>
         </tr>
 
         <tr th:each="file : ${files}">
             <td><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
             <td th:text="${file.lastModifiedTime}"></td>
             <td th:text="${file.formattedSize}"></td>
-            <td><button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button"><img th:src="@{'/__assets/svg/trash-can.svg'}"></button></td>
+            <td><button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button" title="Delete file">
+                <img th:src="@{'/__assets/svg/trash-can.svg'}">
+            </button></td>
         </tr>
         </tbody>
 
@@ -306,8 +315,12 @@
         const deleteButtons = document.querySelectorAll("button.delete-button");
         for (let deleteButton of deleteButtons) {
             deleteButton.addEventListener("click", () => {
-                if (window.confirm(`Are you sure you want to delete the file ${deleteButton.dataset.filename}?`)){
-                    deleteObject(deleteButton.dataset.filename);
+                const objectName = deleteButton.dataset.filename !== undefined ? deleteButton.dataset.filename : deleteButton.dataset.dirname;
+                const action = deleteButton.dataset.ispathcomponent === 'true' ? 'clean' : 'delete';
+                const fileType = deleteButton.dataset.filename ? 'file' : 'directory';
+                const message = `Are you sure you want to ${action} the '${objectName}' ${fileType}?`
+                if (window.confirm(message)) {
+                    deleteObject(objectName);
                 }
             });
         }

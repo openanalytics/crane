@@ -51,7 +51,9 @@ public class DeleteTask extends SimpleFileVisitor<Path> {
 
     @Override
     public @NotNull FileVisitResult postVisitDirectory(Path dir, IOException exception) {
-        delete(dir);
+        if (!CraneResource.isPathComponent(dir, repository)) {
+            delete(dir);
+        }
         return FileVisitResult.CONTINUE;
     }
 
