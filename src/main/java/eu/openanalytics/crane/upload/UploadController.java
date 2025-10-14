@@ -162,7 +162,7 @@ public class UploadController {
             return ApiResponse.failConflict(Map.of("message", e.getMessage()));
         }
     }
-    
+
     private void setPathAttribute(Path parent, Path path) throws IOException {
         Map<String, Object> pathAttributes = Files.readAttributes(parent, "unix:owner,uid,gid,permissions");
         for (String attr : pathAttributes.keySet()) {
