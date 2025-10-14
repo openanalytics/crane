@@ -137,7 +137,7 @@
             headers: {[csrfHeader]: csrfToken}
         }).then(async (resp) => {
             if (resp.ok) {
-                location.reload();
+                location.replace(url);
                 return;
             }
             let error;
