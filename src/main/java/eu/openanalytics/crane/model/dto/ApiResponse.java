@@ -67,6 +67,11 @@ public class ApiResponse<T> {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>("error", "not found"));
     }
 
+    // conflict request
+    public static <T> ResponseEntity<ApiResponse<T>> failConflict(Object data) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse<>("fail", data));
+    }
+
     // invalid request
     public static <T> ResponseEntity<ApiResponse<T>> fail(Object data) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>("fail", data));

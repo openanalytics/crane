@@ -144,7 +144,8 @@ public class UploadController {
 
         if (!Files.exists(path)) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
-            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
+            String fileType = Files.isDirectory(path) ? "Directory" : "File";
+            return ApiResponse.fail(Map.of("message", "%s %s doesn't exist".formatted(fileType, stringRepository + stringPath)));
         }
         try {
             Map<String, Object> progress = deletionService.initDeletion(repository, path);
@@ -156,6 +157,9 @@ public class UploadController {
         } catch (IOException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File deletion failed"));
+        } catch (IllegalAccessException e) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.CONFLICT);
+            return ApiResponse.failConflict(Map.of("message", e.getMessage()));
         }
     }
     

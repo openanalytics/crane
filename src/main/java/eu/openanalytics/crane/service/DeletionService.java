@@ -55,7 +55,7 @@ public class DeletionService {
         this.state = new HashMap<>();
     }
 
-    public Map<String, Object> initDeletion(Repository repository, Path path) throws InterruptedException, IOException {
+    public Map<String, Object> initDeletion(Repository repository, Path path) throws InterruptedException, IOException, IllegalAccessException {
         if (!Files.isDirectory(path)) {
             if (path.toString().startsWith("s3://")) {
                 deleteS3Object(path);
@@ -76,10 +76,11 @@ public class DeletionService {
             executor.execute(deleteTask::start);
             StateEntry stateEntry = new StateEntry(authentication.getName(), countFiles.count);
             state.put(path, stateEntry);
+        } else if (state.containsKey(path) && !state.get(path).initiator.equals(userService.getUser().getName())) {
+            throw new IllegalAccessException("This directory is already being deleted");
         }
         return getProgress(repository, path);
     }
-
 
     public Map<String, Object> getProgress(Repository repository, Path path) throws IOException {
         long totalFiles = state.get(path).totalFiles;
