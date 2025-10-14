@@ -45,7 +45,8 @@ public class IndexPageService {
     private final PathWriteAccessControlService pathWriteAccessControlService;
     private final PosixWriteAccessControlService posixWriteAccessControlService;
 
-    public IndexPageService(PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
+    public IndexPageService(PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, PathWriteAccessControlService pathWriteAccessControlService,
+                            PosixWriteAccessControlService posixWriteAccessControlService) {
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
         this.pathWriteAccessControlService = pathWriteAccessControlService;
@@ -61,7 +62,7 @@ public class IndexPageService {
         List<CraneDirectory> craneDirectories = new ArrayList<>();
         try (Stream<Path> dirListing = Files.list(path)) {
             dirListing.forEach(p -> {
-                CraneResource craneResource = CraneResource.createFromPath(p, repository);
+                CraneResource craneResource = CraneResource.createFromPath(p, repository, pathWriteAccessControlService, posixWriteAccessControlService);
                 if (craneResource == null) {
                     // TODO
                     return;
@@ -85,11 +86,11 @@ public class IndexPageService {
         // breadcrumbs
         List<CraneResource> breadcrumbs = new ArrayList<>();
         Path current = path;
-        CraneResource resource = CraneResource.createFromPath(current, repository);
+        CraneResource resource = CraneResource.createFromPath(current, repository, pathWriteAccessControlService, posixWriteAccessControlService);
         while (resource != null && current != null && !current.toString().equals(repository.getStoragePath().toString())) {
             breadcrumbs.add(0, resource);
             current = current.getParent();
-            resource = CraneResource.createFromPath(current, repository);
+            resource = CraneResource.createFromPath(current, repository, pathWriteAccessControlService, posixWriteAccessControlService);
         }
         breadcrumbs.add(0, resource);
 

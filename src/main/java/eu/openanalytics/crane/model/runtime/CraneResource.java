@@ -20,21 +20,42 @@
  */
 package eu.openanalytics.crane.model.runtime;
 
+import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.upload.PathWriteAccessControlService;
+import eu.openanalytics.crane.upload.PosixWriteAccessControlService;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Iterator;
+import java.util.Optional;
 
 public interface CraneResource {
 
-    public static CraneResource createFromPath(Path path, Repository repository) {
+    public static boolean isPathComponent(Path path, Repository repository) {
+        Path relativePath = repository.getStoragePath().getParent().relativize(path);
+        Iterator<Path> pathIterator = relativePath.iterator();
+        pathIterator.next();
+        Optional<PathComponent> parentPathComponent = Optional.of(repository);
+        while (pathIterator.hasNext() && parentPathComponent.isPresent()) {
+            Path nextPath = pathIterator.next();
+            parentPathComponent = parentPathComponent.get().getPath(nextPath.toString());
+        }
+        return !pathIterator.hasNext() && parentPathComponent.isPresent();
+    }
+
+    public static CraneResource createFromPath(Path path, Repository repository, PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService) {
         try {
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
 
             if (attributes.isDirectory()) {
-                return new CraneDirectory(path.getFileName().toString(), "/" + repository.getStoragePath().getParent().relativize(path));
+                boolean isPathComponent = isPathComponent(path, repository);
+                String relativePath = "/" + repository.getStoragePath().getParent().relativize(path);
+                String subPathString = repository.getStoragePath().relativize(path).toString();
+                boolean hasWriteAccess = pathWriteAccessControlService.canAccess(repository, subPathString) && posixWriteAccessControlService.canAccess(repository, subPathString);
+                return new CraneDirectory(path.getFileName().toString(), relativePath, isPathComponent, hasWriteAccess);
             } else {
                 return new CraneFile(path.getFileName().toString(), attributes.lastModifiedTime().toInstant(), attributes.size());
             }

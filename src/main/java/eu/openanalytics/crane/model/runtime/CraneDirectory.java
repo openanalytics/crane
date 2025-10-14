@@ -24,10 +24,14 @@ public class CraneDirectory implements CraneResource {
 
     private final String name;
     private final String path;
+    private final boolean isPathComponent;
+    private final boolean hasWriteAccess;
 
-    public CraneDirectory(String name, String path) {
+    public CraneDirectory(String name, String path, boolean isPathComponent, boolean hasWriteAccess) {
         this.name = name;
         this.path = path;
+        this.isPathComponent = isPathComponent;
+        this.hasWriteAccess = hasWriteAccess;
     }
 
     @Override
@@ -38,5 +42,13 @@ public class CraneDirectory implements CraneResource {
     public String getPath() {
         // path relative to crane root
         return path;
+    }
+
+    public boolean isPathComponent() {
+        return isPathComponent;
+    }
+
+    public boolean hasWriteAccess() {
+        return hasWriteAccess;
     }
 }
