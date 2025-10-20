@@ -38,7 +38,7 @@ public interface CraneResource {
     public static boolean isPathComponent(Path path, Repository repository) {
         Iterator<Path> pathIterator = repository.getStoragePath().relativize(path).iterator();
         Optional<PathComponent> pathComponent = Optional.of(repository);
-        while (pathIterator.hasNext() && pathComponent.isPresent()) {
+        while (pathIterator.hasNext() && pathComponent.isPresent() && pathComponent.get().hasPaths()) {
             Path nextPath = pathIterator.next();
             pathComponent = pathComponent.get().getPath(nextPath.toString());
         }
