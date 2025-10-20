@@ -136,7 +136,7 @@ public class UploadController {
     @PreAuthorize("@uploadAccessControlService.canAccess(#r, #p)")
     @ResponseBody
     @DeleteMapping(value = "/__file/{repository}/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteResource(HttpServletRequest request,
+    public ResponseEntity<ApiResponse<Object>> deleteResource(HttpServletRequest request,
                                                                            @P("r") @PathVariable(name = "repository") String stringRepository,
                                                                            @P("p") @PathVariable(name = "path") String stringPath) {
         Repository repository = config.getRepository(stringRepository);
@@ -144,13 +144,13 @@ public class UploadController {
 
         if (!Files.exists(path)) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
-            String fileType = Files.isDirectory(path) ? "Directory" : "File";
-            return ApiResponse.fail(Map.of("message", "%s %s doesn't exist".formatted(fileType, stringRepository + stringPath)));
+            deletionService.removeFromState(path);
+            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
         }
         try {
-            Map<String, Object> progress = deletionService.initDeletion(repository, path);
+            DeletionService.Progress progress = deletionService.initDeletion(repository, path);
             auditingService.createUploadAuditEvent(request);
-            return ApiResponse.success(progress);
+            return ApiResponse.accepted(progress);
         } catch (InterruptedException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "Directory deletion was interrupted"));

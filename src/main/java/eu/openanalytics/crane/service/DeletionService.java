@@ -24,7 +24,6 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.DeleteTask;
 import eu.openanalytics.crane.upload.UploadAccessControlService;
 import eu.openanalytics.crane.util.ExecutorServiceFactory;
-import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -53,20 +52,8 @@ public class DeletionService {
         this.state = new HashMap<>();
     }
 
-    public Map<String, Object> initDeletion(Repository repository, Path path) throws InterruptedException, IOException, IllegalAccessException {
-        if (!Files.isDirectory(path)) {
-            if (path.toString().startsWith("s3://")) {
-                throw new NotImplementedException("S3 deletion not implemented yet");
-            } else if (path.toString().startsWith("/")) {
-                boolean deleted = path.toFile().delete();
-                if (!deleted) {
-                    throw new IOException();
-                }
-            } else {
-                throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
-            }
-            return Map.of("message", "File deletion succeeded");
-        } else if (Files.isDirectory(path) && !state.containsKey(path)) {
+    public Progress initDeletion(Repository repository, Path path) throws InterruptedException, IOException, IllegalAccessException {
+        if (!state.containsKey(path)) {
             CountFiles countFiles = new CountFiles(repository, uploadAccessControlService);
             Files.walkFileTree(path, countFiles);
             Authentication authentication = userService.getUser();
@@ -80,16 +67,24 @@ public class DeletionService {
         return getProgress(repository, path);
     }
 
-    public Map<String, Object> getProgress(Repository repository, Path path) throws IOException {
-        long totalFiles = state.get(path).totalFiles;
-        CountFiles remainingFiles = new CountFiles(repository, uploadAccessControlService);
-        Files.walkFileTree(path, remainingFiles);
-        long todo = remainingFiles.count;
-        long deleted = totalFiles - remainingFiles.count;
-        if (todo == 0) {
-            state.remove(path);
+    public Progress getProgress(Repository repository, Path path) throws IOException {
+        if (state.containsKey(path)) {
+            long totalFiles = state.get(path).totalFiles;
+            CountFiles remainingFiles = new CountFiles(repository, uploadAccessControlService);
+            Files.walkFileTree(path, remainingFiles);
+            long todo = remainingFiles.count;
+            long deleted = totalFiles - remainingFiles.count;
+            if (todo == 0) {
+                state.remove(path);
+            }
+            return new Progress(todo, deleted);
+        } else {
+            throw new IOException("File %s doesn't exist".formatted(path.toString()));
         }
-        return Map.of("todo", Map.of("files", todo), "deleted", Map.of("files", deleted));
+    }
+
+    public void removeFromState(Path path) {
+        state.remove(path);
     }
 
     private static class CountFiles extends SimpleFileVisitor<Path> {
@@ -123,10 +118,11 @@ public class DeletionService {
         }
 
         @Override
-        public FileVisitResult visitFileFailed(Path file,
-                                               IOException exc) {
+        public @NotNull FileVisitResult visitFileFailed(Path file,
+                                                        @NotNull IOException exc) {
             return FileVisitResult.CONTINUE;
         }
     }
     private record StateEntry(String initiator, long totalFiles) {}
+    public record Progress(long todo, long deleted) {}
 }

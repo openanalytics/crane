@@ -40,6 +40,10 @@ public class ApiResponse<T> {
         return ResponseEntity.ok(new ApiResponse<>("success", data));
     }
 
+    public static <T> ResponseEntity<ApiResponse<T>> accepted(T data) {
+        return ResponseEntity.accepted().body(new ApiResponse<>("accepted", data));
+    }
+
     public static <T> ResponseEntity<ApiResponse<T>> created(T data) {
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>("success", data));
     }
