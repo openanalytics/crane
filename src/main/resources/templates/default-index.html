@@ -73,22 +73,26 @@
             <td></td>
             <td></td>
             <td>
-            <button th:if="${directory.hasWriteAccess && !directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.hasWriteAccess}" type="button" class="delete-button danger button" title="Delete directory">
-                <img th:src="@{'/__assets/svg/trash-can.svg'}" >
-            </button>
-            <button th:if="${directory.hasWriteAccess && directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.hasWriteAccess}" type="button" class="delete-button danger button" title="Clean directory">
-                <img th:src="@{'/__assets/svg/broom.svg'}">
-            </button>
-        </td>
+                <button th:if="${directory.hasWriteAccess && !directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.hasWriteAccess}" type="button" class="delete-button danger button" title="Delete directory">
+                    <img th:src="@{'/__assets/svg/trash-can.svg'}" >
+                </button>
+                <button th:if="${directory.hasWriteAccess && directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.hasWriteAccess}" type="button" class="delete-button danger button" title="Clean directory">
+                    <img th:src="@{'/__assets/svg/broom.svg'}">
+                </button>
+                <span class="delete-info" th:id="${'progress-' + directory.name}"></span>
+            </td>
         </tr>
 
         <tr th:each="file : ${files}">
             <td><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
             <td th:text="${file.lastModifiedTime}"></td>
             <td th:text="${file.formattedSize}"></td>
-            <td><button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button" title="Delete file">
-                <img th:src="@{'/__assets/svg/trash-can.svg'}">
-            </button></td>
+            <td>
+                <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button" title="Delete file">
+                    <img th:src="@{'/__assets/svg/trash-can.svg'}">
+                </button>
+                <span class="delete-info" th:id="${'progress-' + file.name}"></span>
+            </td>
         </tr>
         </tbody>
 
@@ -161,24 +165,66 @@
         createDirectoryButton.disabled = dirNameField.value === "";
     }
 
-    function deleteObject(fileName) {
+    function startDeleting(button, data) {
+        button.classList.add("deleting")
+        let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
+        if (deleteInfo !== null || deleteInfo !== undefined) {
+            deleteInfo.innerText = `${data.deleted}/${data.todo+data.deleted}`
+        }
+    }
+
+    function updateDeleting(button, data) {
+        let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
+        if (deleteInfo !== null || deleteInfo !== undefined) {
+            deleteInfo.innerText = `${data.deleted}/${data.todo+data.deleted}`
+        }
+    }
+
+    function stopDeleting(button, isPathComponent) {
+        let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
+        if (deleteInfo !== null || deleteInfo !== undefined) {
+            deleteInfo.innerText = ""
+        }
+        button.classList.remove("deleting")
+    }
+
+    function otherDeleteInProgress() {
+        let deleteInfos = document.getElementsByClassName("delete-info");
+        for (const deleteInfo of deleteInfos) {
+            if (deleteInfo.innerText !== "") {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function deleteObject(fileName, button) {
         const url = document.URL + fileName;
         const csrfToken = $("meta[name='_csrf']").attr("content");
         const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        const isPathComponent = button.dataset?.ispathcomponent === "true";
         async function deleteObjectAction(url, options) {
             const delay = ms => new Promise(res => setTimeout(res, ms));
             return fetch(url, options).then(async (resp) => {
-            if (resp.status === 202) { 
+            if (resp.status === 202) {
                 let response = resp;
                 let json = await resp.json();
-                console.log(response.status, json.data)
+                startDeleting(button, json.data);
+
                 while (response.status === 202 && json.data.todo !== 0) {
                     await delay(250)
                     response = await fetch(url, options);
                     json = await response.json();
-                    console.log(response.status, json.data)
+                    updateDeleting(button, json.data)
                 }
-                location.reload();
+                let otherInProgress = otherDeleteInProgress()
+                if (!isPathComponent && !otherInProgress) {
+                    location.reload();
+                }
+                if (otherInProgress) {
+                    button.closest("tr").hidden = true;
+                }
+                stopDeleting(button, isPathComponent);
                 return;
             }
             let error;
@@ -333,7 +379,7 @@
                 const fileType = deleteButton.dataset.filename ? 'file' : 'directory';
                 const message = `Are you sure you want to ${action} the '${objectName}' ${fileType}?`
                 if (window.confirm(message)) {
-                    deleteObject(objectName);
+                    deleteObject(objectName, deleteButton);
                 }
             });
         }

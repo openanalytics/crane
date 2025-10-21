@@ -241,6 +241,31 @@ button.dt-button[tabindex='0'] {
     -webkit-animation: loading-animation 2s infinite;
 }
 
+
+@-webkit-keyframes delete-loading-animation {
+  0% {
+    background-color: #e52323;
+  }
+
+  50% {
+    background-color: rgb(228, 136, 136);
+  }
+
+  100% {
+    background-color: #e52323;
+  }
+}
+
+.delete-info {
+    position: relative;
+    top: -3px;
+}
+
+.deleting {
+    -webkit-animation: delete-loading-animation 2s infinite;
+}
+
+
 button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
     background-color: #32a6d37a;
 }
