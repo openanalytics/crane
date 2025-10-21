@@ -34,8 +34,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
 
@@ -44,12 +44,12 @@ public class DeletionService {
     private final ExecutorService executor = ExecutorServiceFactory.create("DeletionService");
     private final UploadAccessControlService uploadAccessControlService;
     private final UserService userService;
-    private final Map<Path, StateEntry> state;
+    private final ConcurrentMap<Path, StateEntry> state;
 
     public DeletionService(UploadAccessControlService uploadAccessControlService, UserService userService) {
         this.uploadAccessControlService = uploadAccessControlService;
         this.userService = userService;
-        this.state = new HashMap<>();
+        this.state = new ConcurrentHashMap<>();
     }
 
     public Progress initDeletion(Repository repository, Path path) throws InterruptedException, IOException, IllegalAccessException {
@@ -57,7 +57,7 @@ public class DeletionService {
             CountFiles countFiles = new CountFiles(repository, uploadAccessControlService);
             Files.walkFileTree(path, countFiles);
             Authentication authentication = userService.getUser();
-            DeleteTask deleteTask = new DeleteTask(uploadAccessControlService, repository, path, authentication);
+            DeleteTask deleteTask = new DeleteTask(this, uploadAccessControlService, repository, path, authentication);
             executor.execute(deleteTask::startDeletion);
             StateEntry stateEntry = new StateEntry(authentication.getName(), countFiles.count);
             state.put(path, stateEntry);

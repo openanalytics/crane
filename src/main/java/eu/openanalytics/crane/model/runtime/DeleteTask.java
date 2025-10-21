@@ -1,6 +1,7 @@
 package eu.openanalytics.crane.model.runtime;
 
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.service.DeletionService;
 import eu.openanalytics.crane.upload.UploadAccessControlService;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
@@ -19,11 +20,13 @@ public class DeleteTask extends SimpleFileVisitor<Path> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final UploadAccessControlService uploadAccessControlService;
+    private final DeletionService deletionService;
     private final Repository repository;
     private final Path path;
     private final Authentication auth;
 
-    public DeleteTask(UploadAccessControlService uploadAccessControlService, Repository repository, Path path, Authentication auth) {
+    public DeleteTask(DeletionService deletionService, UploadAccessControlService uploadAccessControlService, Repository repository, Path path, Authentication auth) {
+        this.deletionService = deletionService;
         this.uploadAccessControlService = uploadAccessControlService;
         this.repository = repository;
         this.path = path;
@@ -33,6 +36,7 @@ public class DeleteTask extends SimpleFileVisitor<Path> {
     public void startDeletion() {
         try {
             Files.walkFileTree(path, this);
+            deletionService.getProgress(repository, path);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
