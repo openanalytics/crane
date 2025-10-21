@@ -218,11 +218,12 @@
                     updateDeleting(button, json.data)
                 }
                 let otherInProgress = otherDeleteInProgress()
-                if (!isPathComponent && !otherInProgress) {
-                    location.reload();
-                }
-                if (otherInProgress) {
-                    button.closest("tr").hidden = true;
+                if (!isPathComponent) {
+                    if (!otherInProgress) {
+                        location.reload();
+                    } else {
+                        button.closest("tr").hidden = true;
+                    }
                 }
                 stopDeleting(button, isPathComponent);
                 return;
