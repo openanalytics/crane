@@ -36,7 +36,7 @@ public class DeleteTask extends SimpleFileVisitor<Path> {
     public void startDeletion() {
         try {
             Files.walkFileTree(path, this);
-            deletionService.getProgress(repository, path);
+            deletionService.removeFromState(path);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
