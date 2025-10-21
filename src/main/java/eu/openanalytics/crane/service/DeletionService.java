@@ -52,7 +52,7 @@ public class DeletionService {
         this.state = new ConcurrentHashMap<>();
     }
 
-    public Progress initDeletion(Repository repository, Path path) throws InterruptedException, IOException, IllegalAccessException {
+    synchronized public Progress initDeletion(Repository repository, Path path) throws InterruptedException, IOException, IllegalAccessException {
         if (!state.containsKey(path)) {
             CountFiles countFiles = new CountFiles(repository, uploadAccessControlService);
             Files.walkFileTree(path, countFiles);
