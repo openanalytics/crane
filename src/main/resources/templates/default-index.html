@@ -167,6 +167,7 @@
 
     function startDeleting(button, data) {
         button.classList.add("deleting")
+        button.disabled = true;
         let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
         if (deleteInfo !== null || deleteInfo !== undefined) {
             deleteInfo.innerText = `${data.deleted}/${data.todo+data.deleted}`
@@ -217,7 +218,8 @@
                     json = await response.json();
                     updateDeleting(button, json.data)
                 }
-                let otherInProgress = otherDeleteInProgress()
+                stopDeleting(button, isPathComponent);
+                const otherInProgress = otherDeleteInProgress()
                 if (!isPathComponent) {
                     if (!otherInProgress) {
                         location.reload();
@@ -225,7 +227,6 @@
                         button.closest("tr").hidden = true;
                     }
                 }
-                stopDeleting(button, isPathComponent);
                 return;
             }
             let error;
