@@ -148,7 +148,7 @@ dialog::backdrop {
 input#file-name, input#upload-input-file, input#directory-name {
     border-radius: .5rem;
     border: solid lightgray 1px;
-    width: -moz-available;
+    width: 100%;
 }
 
 input[type="file"]::file-selector-button {
