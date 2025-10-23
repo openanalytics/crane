@@ -370,6 +370,12 @@
         document.getElementById("directory-name").addEventListener("input", disableCreateDirectory);
         document.getElementById("cancel-create-directory").addEventListener("click", closeCreateDirectoryDialog);
         document.getElementById("create-directory").addEventListener("click", createDirectory);
+        createDirectoryForm.addEventListener('keydown', function (event) {
+            if (event.code === "Enter") {
+                event.preventDefault();
+                createDirectory(event);
+            }
+        });
 
         disableCreateDirectory();
 
