@@ -291,6 +291,7 @@ button.cancel:not([disabled]):hover, button.retry:not([disabled]):hover {
 button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardContent-addMore:disabled {
     background-color: #b7b7b7;
     color: rgb(0, 0, 0);
+    cursor: not-allowed;
 }
 
 button.danger:hover {
