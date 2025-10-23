@@ -244,15 +244,15 @@ button.dt-button[tabindex='0'] {
 
 @-webkit-keyframes delete-loading-animation {
   0% {
-    background-color: #e52323;
+    background-color: #b7b7b7;
   }
 
   50% {
-    background-color: rgb(228, 136, 136);
+    background-color: #f7f7f7;
   }
 
   100% {
-    background-color: #e52323;
+    background-color: #b7b7b7;
   }
 }
 
@@ -285,7 +285,7 @@ button.cancel:not([disabled]):hover, button.retry:not([disabled]):hover {
 }
 
 button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardContent-addMore:disabled {
-    background-color: #e5e5e5;
+    background-color: #b7b7b7;
     color: rgb(0, 0, 0);
     cursor: default;
 }
