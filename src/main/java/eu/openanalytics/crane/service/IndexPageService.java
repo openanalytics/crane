@@ -86,7 +86,8 @@ public class IndexPageService {
             current = current.getParent();
             resource = CraneResource.createFromPath(current, repository, uploadAccessControlService);
         }
-        breadcrumbs.add(0, resource);
+        // add breadcrumb for the repository: always use the name of the repository, not the name of the directory in the storage-location
+        breadcrumbs.add(0,new CraneDirectory(repository.getName(), "/" + repository.getName(), true, false));
 
         Map<String, Object> map = new HashMap<>();
         map.put("files", craneFiles);

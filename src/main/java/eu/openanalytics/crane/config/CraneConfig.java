@@ -22,6 +22,7 @@ package eu.openanalytics.crane.config;
 
 import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.model.config.UserWorkspaceRepository;
 import jakarta.annotation.PostConstruct;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
 import org.carlspring.cloud.storage.s3fs.S3FileSystem;
@@ -68,6 +69,7 @@ public class CraneConfig {
     private static final String OIDC_METADATA_PATH = "/.well-known/openid-configuration";
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private String storageLocation;
+    private String userWorkspaceStorageLocation;
     private String auditLogging;
     private Path auditLoggingPath;
     private String openidIssuerUri;
@@ -130,6 +132,9 @@ public class CraneConfig {
                 r.setStoragePath(storageLocationToPath(validateRepositoryStorageLocation(r.getStorageLocation(), r.getName())));
             }
             r.init();
+        }
+        if (userWorkspaceStorageLocation != null) {
+            repositories.put("Workspace", new UserWorkspaceRepository(userWorkspaceStorageLocation, storageLocationToPath(userWorkspaceStorageLocation)));
         }
         close();
     }
@@ -245,7 +250,7 @@ public class CraneConfig {
     public String getJwksUri() {
         // Create a temporary clientRegistration (with bogus clientId) in order to fetch metadata
         ClientRegistration clientRegistration = ClientRegistrations
-                .fromIssuerLocation(getOpenidIssuerUri()).clientId("bogus").build();
+            .fromIssuerLocation(getOpenidIssuerUri()).clientId("bogus").build();
         return clientRegistration.getProviderDetails().getJwkSetUri();
     }
 
@@ -257,8 +262,8 @@ public class CraneConfig {
         URI issuer = URI.create(openidIssuerUri);
 
         return UriComponentsBuilder.fromUri(issuer)
-                .replacePath(issuer.getPath() + OIDC_METADATA_PATH)
-                .build(Collections.emptyMap()).toString();
+            .replacePath(issuer.getPath() + OIDC_METADATA_PATH)
+            .build(Collections.emptyMap()).toString();
     }
 
     public Collection<Repository> getRepositories() {
@@ -373,7 +378,7 @@ public class CraneConfig {
             return true;
         }
         for (Repository repository : repositories.values()) {
-            if (repository.getStoragePath().getFileSystem() instanceof S3FileSystem) {
+            if (repository.usesS3()) {
                 return true;
             }
         }
@@ -386,5 +391,13 @@ public class CraneConfig {
 
     public boolean isOnlyPublic() {
         return onlyPublic;
+    }
+
+    public String getUserWorkspaceStorageLocation() {
+        return userWorkspaceStorageLocation;
+    }
+
+    public void setUserWorkspaceStorageLocation(String userWorkspaceStorageLocation) {
+        this.userWorkspaceStorageLocation = userWorkspaceStorageLocation;
     }
 }

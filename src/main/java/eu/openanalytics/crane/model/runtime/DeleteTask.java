@@ -43,6 +43,7 @@ public class DeleteTask extends SimpleFileVisitor<Path> {
     private final DeletionService deletionService;
     private final Repository repository;
     private final Path path;
+    private final Path storagePath;
     private final Authentication auth;
 
     public DeleteTask(DeletionService deletionService, UploadAccessControlService uploadAccessControlService, Repository repository, Path path, Authentication auth) {
@@ -51,6 +52,7 @@ public class DeleteTask extends SimpleFileVisitor<Path> {
         this.repository = repository;
         this.path = path;
         this.auth = auth;
+        storagePath = repository.getStoragePath();
     }
 
     public void startDeletion() {
@@ -63,24 +65,24 @@ public class DeleteTask extends SimpleFileVisitor<Path> {
     }
 
     @Override
-    public @NotNull FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attributes) {
-        if (!uploadAccessControlService.canAccess(repository, "/" + repository.getStoragePath().relativize(dir), auth)) {
+    public @NotNull FileVisitResult preVisitDirectory(@NotNull Path dir, @NotNull BasicFileAttributes attributes) {
+        if (!uploadAccessControlService.canAccess(repository, "/" + storagePath.relativize(dir), auth)) {
             return FileVisitResult.SKIP_SUBTREE;
         }
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public @NotNull FileVisitResult postVisitDirectory(Path dir, IOException exception) {
-        if (!CraneResource.isPathComponent(dir, repository)) {
+    public @NotNull FileVisitResult postVisitDirectory(@NotNull Path dir, IOException exception) {
+        if (!CraneResource.isPathComponent(dir, storagePath, repository)) {
             delete(dir);
         }
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public @NotNull FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attributes) {
-        if (!uploadAccessControlService.canAccess(repository, "/" + repository.getStoragePath().relativize(file), auth)) {
+    public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attributes) {
+        if (!uploadAccessControlService.canAccess(repository, "/" + storagePath.relativize(file), auth)) {
             return FileVisitResult.CONTINUE;
         }
         delete(file);

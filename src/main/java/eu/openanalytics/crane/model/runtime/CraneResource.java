@@ -22,8 +22,6 @@ package eu.openanalytics.crane.model.runtime;
 
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.model.config.Repository;
-import eu.openanalytics.crane.upload.PathWriteAccessControlService;
-import eu.openanalytics.crane.upload.PosixWriteAccessControlService;
 import eu.openanalytics.crane.upload.UploadAccessControlService;
 
 import java.io.IOException;
@@ -35,8 +33,8 @@ import java.util.Optional;
 
 public interface CraneResource {
 
-    public static boolean isPathComponent(Path path, Repository repository) {
-        Iterator<Path> pathIterator = repository.getStoragePath().relativize(path).iterator();
+    public static boolean isPathComponent(Path path, Path storagePath, Repository repository) {
+        Iterator<Path> pathIterator = storagePath.relativize(path).iterator();
         Optional<PathComponent> pathComponent = Optional.of(repository);
         while (pathIterator.hasNext() && pathComponent.isPresent() && pathComponent.get().hasPaths()) {
             Path nextPath = pathIterator.next();
@@ -50,11 +48,10 @@ public interface CraneResource {
             BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
 
             if (attributes.isDirectory()) {
-                boolean isPathComponent = isPathComponent(path, repository);
-                String pathRelativeToRoot = "/" + repository.getStoragePath().getParent().relativize(path);
+                boolean isPathComponent = isPathComponent(path, repository.getStoragePath(), repository);
                 String pathRelativeToRepository = repository.getStoragePath().relativize(path).toString();
                 boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, pathRelativeToRepository);
-                return new CraneDirectory(path.getFileName().toString(), pathRelativeToRoot, isPathComponent, hasWriteAccess);
+                return new CraneDirectory(path.getFileName().toString(), "/" + repository.getName() + "/" + pathRelativeToRepository, isPathComponent, hasWriteAccess);
             } else {
                 return new CraneFile(path.getFileName().toString(), attributes.lastModifiedTime().toInstant(), attributes.size());
             }
