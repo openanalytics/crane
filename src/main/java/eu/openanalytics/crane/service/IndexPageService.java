@@ -75,7 +75,7 @@ public class IndexPageService {
         }
 
         // check user write access
-        boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, path.toString());
+        boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, path.toString().substring(repository.getStorageLocation().length()));
 
         // breadcrumbs
         List<CraneResource> breadcrumbs = new ArrayList<>();
