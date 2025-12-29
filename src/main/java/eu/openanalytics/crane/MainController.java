@@ -31,6 +31,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,12 +46,15 @@ public class MainController extends BaseUIController {
     private final PathReadAccessControlService pathReadAccessControlService;
     private final PosixReadAccessControlService posixReadAccessControlService;
     private final AuditingService auditingService;
+    private final UserService userService;
 
-    public MainController(CraneConfig config, UserService userService, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, AuditingService auditingService) {
+    public MainController(CraneConfig config, UserService userService, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, AuditingService auditingService,
+                          UserService userService1) {
         super(userService, config);
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
         this.auditingService = auditingService;
+        this.userService = userService1;
     }
 
     @GetMapping("/.well-known/configured-openid-configuration")
@@ -64,9 +68,9 @@ public class MainController extends BaseUIController {
         boolean authenticated = userService.isAuthenticated();
 
         List<String> repositories = config.getRepositories().stream()
-                .filter(r -> pathReadAccessControlService.canAccess(r.getName(), "/") && posixReadAccessControlService.canAccess(r.getName(), "/"))
-                .map(Repository::getName)
-                .collect(Collectors.toList());
+            .filter(r -> pathReadAccessControlService.canAccess(r.getName(), "/") && posixReadAccessControlService.canAccess(r.getName(), "/"))
+            .map(Repository::getName)
+            .collect(Collectors.toList());
 
         auditingService.createListRepositoriesAuditEvent(request);
 
@@ -84,13 +88,32 @@ public class MainController extends BaseUIController {
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRepositoriesAsJson(HttpServletRequest request) {
         return ApiResponse.success(
-                Map.of(
-                        "directories",
-                        config.getRepositories().stream()
-                                .filter(r -> pathReadAccessControlService.canAccess(r.getName(), "/") && posixReadAccessControlService.canAccess(r.getName(), "/"))
-                                .map(Repository::getName)
-                                .toList()
-                )
+            Map.of(
+                "directories",
+                config.getRepositories().stream()
+                    .filter(r -> pathReadAccessControlService.canAccess(r.getName(), "/") && posixReadAccessControlService.canAccess(r.getName(), "/"))
+                    .map(Repository::getName)
+                    .toList()
+            )
         );
     }
+
+    @ResponseBody
+    @GetMapping(value = "/__user/me", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUserMetadata() {
+        if (!userService.isAuthenticated()) {
+            return ApiResponse.success(
+                Map.of("authenticated", false)
+            );
+        }
+        Authentication user = userService.getUser();
+        return ApiResponse.success(
+            Map.of(
+                "authenticated", true,
+                "username", user.getName(),
+                "groups", UserService.getGroups(user)
+            )
+        );
+    }
+
 }

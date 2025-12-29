@@ -30,6 +30,9 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -45,18 +48,18 @@ public class UserService {
 
     public String getLoginPath() {
         return ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path(OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI)
-                .path("/")
-                .path(clientRegistrationId)
-                .build().getPath();
+            .path(OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI)
+            .path("/")
+            .path(clientRegistrationId)
+            .build().getPath();
     }
 
     public String getLoginUrl() {
         return ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path(OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI)
-                .path("/")
-                .path(clientRegistrationId)
-                .build().toString();
+            .path(OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI)
+            .path("/")
+            .path(clientRegistrationId)
+            .build().toString();
     }
 
     public boolean isAuthenticated() {
@@ -80,4 +83,19 @@ public class UserService {
         }
         return false;
     }
+
+    public static List<String> getGroups(Authentication auth) {
+        List<String> groups = new ArrayList<>();
+        if (auth != null) {
+            for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
+                String authName = grantedAuth.getAuthority().toUpperCase();
+                if (authName.startsWith("ROLE_")) {
+                    authName = authName.substring(5);
+                }
+                groups.add(authName);
+            }
+        }
+        return groups;
+    }
+
 }
