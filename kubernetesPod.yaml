@@ -28,7 +28,7 @@ spec:
           memory: "4Gi"
           cpu: "1.5"
     - name: docker
-      image: docker:dind
+      image: docker:28-dind
       securityContext:
         privileged: true
       env:
