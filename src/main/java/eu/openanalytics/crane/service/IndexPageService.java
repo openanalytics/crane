@@ -61,7 +61,7 @@ public class IndexPageService {
                     // TODO
                     return;
                 }
-                String fullPath = p.toString().substring(repository.getStorageLocation().length());
+                String fullPath = "/" + repository.getStoragePath().relativize(p);
                 if (readAccessControlService.canAccess(repository, fullPath)) {
                     if (craneResource instanceof CraneFile craneFile) {
                         craneFiles.add(craneFile);
@@ -75,7 +75,7 @@ public class IndexPageService {
         }
 
         // check user write access
-        boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, path.toString().substring(repository.getStorageLocation().length()));
+        boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, "/" + repository.getStoragePath().relativize(path));
 
         // breadcrumbs
         List<CraneResource> breadcrumbs = new ArrayList<>();

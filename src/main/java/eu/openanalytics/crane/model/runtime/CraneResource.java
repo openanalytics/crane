@@ -49,7 +49,7 @@ public interface CraneResource {
 
             if (attributes.isDirectory()) {
                 boolean isPathComponent = isPathComponent(path, repository.getStoragePath(), repository);
-                String pathRelativeToRepository = path.toString().substring(repository.getStorageLocation().length());
+                String pathRelativeToRepository = "/" + repository.getStoragePath().relativize(path);
                 boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, pathRelativeToRepository);
                 return new CraneDirectory(path.getFileName().toString(), "/" + repository.getName() + "/" + pathRelativeToRepository, isPathComponent, hasWriteAccess);
             } else {
