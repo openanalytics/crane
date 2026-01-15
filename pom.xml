@@ -5,9 +5,10 @@
 
     <groupId>eu.openanalytics</groupId>
     <artifactId>crane</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>Crane</name>
     <packaging>jar</packaging>
+    <inceptionYear>2021</inceptionYear>
 
     <organization>
         <name>Open Analytics NV</name>
@@ -17,7 +18,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.4.13</version>
         <relativePath/>
     </parent>
 
@@ -27,6 +28,26 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <finalName>${project.artifactId}-${project.version}</finalName>
+        <!-- Dependency versions -->
+        <commons-fileupload2-jakarta-servlet6.version>2.0.0-M4</commons-fileupload2-jakarta-servlet6.version>
+        <commons-lang.version>3.18.0</commons-lang.version>
+        <datatables-buttons.version>3.1.2</datatables-buttons.version>
+        <datatables-responsive.version>2.2.7</datatables-responsive.version>
+        <datatables.version>2.0.3</datatables.version>
+        <javax-json-api.version>1.1.4</javax-json-api.version>
+        <jquery.version>3.7.1</jquery.version>
+        <okhttp.version>4.12.0</okhttp.version>
+        <s3fs-nio.version>1.0.4</s3fs-nio.version>
+        <tika-core.version>3.2.3</tika-core.version>
+        <!-- Test dependency versions -->
+        <testcontainers-keycloak.version>3.9.1</testcontainers-keycloak.version>
+        <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
+        <docker-java-transport-okhttp.version>3.7.0</docker-java-transport-okhttp.version>
+        <!-- Plugin versions -->
+        <maven.license-plugin.version>4.6</maven.license-plugin.version>
+        <maven.build-helper-maven.plugin.version>3.6.0</maven.build-helper-maven.plugin.version>
+        <maven.dependency-check-plugin.version>12.1.7</maven.dependency-check-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -87,46 +108,19 @@
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
+            <version>${okhttp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp-urlconnection</artifactId>
-            <version>4.12.0</version>
+            <version>${okhttp.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
-            <version>1.1.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.docker-java</groupId>
-            <artifactId>docker-java-transport-okhttp</artifactId>
-            <version>3.4.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <scope>test</scope>
+            <version>${javax-json-api.version}</version>
         </dependency>
         <dependency>
             <groupId>io.lettuce</groupId>
@@ -135,7 +129,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>2.9.2</version>
+            <version>${tika-core.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
@@ -152,65 +146,116 @@
         <dependency>
             <groupId>org.carlspring.cloud.aws</groupId>
             <artifactId>s3fs-nio</artifactId>
-            <version>1.0.4</version>
+            <version>${s3fs-nio.version}</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>datatables</artifactId>
-            <version>2.0.3</version>
+            <version>${datatables.version}</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
-            <version>3.7.1</version>
+            <version>${jquery.version}</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>datatables-responsive</artifactId>
-            <version>2.2.7</version>
+            <version>${datatables-responsive.version}</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>datatables-buttons</artifactId>
-            <version>3.1.2</version>
+            <version>${datatables-buttons.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-fileupload2-jakarta-servlet6</artifactId>
+            <version>${commons-fileupload2-jakarta-servlet6.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
-            <version>3.3.1</version>
+            <version>${testcontainers-keycloak.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.19.8</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.redis</groupId>
             <artifactId>testcontainers-redis</artifactId>
-            <version>2.2.2</version>
+            <version>${testcontainers-redis.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.19.8</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.16.0</version>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-okhttp</artifactId>
+            <version>${docker-java-transport-okhttp.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-fileupload2-jakarta-servlet6</artifactId>
-            <version>2.0.0-M2</version>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Transitive dependencies updated for security -->
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <version>2.3.21.Final</version>
         </dependency>
         <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-servlet</artifactId>
+            <version>2.3.21.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-websockets-jsr</artifactId>
+            <version>2.3.21.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.25.3</version>
         </dependency>
     </dependencies>
 
@@ -226,7 +271,7 @@
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
-                <version>1.19.8</version>
+                <version>${testcontainers.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -260,9 +305,9 @@
             </plugin>
 
             <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.9.0</version>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>${maven.license-plugin.version}</version>
 
                 <executions>
                     <execution>
@@ -283,6 +328,7 @@
                         <exclude>.devbox/**/*</exclude>
                         <exclude>**/*.properties</exclude>
                         <exclude>**/*.yml</exclude>
+                        <exclude>**/*.yaml</exclude>
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.raml</exclude>
                         <exclude>**/*.sh</exclude>
@@ -294,7 +340,32 @@
                         <exclude>README.md</exclude>
                         <exclude>.gitignore</exclude>
                     </excludes>
+                    <aggregate>true</aggregate>
+                    <strictCheck>true</strictCheck>
+                    <properties>
+                        <year>${current.year}</year>
+                    </properties>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${maven.build-helper-maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>timestamp-property</id>
+                        <goals>
+                            <goal>timestamp-property</goal>
+                        </goals>
+                        <phase>validate</phase>
+                        <configuration>
+                            <name>current.year</name>
+                            <pattern>yyyy</pattern>
+                            <locale>en-GB</locale>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -324,19 +395,13 @@
 
     <profiles>
         <profile>
-            <id>tmpOutputDir</id>
-            <build>
-                <directory>/tmp/target</directory>
-            </build>
-        </profile>
-        <profile>
             <id>owasp-dependency-check</id>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>6.1.6</version>
+                        <version>${maven.dependency-check-plugin.version}</version>
                         <executions>
                             <execution>
                                 <goals>
