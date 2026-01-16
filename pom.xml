@@ -28,6 +28,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <finalName>${project.artifactId}-${project.version}</finalName>
+        <!-- Dependency versions -->
         <commons-fileupload2-jakarta-servlet6.version>2.0.0-M4</commons-fileupload2-jakarta-servlet6.version>
         <commons-lang.version>3.18.0</commons-lang.version>
         <datatables-buttons.version>3.1.2</datatables-buttons.version>
@@ -38,6 +39,7 @@
         <okhttp.version>4.12.0</okhttp.version>
         <s3fs-nio.version>1.0.4</s3fs-nio.version>
         <tika-core.version>3.2.3</tika-core.version>
+        <uppy.version>5.1.1</uppy.version>
         <!-- Test dependency versions -->
         <testcontainers-keycloak.version>3.9.1</testcontainers-keycloak.version>
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
@@ -150,7 +152,7 @@
         <dependency>
             <groupId>org.webjars.npm</groupId>
             <artifactId>uppy</artifactId>
-            <version>5.1.1</version>
+            <version>${uppy.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.webjars.npm</groupId>
