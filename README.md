@@ -29,4 +29,4 @@ java -jar target/crane-${CRANE_VERSION}-exec.jar
 
 This project requires JDK 17.
 
-**(c) Copyright Open Analytics NV, 2021-2025 - Apache License 2.0**
+**(c) Copyright Open Analytics NV, 2021-2026 - Apache License 2.0**
