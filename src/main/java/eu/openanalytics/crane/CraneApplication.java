@@ -20,11 +20,14 @@
  */
 package eu.openanalytics.crane;
 
+import io.undertow.UndertowOptions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -108,6 +111,18 @@ public class CraneApplication {
         System.out.println();
 
         System.exit(1);
+    }
+
+    @Bean
+    public UndertowServletWebServerFactory servletContainer() {
+        UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
+        factory.addBuilderCustomizers(builder -> {
+            // allow uploads of unlimited size
+            builder.setServerOption(UndertowOptions.MAX_ENTITY_SIZE, -1L);
+            // limit parsing of multipart requests to 2MB (see #36124), multipart requests are not used in Crane
+            builder.setServerOption(UndertowOptions.MULTIPART_MAX_ENTITY_SIZE, 2097152L);
+        });
+        return factory;
     }
 
 }

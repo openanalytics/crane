@@ -39,7 +39,7 @@ public class KeycloakInstance implements AutoCloseable {
     public static final KeycloakContainer keycloak = new KeycloakContainer()
             .withEnv("KC_HTTP_PORT", String.valueOf(exposedPort))
             .withRealmImportFiles("crane-realm.json")
-            .withExposedPorts(exposedPort)
+            .withExposedPorts(new Integer[]{8080, 8443, 9000, exposedPort})
             .withNetwork(network);
     public static boolean isKeycloakRunning = false;
     private static String containerIp;
