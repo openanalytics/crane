@@ -5,7 +5,7 @@
 
     <groupId>eu.openanalytics</groupId>
     <artifactId>crane</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>Crane</name>
     <packaging>jar</packaging>
     <inceptionYear>2021</inceptionYear>
