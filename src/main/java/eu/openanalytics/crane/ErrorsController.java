@@ -21,15 +21,21 @@
 package eu.openanalytics.crane;
 
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.error.ErrorController;
+import org.springframework.context.MessageSource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -39,14 +45,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Controller
 public class ErrorsController extends BaseUIController implements ErrorController {
 
-    public ErrorsController(UserService userService, CraneConfig craneConfig) {
-        super(userService, craneConfig);
+    private static final Logger logger = LoggerFactory.getLogger(ErrorsController.class);
+
+    public ErrorsController(UserService userService, CraneConfig craneConfig, LanguageService languageService, MessageSource messageSource) {
+        super(userService, craneConfig, languageService, messageSource);
     }
 
     @RequestMapping(value = "/error", produces = "text/html", method = RequestMethod.GET)
@@ -94,6 +103,12 @@ public class ErrorsController extends BaseUIController implements ErrorControlle
         map.put("mainPage", ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString());
         map.put("authenticated", false);
         return "logout-success";
+    }
+
+    public static void accessDeniedHandler(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) throws ServletException, IOException {
+        logger.debug("Request access denied, method: '{}', uri: '{}', exception:", request.getMethod(), request.getRequestURI(), e);
+        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.FORBIDDEN.value());
+        request.getRequestDispatcher("/error").forward(request, response);
     }
 
     /**

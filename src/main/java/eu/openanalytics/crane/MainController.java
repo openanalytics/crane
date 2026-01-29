@@ -23,18 +23,23 @@ package eu.openanalytics.crane;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
+import eu.openanalytics.crane.model.dto.LanguageDto;
 import eu.openanalytics.crane.security.auditing.AuditingService;
+import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
 import eu.openanalytics.crane.service.PosixReadAccessControlService;
 import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
@@ -48,13 +53,18 @@ public class MainController extends BaseUIController {
     private final AuditingService auditingService;
     private final UserService userService;
 
-    public MainController(CraneConfig config, UserService userService, PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, AuditingService auditingService,
-                          UserService userService1) {
-        super(userService, config);
+    public MainController(CraneConfig config,
+                          UserService userService,
+                          PathReadAccessControlService pathReadAccessControlService,
+                          PosixReadAccessControlService posixReadAccessControlService,
+                          AuditingService auditingService,
+                          LanguageService languageService,
+                          MessageSource messageSource) {
+        super(userService, config, languageService, messageSource);
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
         this.auditingService = auditingService;
-        this.userService = userService1;
+        this.userService = userService;
     }
 
     @GetMapping("/.well-known/configured-openid-configuration")
@@ -114,6 +124,20 @@ public class MainController extends BaseUIController {
                 "groups", UserService.getGroups(user)
             )
         );
+    }
+
+    @ResponseBody
+    @PutMapping(value = "/__language", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Void>> updateUserLanguage(@RequestBody LanguageDto body, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            languageService.updateLanguageOfUser(request, response, body.language());
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ApiResponse.error(e);
+        }
+
+        return ApiResponse.success();
     }
 
 }

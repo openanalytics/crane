@@ -21,27 +21,64 @@
 package eu.openanalytics.crane;
 
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class BaseUIController {
 
     protected final UserService userService;
     protected final CraneConfig config;
+    protected final LanguageService languageService;
+    protected final MessageSource messageSource;
 
-    public BaseUIController(UserService userService, CraneConfig craneConfig) {
+    public BaseUIController(UserService userService, CraneConfig craneConfig, LanguageService languageService, MessageSource messageSource) {
         this.userService = userService;
         this.config = craneConfig;
+        this.languageService = languageService;
+        this.messageSource = messageSource;
     }
 
     protected void prepareMap(ModelMap map) {
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        HttpServletRequest httpServletRequest = servletRequestAttributes.getRequest();
+        HttpServletResponse httpServletResponse = servletRequestAttributes.getResponse();
+
         boolean authenticated = userService.isAuthenticated();
         map.put("loginUrl", userService.getLoginUrl());
         map.put("logo", config.getLogoUrl());
         map.put("authenticated", authenticated);
         map.put("isOnlyPublic", config.isOnlyPublic());
+        map.put("language", languageService.getAndUpdateLanguageOfUser(httpServletRequest, httpServletResponse));
         if (authenticated) {
             map.put("username", userService.getUser().getName());
         }
+        setLanguageConfig(map, httpServletRequest, httpServletResponse);
     }
+
+    private final static List<String> INTERNATIONALIZATION_MESSAGES_CODES = List.of();
+
+    private void setLanguageConfig(ModelMap map, HttpServletRequest request, HttpServletResponse response) {
+        Locale locale = LocaleContextHolder.getLocale();
+
+        Map<String, String> internationalizationMessages = new HashMap<>();
+        for (String code : INTERNATIONALIZATION_MESSAGES_CODES) {
+            internationalizationMessages.put(code, messageSource.getMessage(code, null, locale));
+        }
+        map.put("internationalizationMessages", internationalizationMessages);
+        map.put("language", languageService.getAndUpdateLanguageOfUser(request, response));
+        map.put("enabledLanguages", languageService.getEnabledLanguages().values());
+    }
+
 }

@@ -304,3 +304,70 @@ dialog form div input[type="text"] {
     background-color: transparent;
     height: 27px;
 }
+
+.caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    vertical-align: middle;
+    border-top: 4px dashed;
+    border-top: 4px solid \9;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+}
+
+.open .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu {
+    position: absolute;
+    margin: -6px 0 0 10px;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    padding: 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid lightgray;
+    border-radius: 10px;
+    width: 170px;
+}
+
+.dropdown-menu > li {
+    display: block;
+    padding: 10px 10px;
+    clear: both;
+    font-weight: 400;
+    line-height: 1.42857143;
+    color: #333;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.dropdown-menu > li:hover {
+    text-decoration: none;
+    background: #e6e6e6;
+}
+
+.dropdown-menu > li.language-active {
+    color: #337ab7;
+    font-weight: bold;
+}
+
+.header-field-group {
+    position: relative;
+    display: flex;
+    flex: auto;
+}
+
+.dropdown-toggle {
+    display: inline-block;
+    width: 150px;
+}

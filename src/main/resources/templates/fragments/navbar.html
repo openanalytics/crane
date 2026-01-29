@@ -40,6 +40,14 @@
     </a>
     <div class="nav">
         <a class="header-field header-button" th:href="@{'/'}">Home</a>
+        <div class="header-field-group" id="language-selector" th:if="${enabledLanguages.size() > 1}">
+            <a type="button" class="header-button header-field dropdown-toggle">
+                Language <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li th:each="lang: ${enabledLanguages}" th:data-language="${lang.key}" th:text="${lang.displayName}" th:class="${language == lang.key ? 'language-active' : ''}" ></li>
+            </ul>
+        </div>
         <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!isOnlyPublic} and ${!authenticated}">
             Login to see all repositories.
         </a>
@@ -53,6 +61,59 @@
             </form>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('#language-selector .dropdown-toggle')
+                    .addEventListener('click', function () {
+                        document.querySelector('#language-selector')
+                                .classList.toggle('open');
+                    });
+        });
+        async function _getResponseJson(response) {
+            if (response.status !== 200) {
+                console.log("Received invalid response (not 200 OK) ", response);
+                return null;
+            }
+            let json = await response.json();
+            if (!json.hasOwnProperty("status")) {
+                console.log("Received invalid response (missing status) ", json);
+                return null;
+            }
+            if (json.status !== "success") {
+                console.log("Received invalid response (status is not success) ", json);
+                return null;
+            }
+            if (!json.hasOwnProperty("data")) {
+                console.log("Received invalid response (missing data) ", json);
+                return null;
+            }
+            return json;
+        }
+        async function changeLanguage(language) {
+            const csrfToken = document.querySelector("meta[name='_csrf']")?.content;
+            const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.content;
+            const resp = await fetch("/__language", {
+                method: 'PUT',
+                body: JSON.stringify({"language": language}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                },
+            });
+            const json = await _getResponseJson(resp);
+            return json !== null;
+        }
+        document.querySelectorAll('#language-selector li').forEach(li => {
+            li.addEventListener('click', async () => {
+                if (await changeLanguage(li.dataset.language)) {
+                    window.location.reload();
+                } else {
+                    alert("Failed to change language!");
+                }
+                document.querySelector('#language-selector').classList.remove("open");
+            });
+        });
+    </script>
 </header>
 </body>
 </html>

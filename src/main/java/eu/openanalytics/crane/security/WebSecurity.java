@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.security;
 
+import eu.openanalytics.crane.ErrorsController;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
@@ -85,6 +86,7 @@ public class WebSecurity {
                                 "/__assets/svg/**",
                                 "/__assets/webjars/**",
                                 "/__user/me",
+                                "/__language",
                                 "/actuator/health",
                                 "/actuator/health/liveness",
                                 "/actuator/health/readiness",
@@ -94,7 +96,7 @@ public class WebSecurity {
                         ).permitAll()
                         .requestMatchers(repoMatchers.toArray(new String[0])).permitAll()
                         .anyRequest().authenticated())
-                .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
+                .exceptionHandling(exception -> exception.accessDeniedHandler(ErrorsController::accessDeniedHandler))
                 .requestCache((cache) -> cache.requestCache(requestCache))
                 .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(craneConfig.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, craneConfig))))
                 .oauth2Login(login -> login

@@ -22,6 +22,7 @@ package eu.openanalytics.crane;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.service.IndexPageService;
@@ -29,6 +30,7 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +51,12 @@ public class IndexPageController extends BaseUIController {
 
     private final IndexPageService indexPageService;
 
-    public IndexPageController(IndexPageService indexPageService, UserService userService, CraneConfig craneConfig) {
-        super(userService, craneConfig);
+    public IndexPageController(IndexPageService indexPageService,
+                               UserService userService,
+                               CraneConfig craneConfig,
+                               LanguageService languageService,
+                               MessageSource messageSource) {
+        super(userService, craneConfig, languageService, messageSource);
         this.indexPageService = indexPageService;
     }
 
