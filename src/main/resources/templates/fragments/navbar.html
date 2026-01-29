@@ -39,7 +39,7 @@
 </pre>
             </a>
             <div class="nav">
-                <a class="header-field header-button" th:href="@{'/'}">Home</a>
+                <a class="header-field header-button" th:href="@{'/'}" th:text="#{navbar.home}"></a>
                 <div class="header-field-group" id="language-selector" th:if="${enabledLanguages.size() > 1}">
                     <a type="button" class="header-button header-field dropdown-toggle">
                         Language <span class="caret"></span>
@@ -48,16 +48,13 @@
                         <li th:each="lang: ${enabledLanguages}" th:data-language="${lang.key}" th:text="${lang.displayName}" th:class="${language == lang.key ? 'language-active' : ''}"></li>
                     </ul>
                 </div>
-                <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!isOnlyPublic} and ${!authenticated}">
-                    Login to see all repositories.
-                </a>
+                <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!isOnlyPublic} and ${!authenticated}" th:text="#{navbar.login_all_repos}"></a>
                 <div style="display:flex;" th:if="${!isOnlyPublic} and ${authenticated}">
-                    <p class="header-field">
-                        Logged in as <b th:text="${username}"></b>
+                    <p class="header-field" th:text="${#messages.msgWithParams('navbar.logged_in_as', username)}">
                     </p>
                     <form class="logout-form" method="post" th:action="@{/logout}">
                         <input name="_csrf" type="hidden" th:value="${_csrf.token}">
-                        <button class="header-field header-button" type="submit">Logout</button>
+                        <button class="header-field header-button" type="submit" th:text="#{navbar.logout}"></button>
                     </form>
                 </div>
             </div>

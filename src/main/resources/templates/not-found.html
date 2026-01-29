@@ -23,11 +23,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
     <th:block th:fragment="head">
-        <title>Crane - not found</title>
+        <title th:text="'Crane - ' + #{'not-found.not-found'}"></title>
     </th:block>
     <th:block th:fragment="content">
-        <h1>Not found</h1>
-        <p>The resource <code th:text="${resource}"></code> was not found.</p>
-        <a th:href="${mainPage}">Go back to the main page</a>
+        <h1 th:text="#{'not-found.not-found'}"></h1>
+        <code th:text="${resource}"></code>
+        <p  th:text="#{'not-found.resource-not-found'}"></p>
+        <a th:href="${mainPage}" th:text="#{'not-found.goto-main-page'}"></a>
     </th:block>
 </html>

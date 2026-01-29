@@ -23,9 +23,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
     <th:block th:fragment="head">
-        <title>Crane - logout</title>
+        <title th:text="'Crane - ' + #{'logout.logout'}"></title>
     </th:block>
     <th:block th:fragment="content">
-        <h1>You have been logged out successfully.</h1>
+        <h1 th:text="#{'logout.logout-success'}"></h1>
     </th:block>
 </html>

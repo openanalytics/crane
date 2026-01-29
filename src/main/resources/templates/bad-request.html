@@ -23,14 +23,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
     <head>
-        <title>Crane - bad request</title>
+        <title th:text="'Crane - ' + #{'bad-request.bad-request'}"></title>
         <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
     </head>
     <body>
         <!--/* Do not use the layout or include navbar since there is no CSRF token. */-->
         <div class="container">
-            <h1>Bad request</h1>
-            <a th:href="${mainPage}">Go back to the main page</a>
+            <h1 th:text="#{'bad-request.bad-request'}"></h1>
+            <a th:href="${mainPage}" th:text="#{'bad-request.goto-main-page'}"></a>
         </div>
     </body>
 </html>

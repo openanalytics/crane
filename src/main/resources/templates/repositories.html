@@ -26,8 +26,8 @@
         <title>Crane</title>
     </th:block>
     <th:block th:fragment="content">
-        <h1>Repositories</h1>
-        <p th:if="${repositories.isEmpty()}">You do not have access to any repository.</p>
+        <h1 th:text="#{'repositories.repositories'}"></h1>
+        <p th:if="${repositories.isEmpty()}" th:text="#{'repositories.no-access'}"></p>
         <ul>
             <li th:each="repository: ${repositories}">
                 <a th:href="@{${repository} + '/'}" th:text="${repository}"></a>
