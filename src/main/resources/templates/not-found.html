@@ -21,17 +21,13 @@
 
 -->
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Crane - not found</title>
-    <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
-</head>
-<body>
-<div class="container">
-    <div th:insert="~{fragments/navbar.html}"></div>
-    <h1>Not found</h1>
-    <p>The resource <code th:text="${resource}"></code> was not found.</p>
-    <a th:href="${mainPage}">Go back to the main page</a>
-</div>
-</body>
+<html xmlns:th="http://www.thymeleaf.org">
+    <th:block th:fragment="head">
+        <title>Crane - not found</title>
+    </th:block>
+    <th:block th:fragment="content">
+        <h1>Not found</h1>
+        <p>The resource <code th:text="${resource}"></code> was not found.</p>
+        <a th:href="${mainPage}">Go back to the main page</a>
+    </th:block>
 </html>

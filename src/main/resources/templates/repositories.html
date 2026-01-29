@@ -21,23 +21,17 @@
 
 -->
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Crane</title>
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
-</head>
-<body>
-<div class="container">
-    <div th:insert="~{fragments/navbar.html}"></div>
-    <h1>Repositories</h1>
-    <p th:if="${repositories.isEmpty()}">You do not have access to any repository.</p>
-    <ul>
-        <li th:each="repository: ${repositories}">
-            <a th:href="@{${repository} + '/'}" th:text="${repository}"></a>
-        </li>
-    </ul>
-</div>
-</body>
+<html xmlns:th="http://www.thymeleaf.org">
+    <th:block th:fragment="head">
+        <title>Crane</title>
+    </th:block>
+    <th:block th:fragment="content">
+        <h1>Repositories</h1>
+        <p th:if="${repositories.isEmpty()}">You do not have access to any repository.</p>
+        <ul>
+            <li th:each="repository: ${repositories}">
+                <a th:href="@{${repository} + '/'}" th:text="${repository}"></a>
+            </li>
+        </ul>
+    </th:block>
 </html>

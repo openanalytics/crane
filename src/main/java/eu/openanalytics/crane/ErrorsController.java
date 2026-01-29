@@ -54,7 +54,11 @@ public class ErrorsController extends BaseUIController implements ErrorControlle
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorsController.class);
 
-    public ErrorsController(UserService userService, CraneConfig craneConfig, LanguageService languageService, MessageSource messageSource) {
+    public ErrorsController(UserService userService,
+                            CraneConfig craneConfig,
+                            LanguageService languageService,
+                            MessageSource messageSource
+    ) {
         super(userService, craneConfig, languageService, messageSource);
     }
 
@@ -67,10 +71,13 @@ public class ErrorsController extends BaseUIController implements ErrorControlle
         map.put("resource", request.getAttribute(RequestDispatcher.FORWARD_SERVLET_PATH));
 
         prepareMap(map);
-        if (status == HttpStatus.NOT_FOUND.value() || status == HttpStatus.FORBIDDEN.value()) {
-            return new ModelAndView("not-found", HttpStatus.NOT_FOUND);
+        if (status == HttpStatus.BAD_REQUEST.value()) {
+            return new ModelAndView("bad-request", HttpStatus.BAD_REQUEST);
+        } else if (status >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+            return new ModelAndView("error", HttpStatus.valueOf(status));
         }
-        return new ModelAndView("not-found", HttpStatus.valueOf(status));
+
+        return new ModelAndView("not-found", HttpStatus.NOT_FOUND);
     }
 
     @RequestMapping("/error")

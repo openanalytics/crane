@@ -28,7 +28,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.servlet.LocaleResolver;
@@ -127,7 +126,6 @@ public class CraneApplication {
     }
 
     @Bean
-    @Primary
     public LocaleResolver localeResolver() {
         // no default language is configured, therefore the Accept header will determine the language if there is no cookie
         CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver("shinyproxy_language");

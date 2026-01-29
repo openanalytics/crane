@@ -22,18 +22,10 @@
 -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
-<head lang="en">
-    <title>Crane - logout</title>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
-    <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
-</head>
-
-<body>
-<div class="container">
-    <div th:insert="~{fragments/navbar.html}"></div>
-    <h1>You have been logged out successfully.</h1>
-</div>
-</body>
+    <th:block th:fragment="head">
+        <title>Crane - logout</title>
+    </th:block>
+    <th:block th:fragment="content">
+        <h1>You have been logged out successfully.</h1>
+    </th:block>
 </html>

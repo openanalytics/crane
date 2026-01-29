@@ -21,17 +21,17 @@
 
 -->
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Crane - error</title>
-    <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
-</head>
-<body>
-<div class="container">
-    <div th:insert="~{fragments/navbar.html}"></div>
-    <h1>An error occurred</h1>
-    <p>Crane experienced an unrecoverable error.</p>
-    <a th:href="${mainPage}">Go back to the main page</a>
-</div>
-</body>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Crane - error</title>
+        <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
+    </head>
+    <body>
+        <!--/* Do not use the layout or include navbar since there is no CSRF token. */-->
+        <div class="container">
+            <h1>An error occurred</h1>
+            <p>Crane experienced an unrecoverable error.</p>
+            <a th:href="${mainPage}">Go back to the main page</a>
+        </div>
+    </body>
 </html>

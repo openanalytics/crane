@@ -21,17 +21,16 @@
 
 -->
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Crane - access denied</title>
-    <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
-</head>
-<body>
-<div class="container">
-    <div th:insert="~{fragments/navbar.html}"></div>
-    <h1>Access denied</h1>
-    <p>You do not have access to the resource <code th:text="${resource}"></code>.</p>
-    <a th:href="${mainPage}">Go back to the main page</a>
-</div>
-</body>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Crane - bad request</title>
+        <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
+    </head>
+    <body>
+        <!--/* Do not use the layout or include navbar since there is no CSRF token. */-->
+        <div class="container">
+            <h1>Bad request</h1>
+            <a th:href="${mainPage}">Go back to the main page</a>
+        </div>
+    </body>
 </html>

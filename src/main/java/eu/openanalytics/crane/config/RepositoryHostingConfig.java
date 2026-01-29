@@ -23,6 +23,7 @@ package eu.openanalytics.crane.config;
 import eu.openanalytics.crane.model.config.Repository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.util.UrlPathHelper;
@@ -49,7 +50,9 @@ public class RepositoryHostingConfig {
                     request.getRequestDispatcher("/__file" + urlPathHelper.getPathWithinApplication(request)).forward(request, response));
         }
 
-        return new SimpleUrlHandlerMapping(urlMap);
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping(urlMap);
+        mapping.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return mapping;
     }
 
 }
