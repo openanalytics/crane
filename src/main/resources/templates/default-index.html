@@ -26,26 +26,26 @@
         <title th:text="${title}"></title>
     </th:block>
     <th:block th:fragment="content">
-        <h1>Directory <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
+        <h1><span th:text="#{index.directoryo}"></span> <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
         </code></h1>
         <dialog id="uppy-dialog">
             <div id="uppy" th:action="@{${resource}}"></div>
             <div class="flex flex-space-between">
-                <button id="cancel-uppy-upload" type="button" class="button cancel">Cancel</button>
-                <button id="uppy-upload" type="button" class="button create">Upload</button>
+                <button id="cancel-uppy-upload" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
+                <button id="uppy-upload" type="button" class="button create" th:text="#{index.upload.button}"></button>
             </div>
         </dialog>
 
         <dialog id="create-directory-dialog">
             <form id="create-directory-form" method="post" th:action="@{${resource}}">
-                <div><h1>Create directory</h1></div>
+                <div><h1 th:text="#{index.create-directory}"></h1></div>
                 <div class="input-field">
-                    <label>Directory name</label>
-                    <input id="directory-name" type="text" placeholder="Name your directory"/>
+                    <label th:text="#{index.directory-name}"></label>
+                    <input id="directory-name" type="text" />
                 </div>
                 <div class="flex flex-space-between">
-                    <button id="cancel-create-directory" type="button" class="button cancel">Cancel</button>
-                    <button id="create-directory" type="button" class="button create">Create</button>
+                    <button id="cancel-create-directory" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
+                    <button id="create-directory" type="button" class="button create" th:text="#{index.create.button}"></button>
                 </div>
             </form>
         </dialog>
@@ -53,10 +53,10 @@
         <table th:attr="data-has-write-access=${hasWriteAccess}">
             <thead>
                 <tr>
-                    <th>Filename</th>
-                    <th>Last Modified time</th>
-                    <th>Size</th>
-                    <td>Action</td>
+                    <th th:text="#{index.filename}"></th>
+                    <th th:text="#{index.last_modified_time}"></th>
+                    <th th:text="#{index.size}"></th>
+                    <td th:text="#{index.actions}"></td>
                 </tr>
             </thead>
             <tbody>
@@ -66,11 +66,11 @@
                     <td></td>
                     <td>
                         <button th:if="${directory.hasWriteAccess && !directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.isPathComponent}" type="button" class="delete-button danger button"
-                                title="Delete directory">
+                                th:title="#{index.delete_directory}">
                             <img th:src="@{'/__assets/svg/trash-can.svg'}">
                         </button>
                         <button th:if="${directory.hasWriteAccess && directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.isPathComponent}" type="button" class="delete-button danger button"
-                                title="Empty directory">
+                                th:title="#{index.empty_directory}">
                             <img th:src="@{'/__assets/svg/broom.svg'}">
                         </button>
                         <span class="delete-info" th:id="${'progress-' + directory.name}"></span>
@@ -82,7 +82,7 @@
                     <td th:text="${file.lastModifiedTime}"></td>
                     <td th:text="${file.formattedSize}"></td>
                     <td>
-                        <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button" title="Delete file">
+                        <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button" th:title="#{index.delete_file}">
                             <img th:src="@{'/__assets/svg/trash-can.svg'}">
                         </button>
                         <span class="delete-info" th:id="${'progress-' + file.name}"></span>
@@ -91,322 +91,6 @@
             </tbody>
 
         </table>
-        <script>
-            const createDirectoryDialog = document.getElementById("create-directory-dialog");
-            const uppyDialog = document.getElementById("uppy-dialog");
-            const createDirectoryForm = document.getElementById("create-directory-form");
-            const createDirectoryButton = document.getElementById("create-directory");
-
-            function closeCreateDirectoryDialog() {
-                const cancelButton = document.getElementById("cancel-create-directory");
-                cancelButton.disabled = false;
-                if (createDirectoryButton.classList.contains("uploading")) {
-                    createDirectoryButton.innerHTML = "Create";
-                    createDirectoryButton.classList.remove("uploading");
-                }
-                createDirectoryDialog.close();
-                createDirectoryForm.reset();
-            }
-
-            function createDirectory(e) {
-                e.preventDefault();
-                const dirNameField = document.getElementById("directory-name");
-                const cancelButton = document.getElementById("cancel-create-directory");
-                cancelButton.disabled = true;
-                createDirectoryButton.disabled = true;
-                createDirectoryButton.innerHTML = "Creating...";
-                createDirectoryButton.classList.toggle("uploading");
-
-                const url = createDirectoryForm.action + dirNameField.value;
-                const csrfToken = $("meta[name='_csrf']").attr("content");
-                const csrfHeader = $("meta[name='_csrf_header']").attr("content");
-                fetch(url, {
-                    method: 'POST',
-                    body: '',
-                    headers: {[csrfHeader]: csrfToken}
-                }).then(async (resp) => {
-                    if (resp.ok) {
-                        location.replace(url);
-                        return;
-                    }
-                    let error;
-                    try {
-                        error = (await resp.json()).data.message;
-                    } catch (e) {
-                        error = resp.statusText;
-                    }
-                    if (error === "") {
-                        error = statusToText[resp.status.toString()];
-                    }
-                    if (error === "Forbidden") {
-                        error = "You are not allowed to create this directory";
-                    }
-                    closeCreateDirectoryDialog();
-                    alert(error);
-                }).catch((error) => {
-                    closeCreateDirectoryDialog();
-                    alert(error);
-                });
-            }
-
-            function disableCreateDirectory() {
-                const dirNameField = document.getElementById("directory-name");
-                createDirectoryButton.disabled = dirNameField.value === "";
-            }
-
-            function startDeleting(button, data) {
-                let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
-                if (deleteInfo !== null || deleteInfo !== undefined) {
-                    deleteInfo.innerText = `${data.deleted}/${data.todo + data.deleted}`
-                }
-            }
-
-            function updateDeleting(button, data) {
-                let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
-                if (deleteInfo !== null || deleteInfo !== undefined) {
-                    deleteInfo.innerText = `${data.deleted}/${data.todo + data.deleted}`
-                }
-            }
-
-            function stopDeleting(button) {
-                let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
-                if (deleteInfo !== null || deleteInfo !== undefined) {
-                    deleteInfo.innerText = ""
-                }
-                button.classList.remove("deleting")
-            }
-
-            function otherDeleteInProgress() {
-                let deleteInfos = document.getElementsByClassName("delete-info");
-                for (const deleteInfo of deleteInfos) {
-                    if (deleteInfo.innerText !== "") {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            async function deleteObject(fileName, button) {
-                const url = document.URL + fileName;
-                const csrfToken = $("meta[name='_csrf']").attr("content");
-                const csrfHeader = $("meta[name='_csrf_header']").attr("content");
-                const isPathComponent = button.dataset?.ispathcomponent === "true";
-                button.classList.add("deleting")
-                const delay = ms => new Promise(res => setTimeout(res, ms));
-                const options = {
-                    method: 'DELETE',
-                    headers: {[csrfHeader]: csrfToken}
-                };
-                fetch(url, options).then(async (resp) => {
-                    if (resp.status === 202) {
-                        let response = resp;
-                        let json = await resp.json();
-                        startDeleting(button, json.data);
-
-                        while (response.status === 202 && json.data.todo !== 0) {
-                            await delay(250)
-                            response = await fetch(url, options);
-                            json = await response.json();
-                            updateDeleting(button, json.data)
-                        }
-                        const otherInProgress = otherDeleteInProgress()
-                        if (!isPathComponent) {
-                            if (!otherInProgress) {
-                                location.reload();
-                            } else {
-                                button.closest("tr").hidden = true;
-                            }
-                        }
-                        stopDeleting(button);
-                        return;
-                    }
-                    let error;
-                    try {
-                        error = (await resp.json()).data.message;
-                    } catch (e) {
-                        error = resp.statusText;
-                    }
-                    if (error === "") {
-                        error = statusToText[resp.status.toString()];
-                    }
-                    alert(error);
-                }).catch((error) => {
-                    alert(error);
-                });
-            }
-
-            $(document).ready(function () {
-                let table = $('table');
-                let dataTableOptions = {
-                    aaSorting: [], // apply no sort by default
-                    paging: false
-                };
-                if (table.data("has-write-access")) {
-                    dataTableOptions["layout"] = {
-                        topStart: {
-                            buttons: [
-                                {
-                                    action: () => uppyDialog.showModal(),
-                                    text: 'Upload'
-                                },
-                                {
-                                    action: () => createDirectoryDialog.showModal(),
-                                    text: "Create directory"
-                                }
-                            ]
-                        }
-                    }
-                }
-                const datatable = $('table').DataTable(dataTableOptions);
-                $('table').css("visibility", "visible");
-
-                if (table.data("has-write-access")) {
-                    datatable.button(0)[0].node.id = "upload-button";
-                    const uppy = new Uppy.Uppy();
-                    uppy.use(Uppy.Dashboard, {
-                        inline: true,
-                        target: '#uppy',
-                        showProgressDetails: true,
-                        hideUploadButton: true,
-                        hideCancelButton: true,
-                        fileManagerSelectionType: "both",
-                    }).use(Uppy.XHRUpload, {
-                        endpoint: (file) => {
-                            const uppy = document.getElementById("uppy")
-                            if (file.meta.relativePath) {
-                                return uppy.attributes.action.value + file.meta.relativePath;
-                            }
-                            return uppy.attributes.action.value + file.name;
-                        },
-                        headers: () => {
-                            const csrfToken = $("meta[name='_csrf']").attr("content");
-                            const csrfHeader = $("meta[name='_csrf_header']").attr("content");
-                            return {[csrfHeader]: csrfToken}
-                        },
-                        onAfterResponse(response) {
-                            if (response.status == 200) {
-                                return
-                            }
-
-                            if (JSON.parse(response.responseText).data?.message) {
-                                throw new Error(JSON.parse(response.responseText).data.message)
-                            }
-                        }
-                    })
-
-                    function uppyUploadButtonDisable() {
-                        const uploadButton = document.getElementById("uppy-upload");
-                        uploadButton.disabled = uppy.getFiles().length === 0;
-                    }
-
-                    uppy.on("complete", (result) => {
-                        if (result.failed.length === 0) {
-                            document.location.reload();
-                        }
-                    });
-                    uppy.on("file-added", uppyUploadButtonDisable);
-                    uppy.on("files-added", uppyUploadButtonDisable);
-                    uppy.on("file-removed", uppyUploadButtonDisable);
-                    uppy.on("upload-error", () => {
-                        const uploadButton = document.getElementById("uppy-upload");
-                        uploadButton.innerText = "Retry";
-                        uploadButton.classList.remove("uploading");
-                        uploadButton.classList.add("retry");
-
-                        const addMore = document.getElementsByClassName("uppy-DashboardContent-addMore")[0];
-                        addMore.disabled = true;
-                    })
-
-                    uppyDialog.addEventListener("close", () => {
-                        const uploadButton = document.getElementById("uppy-upload");
-                        uploadButton.classList.remove("uploading");
-                        uploadButton.classList.remove("retry");
-                        uploadButton.innerText = "Upload";
-
-                        const files = uppy.getState().files;
-                        for (key in files) {
-                            const file = files[key];
-                            if (file.response?.status === 200) {
-                                document.location.reload();
-                                return;
-                            }
-                        }
-
-                        const addMore = document.getElementsByClassName("uppy-DashboardContent-addMore")[0];
-                        if (addMore) {
-                            addMore.disabled = false;
-                        }
-                        uppy.cancelAll();
-                    })
-
-                    document.getElementById("cancel-uppy-upload").addEventListener("click", () => {
-                        uppyDialog.close();
-                    });
-
-                    document.getElementById("uppy-upload").addEventListener("click", () => {
-                        const button = document.getElementById("uppy-upload");
-                        button.classList.add("uploading");
-                        button.innerText = "Uploading...";
-                        if (!button.classList.contains("retry")) {
-                            uppy.upload();
-                        } else {
-                            button.classList.remove("retry");
-                            uppy.retryAll();
-                        }
-                    });
-                    uppyUploadButtonDisable();
-                }
-
-                document.getElementById("directory-name").addEventListener("input", disableCreateDirectory);
-                document.getElementById("cancel-create-directory").addEventListener("click", closeCreateDirectoryDialog);
-                document.getElementById("create-directory").addEventListener("click", createDirectory);
-                createDirectoryForm.addEventListener('keydown', function (event) {
-                    if (event.code === "Enter") {
-                        event.preventDefault();
-                        createDirectory(event);
-                    }
-                });
-
-                disableCreateDirectory();
-
-                const deleteButtons = document.querySelectorAll("button.delete-button");
-                for (let deleteButton of deleteButtons) {
-                    deleteButton.addEventListener("click", () => {
-                        const objectName = deleteButton.dataset.filename !== undefined ? deleteButton.dataset.filename : deleteButton.dataset.dirname;
-                        const action = deleteButton.dataset.ispathcomponent === 'true' ? 'empty' : 'delete';
-                        const fileType = deleteButton.dataset.filename ? 'file' : 'directory';
-                        const message = `Are you sure you want to ${action} the '${objectName}' ${fileType}?`
-                        if (window.confirm(message)) {
-                            deleteObject(objectName, deleteButton);
-                        }
-                    });
-                }
-
-                for (dialog of document.getElementsByTagName('dialog')) {
-                    dialog.addEventListener('click', function (event) {
-                        if (event.target.open) {
-                            const rect = this.getBoundingClientRect();
-                            const isInDialog = (
-                                    rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
-                                    rect.left <= event.clientX && event.clientX <= rect.left + rect.width
-                            );
-                            if (!isInDialog) {
-                                this.close();
-                            }
-                        }
-                    });
-                }
-
-                $(document).ready(function () {
-                    $(window).keydown(function (event) {
-                        if (event.code == 'Enter') {
-                            event.preventDefault();
-                            return false;
-                        }
-                    });
-                });
-            });
-        </script>
     </th:block>
 
 </html>

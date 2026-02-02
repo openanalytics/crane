@@ -32,6 +32,7 @@ import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,7 +43,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -138,6 +141,31 @@ public class MainController extends BaseUIController {
         }
 
         return ApiResponse.success();
+    }
+
+    private final static List<String> INTERNATIONALIZATION_MESSAGES_CODES = List.of(
+        "index.create.button",
+        "index.creating.button",
+        "index.not_allowed_created_directory.error",
+        "index.create_directory.button",
+        "index.retry.button",
+        "index.upload.button",
+        "index.uploading",
+        "index.delete_file.confirmation",
+        "index.delete_directory.confirmation",
+        "index.empty_directory.confirmation"
+    );
+
+    @ResponseBody
+    @GetMapping(value = "/__language/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Map<String, String>>> getLanguageMessages() {
+        Locale locale = LocaleContextHolder.getLocale();
+
+        Map<String, String> internationalizationMessages = new HashMap<>();
+        for (String code : INTERNATIONALIZATION_MESSAGES_CODES) {
+            internationalizationMessages.put(code, messageSource.getMessage(code, null, locale));
+        }
+        return ApiResponse.success(internationalizationMessages);
     }
 
 }

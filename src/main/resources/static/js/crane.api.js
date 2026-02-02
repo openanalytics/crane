@@ -20,19 +20,70 @@
  */
 Crane = window.Crane || {};
 Crane.api = {
+    csrfToken: document.querySelector("meta[name='_csrf']")?.content,
+    csrfHeader: document.querySelector("meta[name='_csrf_header']")?.content,
+
     async changeLanguage(language) {
-        const csrfToken = document.querySelector("meta[name='_csrf']")?.content;
-        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.content;
         const resp = await fetch("/__language", {
             method: 'PUT',
             body: JSON.stringify({"language": language}),
             headers: {
                 'Content-Type': 'application/json',
-                [csrfHeader]: csrfToken
+                [Crane.api.csrfHeader]: Crane.api.csrfToken
             },
         });
         const json = await Crane.api._getResponseJson(resp);
         return json !== null;
+    },
+
+    async getLanguageMessages() {
+        const resp = await fetch("/__language/messages");
+        const json = await Crane.api._getResponseJson(resp);
+        return json.data;
+    },
+
+    async deleteObject(fileName, button) {
+        const url = document.URL + fileName;
+        const isPathComponent = button.dataset?.ispathcomponent === "true";
+        button.classList.add("deleting")
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        const options = {
+            method: 'DELETE',
+            headers: {[Crane.api.csrfHeader]: Crane.api.csrfToken}
+        };
+        fetch(url, options).then(async (resp) => {
+            if (resp.status === 202) {
+                let response = resp;
+                let json = await resp.json();
+                Crane.ui.startDeleting(button, json.data);
+
+                while (response.status === 202 && json.data.todo !== 0) {
+                    await delay(250)
+                    response = await fetch(url, options);
+                    json = await response.json();
+                    Crane.ui.updateDeleting(button, json.data)
+                }
+                const otherInProgress = Crane.ui.otherDeleteInProgress()
+                if (!isPathComponent) {
+                    if (!otherInProgress) {
+                        location.reload();
+                    } else {
+                        button.closest("tr").hidden = true;
+                    }
+                }
+                Crane.ui.stopDeleting(button);
+                return;
+            }
+            let error;
+            try {
+                error = (await resp.json()).data.message;
+            } catch (e) {
+                error = resp.statusText;
+            }
+            alert(error);
+        }).catch((error) => {
+            alert(error);
+        });
     },
 
     async _getResponseJson(response) {
