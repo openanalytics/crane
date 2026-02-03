@@ -29,9 +29,10 @@
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
         <meta name="_csrf" th:content="${_csrf.token}"/>
         <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-        <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/datatables/2.0.3/css/dataTables.dataTables.min.css'}"/>
-        <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/uppy/5.1.1/dist/uppy.min.css'}"/>
+        <meta name="_dataTableLanguageUrl" th:content="${dataTableLanguageUrl}"/>
         <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
+        <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/uppy/5.1.1/dist/uppy.min.css'}"/>
+        <link media="screen" rel="stylesheet" th:href="@{'/__assets/webjars/datatables.net-dt/2.3.4/css/dataTables.dataTables.min.css'}"/>
     </head>
     <body>
         <div class="container">
@@ -42,12 +43,14 @@
 
             </th:block>
         </div>
-        <script th:src="@{/__assets/webjars/jquery/3.7.1/jquery.min.js}"></script>
-        <script th:src="@{/__assets/webjars/datatables/2.0.3/js/dataTables.min.js}"></script>
-        <script th:src="@{'/__assets/webjars/datatables-buttons/3.1.2/js/dataTables.buttons.min.js'}"></script>
+        <script th:src="@{'/__assets/webjars/jquery/3.7.1/jquery.min.js'}"></script>
+        <script th:src="@{'/__assets/webjars/datatables.net/2.3.4/js/dataTables.min.js'}"></script>
+        <script th:src="@{'/__assets/webjars/datatables.net-buttons/3.2.6/js/dataTables.buttons.min.js'}"></script>
+        <script th:src="@{'/__assets/webjars/datatables.net-buttons/3.2.6/js/buttons.html5.min.js'}"></script>
+        <script th:src="@{'/__assets/webjars/datatables.net-buttons-dt/3.2.6/js/buttons.dataTables.min.js'}"></script>
         <script th:src="@{'/__assets/webjars/uppy/5.1.1/dist/uppy.min.js'}"></script>
-        <script th:src="@{/__assets/js/crane.api.js}"></script>
-        <script th:src="@{/__assets/js/crane.ui.js}"></script>
-        <script th:src="@{/__assets/js/crane.internationalization.js}"></script>
+        <script th:src="@{'/__assets/js/crane.api.js'}"></script>
+        <script th:src="@{'/__assets/js/crane.ui.js'}"></script>
+        <script th:src="@{'/__assets/js/crane.internationalization.js'}"></script>
     </body>
 </html>

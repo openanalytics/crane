@@ -135,9 +135,13 @@ Crane.ui = {
         if (Crane.ui.elements.table.length === 0 ) {
             return;
         }
+        const dataTableLanguageUrl = document.querySelector("meta[name='_dataTableLanguageUrl']")?.content;
         let dataTableOptions = {
             aaSorting: [], // apply no sort by default
-            paging: false
+            paging: false,
+            language: {
+                url: dataTableLanguageUrl
+            }
         };
         if (Crane.ui.elements.table.data("has-write-access")) {
             dataTableOptions["layout"] = {

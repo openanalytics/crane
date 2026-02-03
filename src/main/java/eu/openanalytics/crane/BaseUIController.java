@@ -26,9 +26,14 @@ import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.util.Locale;
+import java.util.Map;
 
 public class BaseUIController {
 
@@ -64,6 +69,25 @@ public class BaseUIController {
     private void setLanguageConfig(ModelMap map, HttpServletRequest request, HttpServletResponse response) {
         map.put("language", languageService.getAndUpdateLanguageOfUser(request, response));
         map.put("enabledLanguages", languageService.getEnabledLanguages().values());
+        map.put("dataTableLanguageUrl", getDataTableLanguageUrl());
+    }
+
+    private final static Map<String, String> LOCALE_TO_DATATABLE_LANGUAGE = Map.of(
+        "nl", "nl-NL.json",
+        "fr", "fr-FR.json",
+        "es", "es-ES.json"
+    );
+
+    private String getDataTableLanguageUrl() {
+        Locale locale = LocaleContextHolder.getLocale();
+        if (locale.getLanguage().equals("en")) {
+            return "";
+        }
+        String file = LOCALE_TO_DATATABLE_LANGUAGE.get(locale.getLanguage());
+        if (file == null) {
+            return ""; // fallback to en
+        }
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/__assets/webjars/datatables.net-plugins/2.3.6/i18n/" + file).toUriString();
     }
 
 }

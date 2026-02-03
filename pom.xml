@@ -31,9 +31,9 @@
         <!-- Dependency versions -->
         <commons-fileupload2-jakarta-servlet6.version>2.0.0-M4</commons-fileupload2-jakarta-servlet6.version>
         <commons-lang.version>3.18.0</commons-lang.version>
-        <datatables-buttons.version>3.1.2</datatables-buttons.version>
-        <datatables-responsive.version>2.2.7</datatables-responsive.version>
-        <datatables.version>2.0.3</datatables.version>
+        <datatables.version>2.3.4</datatables.version>
+        <datatables-plugins.version>2.3.6</datatables-plugins.version>
+        <datatables-buttons.version>3.2.6</datatables-buttons.version>
         <javax-json-api.version>1.1.4</javax-json-api.version>
         <jquery.version>3.7.1</jquery.version>
         <okhttp.version>4.12.0</okhttp.version>
@@ -162,23 +162,42 @@
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
-            <artifactId>datatables</artifactId>
-            <version>${datatables.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
             <version>${jquery.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>datatables-responsive</artifactId>
-            <version>${datatables-responsive.version}</version>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>datatables.net-dt</artifactId>
+            <version>${datatables.version}</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.webjars.npm</groupId>
+                    <artifactId>jquery</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>datatables-buttons</artifactId>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>datatables.net-plugins</artifactId>
+            <version>${datatables-plugins.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.webjars.npm</groupId>
+                    <artifactId>jquery</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>datatables.net-buttons-dt</artifactId>
             <version>${datatables-buttons.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.webjars.npm</groupId>
+                    <artifactId>jquery</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
