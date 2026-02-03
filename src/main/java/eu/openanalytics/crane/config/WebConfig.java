@@ -22,7 +22,9 @@ package eu.openanalytics.crane.config;
 
 import eu.openanalytics.crane.util.ThymeleafLayoutInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
@@ -36,39 +38,54 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    private final boolean cacheEnabled;
+    private static final Map<String, String> PATHS = Map.of(
+        "/__assets/webjars/**", "/webjars/",
+        "/__assets/css/**", "classpath:/static/css/",
+        "/__assets/js/**", "classpath:/static/js/",
+        "/__assets/svg/**", "classpath:/static/svg/"
+    );
+
+    public WebConfig(Environment environment) {
+        cacheEnabled = environment.getProperty("spring.thymeleaf.cache", Boolean.class, true);
+    }
+
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        LoadInMemoryResolver resolver = new LoadInMemoryResolver();
-        registry
-            .addResourceHandler("/__assets/webjars/**")
-            .addResourceLocations("/webjars/")
-            .setOptimizeLocations(true)
-            .setUseLastModified(false)
-            .setCacheControl(CacheControl.maxAge(Duration.ofDays(1)))
-            .resourceChain(true)
-            .addResolver(resolver);
+    public void addResourceHandlers(@NotNull ResourceHandlerRegistry registry) {
+        if (cacheEnabled) {
+            LoadInMemoryResolver resolver = new LoadInMemoryResolver();
 
-        registry
-            .addResourceHandler("/__assets/css/**")
-            .addResourceLocations("classpath:/static/css/")
-            .setOptimizeLocations(true)
-            .setUseLastModified(false)
-            .setCacheControl(CacheControl.maxAge(Duration.ofDays(1)))
-            .resourceChain(true)
-            .addResolver(resolver);
+            for (Map.Entry<String, String> path : PATHS.entrySet()) {
+                registry
+                    .addResourceHandler(path.getKey())
+                    .addResourceLocations(path.getValue())
+                    .setOptimizeLocations(true)
+                    .setUseLastModified(false)
+                    .setCacheControl(CacheControl.maxAge(Duration.ofDays(1)))
+                    .resourceChain(true)
+                    .addResolver(resolver);
 
-        registry
-            .addResourceHandler("/__assets/svg/**")
-            .addResourceLocations("classpath:/static/svg/")
-            .setOptimizeLocations(true)
-            .setUseLastModified(false)
-            .setCacheControl(CacheControl.maxAge(Duration.ofDays(1)))
-            .resourceChain(true)
-            .addResolver(resolver);
+            }
+        } else {
+            for (Map.Entry<String, String> path : PATHS.entrySet()) {
+                registry
+                    .addResourceHandler(path.getKey())
+                    .addResourceLocations(path.getValue())
+                    .setOptimizeLocations(true)
+                    .setUseLastModified(false)
+                    .resourceChain(true);
+            }
+        }
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new ThymeleafLayoutInterceptor());
     }
 
     /**
@@ -94,11 +111,6 @@ public class WebConfig implements WebMvcConfigurer {
         public String resolveUrlPath(@Nonnull String resourcePath, @Nonnull List<? extends Resource> locations, @Nonnull ResourceResolverChain chain) {
             return null;
         }
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new ThymeleafLayoutInterceptor());
     }
 
     private static class InMemoryResource extends ByteArrayResource {
