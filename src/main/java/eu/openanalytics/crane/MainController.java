@@ -32,17 +32,19 @@ import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -157,15 +159,20 @@ public class MainController extends BaseUIController {
     );
 
     @ResponseBody
-    @GetMapping(value = "/__language/messages", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Map<String, String>>> getLanguageMessages() {
-        Locale locale = LocaleContextHolder.getLocale();
+    @GetMapping(value = "/__language/messages/{language}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Map<String, String>>> getLanguageMessages(@PathVariable String language) {
+        if (!languageService.getEnabledLanguages().containsKey(language)) {
+            return ApiResponse.fail("Language not supported.");
+        }
+        Locale locale = Locale.forLanguageTag(language);
 
         Map<String, String> internationalizationMessages = new HashMap<>();
         for (String code : INTERNATIONALIZATION_MESSAGES_CODES) {
             internationalizationMessages.put(code, messageSource.getMessage(code, null, locale));
         }
-        return ApiResponse.success(internationalizationMessages);
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.maxAge(Duration.ofDays(1)))
+            .body(new ApiResponse<>("success", internationalizationMessages));
     }
 
 }

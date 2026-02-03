@@ -37,7 +37,8 @@ Crane.api = {
     },
 
     async getLanguageMessages() {
-        const resp = await fetch("/__language/messages");
+        const lang = document.documentElement.lang;
+        const resp = await fetch(`/__language/messages/${lang}`);
         const json = await Crane.api._getResponseJson(resp);
         return json.data;
     },

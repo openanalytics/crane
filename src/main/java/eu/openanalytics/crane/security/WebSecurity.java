@@ -88,7 +88,7 @@ public class WebSecurity {
                                 "/__assets/webjars/**",
                                 "/__user/me",
                                 "/__language",
-                               "/__language/messages",
+                                "/__language/messages/**",
                                 "/actuator/health",
                                 "/actuator/health/liveness",
                                 "/actuator/health/readiness",
