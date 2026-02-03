@@ -22,9 +22,15 @@ Crane = window.Crane || {};
 Crane.api = {
     csrfToken: document.querySelector("meta[name='_csrf']")?.content,
     csrfHeader: document.querySelector("meta[name='_csrf_header']")?.content,
+    contextPath: document.querySelector("meta[name='_contextPath']")?.content,
+
+    buildURL(location) {
+        const baseURL = new URL(Crane.api.contextPath, window.location.origin);
+        return new URL(location, baseURL);
+    },
 
     async changeLanguage(language) {
-        const resp = await fetch("/__language", {
+        const resp = await fetch(Crane.api.buildURL('__language'), {
             method: 'PUT',
             body: JSON.stringify({"language": language}),
             headers: {
@@ -38,7 +44,7 @@ Crane.api = {
 
     async getLanguageMessages() {
         const lang = document.documentElement.lang;
-        const resp = await fetch(`/__language/messages/${lang}`);
+        const resp = await fetch(Crane.api.buildURL(`__language/messages/${lang}`));
         const json = await Crane.api._getResponseJson(resp);
         return json.data;
     },

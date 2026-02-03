@@ -29,6 +29,7 @@ import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
 import eu.openanalytics.crane.service.PosixReadAccessControlService;
 import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.util.ContextPathHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
@@ -64,8 +65,9 @@ public class MainController extends BaseUIController {
                           PosixReadAccessControlService posixReadAccessControlService,
                           AuditingService auditingService,
                           LanguageService languageService,
-                          MessageSource messageSource) {
-        super(userService, config, languageService, messageSource);
+                          MessageSource messageSource,
+                          ContextPathHelper contextPathHelper) {
+        super(userService, config, languageService, messageSource, contextPathHelper);
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
         this.auditingService = auditingService;

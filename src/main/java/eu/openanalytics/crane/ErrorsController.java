@@ -23,6 +23,7 @@ package eu.openanalytics.crane;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.util.ContextPathHelper;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,9 +58,9 @@ public class ErrorsController extends BaseUIController implements ErrorControlle
     public ErrorsController(UserService userService,
                             CraneConfig craneConfig,
                             LanguageService languageService,
-                            MessageSource messageSource
-    ) {
-        super(userService, craneConfig, languageService, messageSource);
+                            MessageSource messageSource,
+                            ContextPathHelper contextPathHelper) {
+        super(userService, craneConfig, languageService, messageSource, contextPathHelper);
     }
 
     @RequestMapping(value = "/error", produces = "text/html", method = RequestMethod.GET)

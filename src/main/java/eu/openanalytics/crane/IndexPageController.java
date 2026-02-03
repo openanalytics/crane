@@ -22,10 +22,11 @@ package eu.openanalytics.crane;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
-import eu.openanalytics.crane.service.LanguageService;
-import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.service.IndexPageService;
+import eu.openanalytics.crane.service.LanguageService;
+import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.util.ContextPathHelper;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,8 +55,9 @@ public class IndexPageController extends BaseUIController {
                                UserService userService,
                                CraneConfig craneConfig,
                                LanguageService languageService,
-                               MessageSource messageSource) {
-        super(userService, craneConfig, languageService, messageSource);
+                               MessageSource messageSource,
+                               ContextPathHelper contextPathHelper) {
+        super(userService, craneConfig, languageService, messageSource, contextPathHelper);
         this.indexPageService = indexPageService;
     }
 

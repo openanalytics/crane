@@ -23,6 +23,7 @@ package eu.openanalytics.crane;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.util.ContextPathHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
@@ -41,12 +42,18 @@ public class BaseUIController {
     protected final CraneConfig config;
     protected final LanguageService languageService;
     protected final MessageSource messageSource;
+    protected final ContextPathHelper contextPathHelper;
 
-    public BaseUIController(UserService userService, CraneConfig craneConfig, LanguageService languageService, MessageSource messageSource) {
+    public BaseUIController(UserService userService,
+                            CraneConfig craneConfig,
+                            LanguageService languageService,
+                            MessageSource messageSource,
+                            ContextPathHelper contextPathHelper) {
         this.userService = userService;
         this.config = craneConfig;
         this.languageService = languageService;
         this.messageSource = messageSource;
+        this.contextPathHelper = contextPathHelper;
     }
 
     protected void prepareMap(ModelMap map) {
@@ -60,6 +67,7 @@ public class BaseUIController {
         map.put("authenticated", authenticated);
         map.put("isOnlyPublic", config.isOnlyPublic());
         map.put("language", languageService.getAndUpdateLanguageOfUser(httpServletRequest, httpServletResponse));
+        map.put("contextPath", contextPathHelper.withEndingSlash());
         if (authenticated) {
             map.put("username", userService.getUser().getName());
         }
