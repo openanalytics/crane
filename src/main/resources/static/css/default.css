@@ -361,6 +361,16 @@ dialog form div input[type="text"] {
     font-weight: bold;
 }
 
+.dropdown-menu li:first-child {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.dropdown-menu li:last-child {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
 .header-field-group {
     position: relative;
     display: flex;
