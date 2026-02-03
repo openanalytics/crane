@@ -20,16 +20,24 @@
  */
 package eu.openanalytics.crane.upload;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.service.AbstractAccessControlService;
 import eu.openanalytics.crane.service.UserService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UploadAccessControlService extends AbstractAccessControlService {
-    UploadAccessControlService(PathWriteAccessControlService pathWriteAccessControlService, PosixWriteAccessControlService posixWriteAccessControlService, UploadAuditing auditingService, UserService userService) {
-        pathAccessControlService = pathWriteAccessControlService;
-        posixAccessControlService = posixWriteAccessControlService;
-        this.auditingService = auditingService;
-        this.userService = userService;
+
+    UploadAccessControlService(PathWriteAccessControlService pathWriteAccessControlService,
+                               PosixWriteAccessControlService posixWriteAccessControlService,
+                               UploadAuditing auditingService,
+                               UserService userService,
+                               CraneConfig craneConfig) {
+        super(pathWriteAccessControlService,
+            posixWriteAccessControlService,
+            auditingService,
+            userService,
+            craneConfig);
     }
+
 }

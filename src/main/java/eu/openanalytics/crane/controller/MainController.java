@@ -24,6 +24,7 @@ import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.model.dto.LanguageDto;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
@@ -85,7 +86,7 @@ public class MainController extends BaseUIController {
         boolean authenticated = userService.isAuthenticated();
 
         List<String> repositories = config.getRepositories().stream()
-            .filter(r -> pathReadAccessControlService.canAccess(r.getName(), "/") && posixReadAccessControlService.canAccess(r.getName(), "/"))
+            .filter(r -> pathReadAccessControlService.canAccess(new CranePath(r, "")) && posixReadAccessControlService.canAccess(new CranePath(r, "")))
             .map(Repository::getName)
             .collect(Collectors.toList());
 
@@ -108,7 +109,7 @@ public class MainController extends BaseUIController {
             Map.of(
                 "directories",
                 config.getRepositories().stream()
-                    .filter(r -> pathReadAccessControlService.canAccess(r.getName(), "/") && posixReadAccessControlService.canAccess(r.getName(), "/"))
+                    .filter(r -> pathReadAccessControlService.canAccess(new CranePath(r, "")) && posixReadAccessControlService.canAccess(new CranePath(r, "")))
                     .map(Repository::getName)
                     .toList()
             )

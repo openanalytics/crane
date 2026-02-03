@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.model.config;
 
+import eu.openanalytics.crane.model.runtime.CranePath;
 import org.carlspring.cloud.storage.s3fs.S3FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,6 +145,14 @@ public class Repository extends PathComponent {
 
     public boolean usesS3() {
         return storagePath.getFileSystem() instanceof S3FileSystem;
+    }
+
+    public CranePath getPath(String pathRelativeToRepository) {
+        return new CranePath(this, pathRelativeToRepository);
+    }
+
+    public CranePath getPathFromStoragePath(Path fullStoragePath) {
+        return new CranePath(this,storagePath.relativize(fullStoragePath).toString());
     }
 
 }

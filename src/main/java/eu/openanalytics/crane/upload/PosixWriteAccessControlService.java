@@ -25,9 +25,7 @@ import eu.openanalytics.crane.service.AbstractPosixAccessControlService;
 import eu.openanalytics.crane.service.UserService;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Iterator;
 
 @Service
 public class PosixWriteAccessControlService extends AbstractPosixAccessControlService {
@@ -45,8 +43,4 @@ public class PosixWriteAccessControlService extends AbstractPosixAccessControlSe
         return PosixFilePermission.GROUP_WRITE;
     }
 
-    @Override
-    protected Iterator<Path> getSubsequentPaths(String path) {
-        return Path.of(path).getParent().iterator();
-    }
 }

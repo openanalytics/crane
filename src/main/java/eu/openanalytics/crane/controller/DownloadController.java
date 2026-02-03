@@ -20,11 +20,11 @@
  */
 package eu.openanalytics.crane.controller;
 
-import com.google.common.collect.Streams;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.config.RewriteRule;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.HandleSpecExpressionService;
 import eu.openanalytics.crane.service.UserService;
@@ -34,13 +34,11 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,11 +49,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -84,27 +79,30 @@ public class DownloadController {
     public void read(HttpServletRequest request,
                      HttpServletResponse response,
                      @P("r") @PathVariable(name = "repository") String stringRepository,
-                     @P("p") @PathVariable(name = "path") String stringPath, RedirectAttributes redirectAttributes) throws ServletException, IOException {
+                     @P("p") @PathVariable(name = "path") String stringPath) throws ServletException, IOException {
         Repository repository = craneConfig.getRepository(stringRepository);
-        String relativePath = String.join("/", Streams.stream(Path.of(stringPath).iterator()).map(Path::toString).toList()); // TODO
-        Path path = repository.getStoragePath().resolve(relativePath);
-        if (!stringPath.endsWith("/") && Files.isDirectory(path)) {
+        CranePath cranePath = repository.getPath(stringPath);
+
+        if (!stringPath.endsWith("/") && cranePath.isDirectory()) {
             response.sendRedirect(request.getRequestURI().replaceFirst("/__file", "") + "/");
             return;
         }
-        Optional<String> redirect = checkRewriteRules(repository, Path.of(stringPath), request, response);
+
+        Optional<String> redirect = checkRewriteRules(repository, cranePath, request, response);
         if (redirect.isPresent()) {
             logger.debug("Rewriting '{}' to '{}'", stringPath, redirect.get());
             request.getRequestDispatcher("/__file" + redirect.get()).forward(request, response);
             return;
         }
-        if (Files.isDirectory(path)) {
-            path = path.resolve(repository.getIndexFileName());
+
+        if (cranePath.isDirectory()) {
+            cranePath = cranePath.getIndexFile();
         }
-        if (!Files.exists(path)) {
-            if (path.endsWith(repository.getIndexFileName())) {
-                Path directory = path.getParent();
-                if (Files.isDirectory(directory)) {
+
+        if (!cranePath.isExists()) {
+            if (cranePath.isAnIndexFile()) {
+                CranePath directory = cranePath.getParent();
+                if (directory != null && directory.isDirectory()) {
                     request.setAttribute("path", directory);
                     request.setAttribute("repo", repository);
                     auditingService.createRepositoryHandlerAuditEvent(request);
@@ -122,18 +120,17 @@ public class DownloadController {
             return;
         }
 
-        if (new ServletWebRequest(request, response).checkNotModified(Files.getLastModifiedTime(path).toMillis())) {
+        if (new ServletWebRequest(request, response).checkNotModified(cranePath.getLastModifiedTimeInMillis())) {
             return;
         }
 
         auditingService.createRepositoryHandlerAuditEvent(request);
-        InputStreamResource resource = new InputStreamResource(Files.newInputStream(path));
+        InputStreamResource resource = new InputStreamResource(cranePath.asInputStremam());
 
         addCachingHeaders(request, response, repository);
 
         ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
-        MediaType mediaType = getMediaType(path);
-        resourceHttpMessageConverter.write(resource, mediaType, outputMessage);
+        resourceHttpMessageConverter.write(resource, cranePath.getMediaType(), outputMessage);
     }
 
     private void addCachingHeaders(HttpServletRequest request, HttpServletResponse response, Repository repository) {
@@ -143,12 +140,6 @@ public class DownloadController {
                 break;
             }
         }
-    }
-
-    private MediaType getMediaType(Path path) {
-        Tika tika = new Tika();
-        String mimeType = tika.detect(path.getFileName().toString());
-        return MediaType.valueOf(mimeType);
     }
 
     private Map<AntPathRequestMatcher, String> computeCacheRules(Repository repository) {
@@ -164,13 +155,13 @@ public class DownloadController {
         return cacheRules;
     }
 
-    private Optional<String> checkRewriteRules(Repository repository, Path path, HttpServletRequest request, HttpServletResponse response) {
+    private Optional<String> checkRewriteRules(Repository repository, CranePath cranePath, HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = userService.getUser();
         if (repository.getRewrites() == null) {
             return Optional.empty();
         }
         for (RewriteRule redirectRule : repository.getRewrites()) {
-            SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), repository, request, response, path);
+            SpecExpressionContext context = SpecExpressionContext.create(auth, auth.getPrincipal(), auth.getCredentials(), repository, request, response, cranePath);
             if (specExpressionResolver.evaluateToBoolean(redirectRule.getMatcher(), context)) {
                 return Optional.of(specExpressionResolver.evaluateToString(redirectRule.getDestination(), context));
             }

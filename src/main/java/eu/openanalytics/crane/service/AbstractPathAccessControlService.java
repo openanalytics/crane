@@ -23,7 +23,7 @@ package eu.openanalytics.crane.service;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
-import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import org.slf4j.Logger;
@@ -32,10 +32,6 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
-
-import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.Optional;
 
 public abstract class AbstractPathAccessControlService {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -51,47 +47,36 @@ public abstract class AbstractPathAccessControlService {
 
     protected abstract AccessControl getAccessControl(PathComponent pathComponent);
 
-    public boolean canAccess(String repository, String path) {
-        Repository repositoryObject = craneConfig.getRepository(repository);
-        if (repositoryObject == null) {
+    public boolean canAccess(CranePath path) {
+        return canAccess(userService.getUser(), path);
+    }
+
+    public boolean canAccess(Authentication auth, CranePath path) {
+        // first check repository
+        if (!canAccess(auth, getAccessControl(path.getRepository()))) {
+            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, path.getRepository().getName());
             return false;
         }
-        return canAccess(repositoryObject, path);
+        // loop over path components
+        for (CranePath pathComponent : path.getComponents()) {
+            if (!pathComponent.isExistsInConfig()) {
+                logger.debug("User {} can access path {} because there is no access-control for {}", auth.getName(), path, pathComponent.getName());
+            } else {
+                AccessControl accessControl = getAccessControl(pathComponent);
+                if (accessControl == null) {
+                    throw new IllegalStateException("Should not be empty");
+                }
+                if (canAccess(auth, accessControl)) {
+                } else {
+                    logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, pathComponent);
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
-    public boolean canAccess(Repository repository, String fullPath) {
-        return canAccess(userService.getUser(), fullPath, repository, Path.of(fullPath).iterator());
-    }
-
-    public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
-        return canAccess(auth, fullPath, repository, Path.of(fullPath).iterator());
-    }
-
-    public boolean canAccess(Authentication auth, String fullPath, PathComponent pathComponent, Iterator<Path> path) {
-        String accessPath = pathComponent.getName() + fullPath;
-        if (!canAccess(auth, getAccessControl(pathComponent))) {
-            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), accessPath, pathComponent.getName());
-            return false;
-        }
-        if (!pathComponent.hasPaths()) {
-            logger.debug("User {} can access path {}, because they can access {}", auth.getName(), accessPath, pathComponent.getName());
-            return true;
-        }
-        if (!path.hasNext()) {
-            logger.debug("User {} can access path {}, because they can access {}", auth.getName(), accessPath, pathComponent.getName());
-            return true;
-        }
-
-        String nextPartOfRequestedPath = path.next().toString();
-        Optional<PathComponent> nextPathComponent = pathComponent.getPath(nextPartOfRequestedPath);
-
-        if (nextPathComponent.isEmpty()) {
-            logger.debug("User {} can access path {}, because there is no access-control for {}", auth.getName(), accessPath, nextPartOfRequestedPath);
-            return true;
-        }
-
-        return canAccess(auth, fullPath, nextPathComponent.get(), path);
-    }
+    protected abstract AccessControl getAccessControl(CranePath pathComponent);
 
     public boolean canAccess(Authentication auth, AccessControl accessControl) {
         if (auth == null || accessControl == null) {

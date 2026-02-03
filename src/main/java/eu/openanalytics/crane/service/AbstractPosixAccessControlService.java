@@ -21,7 +21,7 @@
 package eu.openanalytics.crane.service;
 
 import eu.openanalytics.crane.config.CraneConfig;
-import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.security.CraneUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,13 +29,12 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,49 +52,50 @@ public abstract class AbstractPosixAccessControlService {
 
     protected abstract PosixFilePermission getGroupAccess();
 
-    public boolean canAccess(Repository repository, String stringPath) {
-        return canAccess(userService.getUser(), stringPath, repository);
+    public boolean canAccess(CranePath path) {
+        return canAccess(userService.getUser(), path);
     }
 
-    public boolean canAccess(String repository, String path) {
-        return canAccess(userService.getUser(), path, craneConfig.getRepository(repository));
-    }
-
-    public boolean canAccess(Authentication auth, String fullPath, Repository repository) {
-        if (auth == null || repository == null) {
+    public boolean canAccess(Authentication auth, CranePath path) {
+        if (auth == null) {
             return false;
         }
 
-        if (!repository.hasPosixAccessControl()) {
+        if (!path.getRepository().hasPosixAccessControl()) {
             return true;
         }
 
-        if (!pathSupportsPosix(repository.getStoragePath())) {
+        if (!pathSupportsPosix(path.getRepository().getStoragePath())) {
             logger.warn("File system is not posix compliant");
             return true;
         }
 
-        Iterator<Path> subsequentPaths = getSubsequentPaths(fullPath);
-        Path currentPath = repository.getStoragePath();
-        while (subsequentPaths.hasNext()) {
-            if (!canAccessPosix(auth, currentPath)) {
-                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), fullPath, currentPath);
+        List<CranePath> pathComponents = path.getComponents();
+        if (pathComponents.isEmpty()) {
+            // request is accessing repository, but there is no posix check for the repository itself
+            return true;
+        }
+        CranePath lastPathComponent = pathComponents.remove(pathComponents.size() - 1);
+        for (CranePath subsequentPath : pathComponents) {
+            if (!canAccessPosix(auth, subsequentPath)) {
+                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, subsequentPath);
                 return false;
             }
-            currentPath = currentPath.resolve(subsequentPaths.next());
         }
-        return canAccessPosix(auth, currentPath);
-    }
-
-    protected Iterator<Path> getSubsequentPaths(String path) {
-        return Path.of(path).iterator();
+        // only check permissions of last component if the path actually exists
+        // i.e. when uploading the file does not exist and we don't check the permission
+        if (lastPathComponent.getStorageFile().exists() && !canAccessPosix(auth, lastPathComponent)) {
+            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, lastPathComponent);
+            return false;
+        }
+        return true;
     }
 
     protected boolean pathSupportsPosix(Path storagePath) {
         return storagePath.getFileSystem().supportedFileAttributeViews().contains("posix");
     }
 
-    protected boolean canAccessPosix(Authentication auth, Path path) {
+    protected boolean canAccessPosix(Authentication auth, CranePath cranePath) {
         if (auth instanceof AnonymousAuthenticationToken) {
             return false;
         }
@@ -103,14 +103,14 @@ public abstract class AbstractPosixAccessControlService {
         PosixFileAttributes attributes;
         int pathUID, pathGID;
         try {
-            Map<String, Object> pathAttributes = Files.readAttributes(path, "unix:uid,gid");
+            Map<String, Object> pathAttributes = cranePath.readAttributes("unix:uid,gid");
             pathUID = (int) pathAttributes.get("uid");
             pathGID = (int) pathAttributes.get("gid");
-            attributes = Files.getFileAttributeView(path, PosixFileAttributeView.class).readAttributes();
+            attributes = cranePath.getFileAttributeView(PosixFileAttributeView.class).readAttributes();
         } catch (NoSuchFileException e) {
             return false;
         } catch (IOException e) {
-            logger.warn("Could not view POSIX file system permissions of {}", path, e);
+            logger.warn("Could not view POSIX file system permissions of {}", cranePath, e);
             return false;
         }
 

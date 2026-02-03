@@ -21,14 +21,12 @@
 package eu.openanalytics.crane.model.config;
 
 
-import eu.openanalytics.crane.upload.UploadController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +42,7 @@ public class PathComponent {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
     private String name;
-    private Map<String, PathComponent> components;
+    private Map<String, PathComponent> components = new HashMap<>();
 
     private AccessControl readAccess = null;
     private AccessControl writeAccess = null;
@@ -81,7 +79,7 @@ public class PathComponent {
         return components != null && !components.isEmpty();
     }
 
-    public Optional<PathComponent> getPath(String name) {
+    public Optional<PathComponent> getPathComponent(String name) {
         return Optional.ofNullable(components.get(name));
     }
 

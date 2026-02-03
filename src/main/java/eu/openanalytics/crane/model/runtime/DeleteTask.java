@@ -20,7 +20,6 @@
  */
 package eu.openanalytics.crane.model.runtime;
 
-import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.service.DeletionService;
 import eu.openanalytics.crane.upload.UploadAccessControlService;
 import org.apache.commons.lang3.NotImplementedException;
@@ -31,71 +30,63 @@ import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-public class DeleteTask extends SimpleFileVisitor<Path> {
+public class DeleteTask extends SimpleFileVisitor<CranePath> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final UploadAccessControlService uploadAccessControlService;
     private final DeletionService deletionService;
-    private final Repository repository;
-    private final Path path;
-    private final Path storagePath;
+    private final CranePath cranePath;
     private final Authentication auth;
 
-    public DeleteTask(DeletionService deletionService, UploadAccessControlService uploadAccessControlService, Repository repository, Path path, Authentication auth) {
+    public DeleteTask(DeletionService deletionService, UploadAccessControlService uploadAccessControlService, CranePath cranePath, Authentication auth) {
         this.deletionService = deletionService;
         this.uploadAccessControlService = uploadAccessControlService;
-        this.repository = repository;
-        this.path = path;
+        this.cranePath = cranePath;
         this.auth = auth;
-        storagePath = repository.getStoragePath();
     }
 
     public void startDeletion() {
         try {
-            Files.walkFileTree(path, this);
-            deletionService.removeFromState(path);
+            cranePath.walkFileTree(this);
+            deletionService.removeFromState(cranePath);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
     }
 
     @Override
-    public @NotNull FileVisitResult preVisitDirectory(@NotNull Path dir, @NotNull BasicFileAttributes attributes) {
-        if (!uploadAccessControlService.canAccess(repository, "/" + storagePath.relativize(dir), auth)) {
+    public @NotNull FileVisitResult preVisitDirectory(@NotNull CranePath dir, @NotNull BasicFileAttributes attributes) {
+        if (!uploadAccessControlService.canAccess(dir, auth)) {
             return FileVisitResult.SKIP_SUBTREE;
         }
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public @NotNull FileVisitResult postVisitDirectory(@NotNull Path dir, IOException exception) {
-        if (!CraneResource.isPathComponent(dir, storagePath, repository)) {
+    public @NotNull FileVisitResult postVisitDirectory(@NotNull CranePath dir, IOException exception) {
+        if (!cranePath.isExistsInConfig()) {
             delete(dir);
         }
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attributes) {
-        if (!uploadAccessControlService.canAccess(repository, "/" + storagePath.relativize(file), auth)) {
+    public @NotNull FileVisitResult visitFile(@NotNull CranePath file, @NotNull BasicFileAttributes attributes) {
+        if (!uploadAccessControlService.canAccess(file, auth)) {
             return FileVisitResult.CONTINUE;
         }
         delete(file);
         return FileVisitResult.CONTINUE;
     }
 
-    private void delete(Path path) {
-        if (path.toString().startsWith("s3://")) {
+    private void delete(@NotNull CranePath path) {
+        if (path.getRepository().usesS3()) {
             throw new NotImplementedException("S3 directory deletion not implemented yet");
-        } else if (path.toString().startsWith("/")) {
-            path.toFile().delete();
         } else {
-            throw new RuntimeException("Path type no supported %s!".formatted(path.toString()));
+            path.getStorageFile().delete();
         }
     }
 }

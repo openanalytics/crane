@@ -22,6 +22,7 @@ package eu.openanalytics.crane.service.spel;
 
 
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -74,8 +75,8 @@ public class SpecExpressionContext {
             if (o instanceof HttpServletResponse) {
                 ctx.response = (HttpServletResponse) o;
             }
-            if (o instanceof Path) {
-                ctx.path = (Path) o;
+            if (o instanceof CranePath) {
+                ctx.path = Path.of("/" + ((CranePath) o).getPathRelativeToRepository()); // TODO
             }
         }
         return ctx;

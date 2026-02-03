@@ -26,7 +26,7 @@
         <title th:text="${title}"></title>
     </th:block>
     <th:block th:fragment="content">
-        <h1><span th:text="#{index.directory}"></span> <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
+        <h1><span th:text="#{index.directory}"></span> <code><span class="slash">/</span><a th:href="@{'/' + ${repository}}" th:text="${repository}"></a><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.webUri}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
         </code></h1>
         <dialog id="uppy-dialog">
             <div id="uppy" th:action="@{${resource}}"></div>
@@ -65,11 +65,11 @@
                     <td></td>
                     <td></td>
                     <td>
-                        <button th:if="${directory.hasWriteAccess && !directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.isPathComponent}" type="button" class="delete-button danger button"
+                        <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button" class="delete-button danger button"
                                 th:title="#{index.delete_directory}">
                             <img th:src="@{'/__assets/svg/trash-can.svg'}">
                         </button>
-                        <button th:if="${directory.hasWriteAccess && directory.isPathComponent}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.isPathComponent}" type="button" class="delete-button danger button"
+                        <button th:if="${@uploadAccessControlService.canAccess(directory) && directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button" class="delete-button danger button"
                                 th:title="#{index.empty_directory}">
                             <img th:src="@{'/__assets/svg/broom.svg'}">
                         </button>

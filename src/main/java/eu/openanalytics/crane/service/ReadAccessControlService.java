@@ -20,16 +20,23 @@
  */
 package eu.openanalytics.crane.service;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.security.auditing.AuditingService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReadAccessControlService extends AbstractAccessControlService {
-    public ReadAccessControlService(PathReadAccessControlService pathReadAccessControlService, PosixReadAccessControlService posixReadAccessControlService, AuditingService auditingService, UserService userService) {
-        pathAccessControlService = pathReadAccessControlService;
-        posixAccessControlService = posixReadAccessControlService;
-        this.auditingService = auditingService;
-        this.userService = userService;
 
+    public ReadAccessControlService(PathReadAccessControlService pathReadAccessControlService,
+                                    PosixReadAccessControlService posixReadAccessControlService,
+                                    AuditingService auditingService,
+                                    UserService userService,
+                                    CraneConfig craneConfig) {
+        super(pathReadAccessControlService,
+            posixReadAccessControlService,
+            auditingService,
+            userService,
+            craneConfig);
     }
+
 }

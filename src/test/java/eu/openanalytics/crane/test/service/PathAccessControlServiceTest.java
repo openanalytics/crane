@@ -20,10 +20,13 @@
  */
 package eu.openanalytics.crane.test.service;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
+import eu.openanalytics.crane.service.ReadAccessControlService;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.AfterAll;
@@ -138,4 +141,20 @@ public class PathAccessControlServiceTest {
         when(mockedAuthentication.getDetails()).thenReturn(new WebAuthenticationDetails("11.11.11.11", null));
         Assertions.assertFalse(pathReadAccessControlService.canAccess(mockedAuthentication, repository.getReadAccess()), "Should not get access incorrect ip and anonymous");
     }
+
+    @Test
+    public void testedNestedPermission() {
+        ReadAccessControlService pathReadAccessControlService = inst.getBean("readAccessControlService", ReadAccessControlService.class);
+        CraneConfig craneConfig = inst.getBean("craneConfig", CraneConfig.class);
+
+        CranePath pathToTest = new CranePath(craneConfig.getRepository("public_repo"), "/nested/nested_restricted");
+
+        Authentication mockedAuthentication = mock(AnonymousAuthenticationToken.class);
+        Assertions.assertFalse(pathReadAccessControlService.canAccess(pathToTest, mockedAuthentication), "Anonymous user cannot access this path");
+
+        mockedAuthentication = mock(Authentication.class);
+        when(mockedAuthentication.getName()).thenReturn("demo");
+        Assertions.assertTrue(pathReadAccessControlService.canAccess(pathToTest, mockedAuthentication), "Authenticated user can access this path");
+    }
+
 }

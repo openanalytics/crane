@@ -18,44 +18,32 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane.model.runtime;
+package eu.openanalytics.crane.model.dto;
 
-import eu.openanalytics.crane.util.FileSize;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import eu.openanalytics.crane.model.runtime.CranePath;
 
+import java.io.IOException;
 import java.time.Instant;
 
-public class CraneFile implements CraneResource {
+public record CraneFileDto(@JsonIgnore CranePath cranePath) {
 
-    private final String name;
-
-    private final Instant lastModifiedTime;
-
-    private final Long size;
-
-    private final String formattedSize;
-
-    public CraneFile(String name, Instant lastModifiedTime, Long size) {
-        this.name = name;
-        this.lastModifiedTime = lastModifiedTime;
-        this.size = size;
-        this.formattedSize = FileSize.bytesToHumanReadableBinary(size);
-    }
-
-    @Override
     public String getName() {
-        return name;
+        return cranePath.getName();
     }
 
-    public Instant getLastModifiedTime() {
-        return lastModifiedTime;
+    public long getSize() throws IOException {
+        return cranePath.getSize();
     }
 
-    public Long getSize() {
-        return size;
+    @SuppressWarnings("unused")
+    public String getFormattedSize() throws IOException {
+        return cranePath.getFormattedSize();
     }
 
-    public String getFormattedSize() {
-        return formattedSize;
+    @SuppressWarnings("unused")
+    public Instant getLastModifiedTiime() throws IOException {
+        return cranePath.getLastModifiedTime();
     }
 
 }

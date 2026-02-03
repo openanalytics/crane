@@ -23,6 +23,7 @@ package eu.openanalytics.crane.upload;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.AbstractPathAccessControlService;
 import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
@@ -38,4 +39,10 @@ public class PathWriteAccessControlService extends AbstractPathAccessControlServ
     protected AccessControl getAccessControl(PathComponent pathComponent) {
         return pathComponent.getWriteAccess();
     }
+
+    @Override
+    protected AccessControl getAccessControl(CranePath pathComponent) {
+        return pathComponent.getWriteAccess();
+    }
+
 }

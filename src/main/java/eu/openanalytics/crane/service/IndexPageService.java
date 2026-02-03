@@ -21,80 +21,45 @@
 package eu.openanalytics.crane.service;
 
 import eu.openanalytics.crane.model.config.Repository;
-import eu.openanalytics.crane.model.runtime.CraneDirectory;
-import eu.openanalytics.crane.model.runtime.CraneFile;
-import eu.openanalytics.crane.model.runtime.CraneResource;
-import eu.openanalytics.crane.upload.UploadAccessControlService;
+import eu.openanalytics.crane.model.runtime.CranePath;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 @Service
 public class IndexPageService {
 
     private final ReadAccessControlService readAccessControlService;
-    private final UploadAccessControlService uploadAccessControlService;
 
-    public IndexPageService(ReadAccessControlService readAccessControlService, UploadAccessControlService uploadAccessControlService) {
+    public IndexPageService(ReadAccessControlService readAccessControlService) {
         this.readAccessControlService = readAccessControlService;
-        this.uploadAccessControlService = uploadAccessControlService;
     }
 
     public String getTemplateName(Repository repository) {
         return "default-index";
     }
 
-    public Map<String, Object> getTemplateVariables(Repository repository, Path path) throws IOException {
-        List<CraneFile> craneFiles = new ArrayList<>();
-        List<CraneDirectory> craneDirectories = new ArrayList<>();
-        try (Stream<Path> dirListing = Files.list(path)) {
+    public Pair<List<CranePath>, List<CranePath>> getFilesAndDirectoriesInPath(CranePath path) throws IOException {
+        List<CranePath> craneFiles = new ArrayList<>();
+        List<CranePath> craneDirectories = new ArrayList<>();
+
+        try (Stream<CranePath> dirListing = path.getContents()) {
             dirListing.forEach(p -> {
-                CraneResource craneResource = CraneResource.createFromPath(p, repository, uploadAccessControlService);
-                if (craneResource == null) {
-                    // TODO
-                    return;
-                }
-                String fullPath = "/" + repository.getStoragePath().relativize(p);
-                if (readAccessControlService.canAccess(repository, fullPath)) {
-                    if (craneResource instanceof CraneFile craneFile) {
-                        craneFiles.add(craneFile);
-                    } else if (craneResource instanceof CraneDirectory craneDirectory) {
-                        craneDirectories.add(craneDirectory);
+                if (readAccessControlService.canAccess(p)) {
+                    if (p.isDirectory()) {
+                        craneDirectories.add(p);
                     } else {
-                        // TODO
+                        craneFiles.add(p);
                     }
                 }
             });
         }
 
-        // check user write access
-        boolean hasWriteAccess = uploadAccessControlService.canAccess(repository, "/" + repository.getStoragePath().relativize(path));
-
-        // breadcrumbs
-        List<CraneResource> breadcrumbs = new ArrayList<>();
-        Path current = path;
-        CraneResource resource = CraneResource.createFromPath(current, repository, uploadAccessControlService);
-        while (resource != null && current != null && !current.toString().equals(repository.getStoragePath().toString())) {
-            breadcrumbs.add(0, resource);
-            current = current.getParent();
-            resource = CraneResource.createFromPath(current, repository, uploadAccessControlService);
-        }
-        // add breadcrumb for the repository: always use the name of the repository, not the name of the directory in the storage-location
-        breadcrumbs.add(0,new CraneDirectory(repository.getName(), "/" + repository.getName(), true, false));
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("files", craneFiles);
-        map.put("directories", craneDirectories);
-        map.put("hasWriteAccess", hasWriteAccess);
-        map.put("breadcrumbs", breadcrumbs);
-        return map;
+        return Pair.of(craneFiles, craneDirectories);
     }
 
 }

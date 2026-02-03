@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.util;
 
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -30,21 +31,32 @@ public class ContextPathHelper {
     private static String contextPathWithoutSlash = null;
     private static String contextPathWithSlash = null;
 
-    private static String getContextPath(Environment environment, boolean endWithSlash) {
+    private String getContextPath(Environment environment, boolean endWithSlash) {
         String contextPath = environment.getProperty("server.servlet.context-path");
-        if (contextPath == null || contextPath.trim().equals("/") || contextPath.trim().isEmpty()) return endWithSlash ? "/" : "";
+        if (contextPath == null || contextPath.trim().equals("/") || contextPath.trim().isEmpty()) {
+            return endWithSlash ? "/" : "";
+        }
 
-        if (!contextPath.startsWith("/")) contextPath = "/" + contextPath;
-        if (endWithSlash && !contextPath.endsWith("/")) contextPath += "/";
+        if (!contextPath.startsWith("/")) {
+            contextPath = "/" + contextPath;
+        }
+
+        if (endWithSlash && !contextPath.endsWith("/")) {
+            contextPath += "/";
+        }
+
+        if (!endWithSlash && contextPath.endsWith("/")) {
+            contextPath = Strings.CS.removeEnd(contextPath, "/");
+        }
 
         return contextPath;
     }
 
-    public String withEndingSlash() {
+    public static String withEndingSlash() {
         return contextPathWithSlash;
     }
 
-    public String withoutEndingSlash() {
+    public static String withoutEndingSlash() {
         return contextPathWithoutSlash;
     }
 

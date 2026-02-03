@@ -20,37 +20,60 @@
  */
 package eu.openanalytics.crane.service;
 
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.security.auditing.AbstractAuditingService;
 import org.springframework.security.core.Authentication;
 
 public abstract class AbstractAccessControlService {
-    protected AbstractPathAccessControlService pathAccessControlService;
-    protected AbstractPosixAccessControlService posixAccessControlService;
-    protected AbstractAuditingService auditingService;
-    protected UserService userService;
 
-    public boolean canAccess(Repository repository, String path) {
-        boolean canAccess = pathAccessControlService.canAccess(repository, path) && posixAccessControlService.canAccess(repository, path);
-        if (!canAccess) {
-            auditingService.createAuthorizationDeniedEvent(userService.getUser());
-        }
-        return canAccess;
+    private final AbstractPathAccessControlService pathAccessControlService;
+    private final AbstractPosixAccessControlService posixAccessControlService;
+    private final AbstractAuditingService auditingService;
+    private final UserService userService;
+    private final CraneConfig craneConfig;
+
+    public AbstractAccessControlService(AbstractPathAccessControlService pathAccessControlService,
+                                        AbstractPosixAccessControlService posixAccessControlService,
+                                        AbstractAuditingService auditingService,
+                                        UserService userService,
+                                        CraneConfig craneConfig) {
+        this.pathAccessControlService = pathAccessControlService;
+        this.posixAccessControlService = posixAccessControlService;
+        this.auditingService = auditingService;
+        this.userService = userService;
+        this.craneConfig = craneConfig;
     }
 
     public boolean canAccess(String repository, String path) {
-        boolean canAccess = pathAccessControlService.canAccess(repository, path) && posixAccessControlService.canAccess(repository, path);
+        Repository repositoryObject = craneConfig.getRepository(repository);
+        if (repositoryObject == null) {
+            return false;
+        }
+        CranePath cranePath = new CranePath(repositoryObject, path);
+
+        boolean canAccess = pathAccessControlService.canAccess(cranePath) && posixAccessControlService.canAccess(cranePath);
         if (!canAccess) {
             auditingService.createAuthorizationDeniedEvent(userService.getUser());
         }
         return canAccess;
     }
 
-    public boolean canAccess(Repository repository, String path, Authentication auth) {
-        boolean canAccess = pathAccessControlService.canAccess(auth, path, repository) && posixAccessControlService.canAccess(auth, path, repository);
+    public boolean canAccess(CranePath path) {
+        boolean canAccess = pathAccessControlService.canAccess(path) && posixAccessControlService.canAccess(path);
+        if (!canAccess) {
+            auditingService.createAuthorizationDeniedEvent(userService.getUser());
+        }
+        return canAccess;
+    }
+
+    public boolean canAccess(CranePath path, Authentication auth) {
+        boolean canAccess = pathAccessControlService.canAccess(auth, path) && posixAccessControlService.canAccess(auth, path);
         if (!canAccess) {
             auditingService.createAuthorizationDeniedEvent(auth);
         }
         return canAccess;
     }
+
 }

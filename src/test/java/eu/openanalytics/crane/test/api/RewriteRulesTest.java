@@ -28,8 +28,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.ArrayList;
@@ -37,7 +35,7 @@ import java.util.List;
 
 @Testcontainers
 public class RewriteRulesTest {
-    private static final Logger logger = LoggerFactory.getLogger(RewriteRulesTest.class);
+
     private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     static List<CraneInstance> instances = new ArrayList<>();
 

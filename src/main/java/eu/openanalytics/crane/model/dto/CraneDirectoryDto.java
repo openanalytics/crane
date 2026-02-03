@@ -18,37 +18,20 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane.model.runtime;
+package eu.openanalytics.crane.model.dto;
 
-public class CraneDirectory implements CraneResource {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import eu.openanalytics.crane.model.runtime.CranePath;
+import eu.openanalytics.crane.util.ContextPathHelper;
 
-    private final String name;
-    private final String path;
-    private final boolean isPathComponent;
-    private final boolean hasWriteAccess;
+public record CraneDirectoryDto(@JsonIgnore CranePath cranePath) {
 
-    public CraneDirectory(String name, String path, boolean isPathComponent, boolean hasWriteAccess) {
-        this.name = name;
-        this.path = path;
-        this.isPathComponent = isPathComponent;
-        this.hasWriteAccess = hasWriteAccess;
-    }
-
-    @Override
     public String getName() {
-        return name;
+        return cranePath.getName();
     }
 
     public String getPath() {
-        // path relative to crane root
-        return path;
+        return ContextPathHelper.withoutEndingSlash() + cranePath.getWebUri();
     }
 
-    public boolean isPathComponent() {
-        return isPathComponent;
-    }
-
-    public boolean hasWriteAccess() {
-        return hasWriteAccess;
-    }
 }
