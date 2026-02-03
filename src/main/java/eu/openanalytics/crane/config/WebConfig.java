@@ -96,6 +96,11 @@ public class WebConfig implements WebMvcConfigurer {
         }
     }
 
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new ThymeleafLayoutInterceptor());
+    }
+
     private static class InMemoryResource extends ByteArrayResource {
 
         private final String filename;
