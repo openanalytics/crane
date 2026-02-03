@@ -141,6 +141,13 @@ Crane.ui = {
             paging: false,
             language: {
                 url: dataTableLanguageUrl
+            },
+            initComplete: function() {
+                Crane.ui.elements.datatable = this.api();
+                if (Crane.ui.elements.table.data("has-write-access")) {
+                    Crane.ui.initUppy();
+                }
+                Crane.ui.elements.table.css("visibility", "visible");
             }
         };
         if (Crane.ui.elements.table.data("has-write-access")) {
@@ -159,12 +166,7 @@ Crane.ui = {
                 }
             }
         }
-        Crane.ui.elements.datatable = Crane.ui.elements.table.DataTable(dataTableOptions);
-        Crane.ui.elements.table.css("visibility", "visible");
-
-        if (Crane.ui.elements.table.data("has-write-access")) {
-            Crane.ui.initUppy();
-        }
+        Crane.ui.elements.table.DataTable(dataTableOptions);
 
         document.getElementById("directory-name").addEventListener("input", Crane.ui.disableCreateDirectory);
         document.getElementById("cancel-create-directory").addEventListener("click", Crane.ui.closeCreateDirectoryDialog);
