@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @Component("messageSource")
 public class CustomMessageSource extends AbstractMessageSource {
 
-    private static final String PROP_PROXY_TRANSLATION_OVERRIDES = "proxy.translation-overrides";
+    private static final String PROP_PROXY_TRANSLATION_OVERRIDES = "app.translation-overrides";
     private final Map<String, Map<String, String>> translationOverrides = new HashMap<>();
     private final Map<String, Map<String, MessageFormat>> translationOverridesMessageFormat = new HashMap<>();
 

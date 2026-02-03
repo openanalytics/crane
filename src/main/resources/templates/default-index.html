@@ -26,7 +26,7 @@
         <title th:text="${title}"></title>
     </th:block>
     <th:block th:fragment="content">
-        <h1><span th:text="#{index.directoryo}"></span> <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
+        <h1><span th:text="#{index.directory}"></span> <code><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.path}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
         </code></h1>
         <dialog id="uppy-dialog">
             <div id="uppy" th:action="@{${resource}}"></div>
