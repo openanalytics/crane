@@ -18,7 +18,7 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane;
+package eu.openanalytics.crane.controller;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.service.LanguageService;
@@ -30,7 +30,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.context.MessageSource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpMethod;
@@ -51,15 +50,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-public class ErrorsController extends BaseUIController implements ErrorController {
+public class ErrorController extends BaseUIController implements org.springframework.boot.web.servlet.error.ErrorController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ErrorsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ErrorController.class);
 
-    public ErrorsController(UserService userService,
-                            CraneConfig craneConfig,
-                            LanguageService languageService,
-                            MessageSource messageSource,
-                            ContextPathHelper contextPathHelper) {
+    public ErrorController(UserService userService,
+                           CraneConfig craneConfig,
+                           LanguageService languageService,
+                           MessageSource messageSource,
+                           ContextPathHelper contextPathHelper) {
         super(userService, craneConfig, languageService, messageSource, contextPathHelper);
     }
 

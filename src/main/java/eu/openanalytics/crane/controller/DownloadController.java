@@ -18,7 +18,7 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane;
+package eu.openanalytics.crane.controller;
 
 import com.google.common.collect.Streams;
 import eu.openanalytics.crane.config.CraneConfig;

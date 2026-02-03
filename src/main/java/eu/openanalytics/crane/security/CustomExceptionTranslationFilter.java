@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.security;
 
+import eu.openanalytics.crane.controller.ErrorController;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -39,7 +40,7 @@ import java.util.List;
 
 /**
  * Filter that runs after {@link ExceptionTranslationFilter} in order to send {@link AccessDeniedException} exceptions
- * to the {@link eu.openanalytics.crane.ErrorsController} if they are not sent by a browser.
+ * to the {@link ErrorController} if they are not sent by a browser.
  * Without this filter these request would get an empty 401 response, but they must get a 404 error.
  * See #34378
  */

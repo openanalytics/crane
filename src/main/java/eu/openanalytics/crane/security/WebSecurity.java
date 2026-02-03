@@ -20,8 +20,8 @@
  */
 package eu.openanalytics.crane.security;
 
-import eu.openanalytics.crane.ErrorsController;
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.controller.ErrorController;
 import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
@@ -98,7 +98,7 @@ public class WebSecurity {
                         ).permitAll()
                         .requestMatchers(repoMatchers.toArray(new String[0])).permitAll()
                         .anyRequest().authenticated())
-                .exceptionHandling(exception -> exception.accessDeniedHandler(ErrorsController::accessDeniedHandler))
+                .exceptionHandling(exception -> exception.accessDeniedHandler(ErrorController::accessDeniedHandler))
                 .requestCache((cache) -> cache.requestCache(requestCache))
                 .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwkSetUri(craneConfig.getJwksUri()).jwtAuthenticationConverter(new CraneJwtAuthenticationConverter(tokenParser, craneConfig))))
                 .oauth2Login(login -> login

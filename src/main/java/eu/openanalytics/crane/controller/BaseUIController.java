@@ -18,7 +18,7 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane;
+package eu.openanalytics.crane.controller;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.service.LanguageService;
@@ -36,7 +36,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.Locale;
 import java.util.Map;
 
-public class BaseUIController {
+public abstract class BaseUIController {
 
     protected final UserService userService;
     protected final CraneConfig config;
