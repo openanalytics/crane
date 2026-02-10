@@ -121,17 +121,13 @@ public class CraneConfig {
 
         repositories.values().forEach(r -> r.validate(onlyPublic));
         for (Repository r : repositories.values()) {
-            if (defaultCache != null && r.getCache() == null) {
-                r.setCache(defaultCache);
-            }
+            Path storagePath;
             if (r.getStorageLocation() == null) {
-                Path repositoryStoragePath = root.resolve(r.getName() + "/");
-                r.setStoragePath(repositoryStoragePath);
-                r.setStorageLocation(repositoryStoragePath.toString());
+                storagePath = root.resolve(r.getName() + "/");
             } else {
-                r.setStoragePath(storageLocationToPath(validateRepositoryStorageLocation(r.getStorageLocation(), r.getName())));
+                storagePath = storageLocationToPath(validateRepositoryStorageLocation(r.getStorageLocation(), r.getName()));
             }
-            r.init();
+            r.init(defaultCache, storagePath);
         }
         if (userWorkspaceStorageLocation != null) {
             repositories.put("Workspace", new UserWorkspaceRepository(userWorkspaceStorageLocation, storageLocationToPath(userWorkspaceStorageLocation)));

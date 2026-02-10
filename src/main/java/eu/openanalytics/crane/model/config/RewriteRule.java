@@ -20,24 +20,20 @@
  */
 package eu.openanalytics.crane.model.config;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
+@EqualsAndHashCode
 public class RewriteRule {
 
     private String matcher;
     private String destination;
 
-    public String getMatcher() {
-        return matcher;
-    }
-
-    public void setMatcher(String matcher) {
+    public RewriteRule(String matcher, String destination) {
         this.matcher = matcher;
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
         this.destination = destination;
     }
 

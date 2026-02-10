@@ -21,37 +21,65 @@
 package eu.openanalytics.crane.model.config;
 
 import eu.openanalytics.crane.model.runtime.CranePath;
+import lombok.Getter;
 import org.carlspring.cloud.storage.s3fs.S3FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Repository extends PathComponent {
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private String indexFileName = "index.html";
-    private List<CacheRule> cache;
-    private String storageLocation;
+    private final String storageLocation;
+    private boolean initialized = false;
+
+    @Getter
+    private final boolean posixAccessControl;
+
+    @Getter
     private Path storagePath;
-    private String onErrorExpression;
-    private boolean posixAccessControl;
-    private List<RewriteRule> rewrites;
 
-    public String getIndexFileName() {
-        return indexFileName;
-    }
+    @Getter
+    private List<CacheRule> cache;
 
-    public void setIndexFileName(String indexFileName) {
-        this.indexFileName = indexFileName;
-    }
+    @Getter
+    private final String indexFileName;
 
-    public List<CacheRule> getCache() {
-        return cache;
+    @Getter
+    private final String onErrorExpression;
+
+    @Getter
+    private final List<RewriteRule> rewrites;
+
+    @ConstructorBinding
+    public Repository(String indexFileName,
+                      List<CacheRule> cache,
+                      String storageLocation,
+                      String onErrorExpression,
+                      boolean posixAccessControl,
+                      List<RewriteRule> rewrites,
+                      AccessControl readAccess,
+                      AccessControl writeAccess,
+                      Map<String, PathComponent> paths) {
+        super(readAccess, writeAccess, paths);
+        this.indexFileName = Objects.requireNonNullElse(indexFileName, "index.html");
+        this.cache = cache;
+        this.storageLocation = storageLocation;
+        this.onErrorExpression = onErrorExpression;
+        this.posixAccessControl = posixAccessControl;
+        this.rewrites = rewrites;
     }
 
     public void setCache(List<CacheRule> cache) {
+        if (this.cache != null) {
+            throw new IllegalStateException("Cache already set");
+        }
         this.cache = cache;
     }
 
@@ -72,19 +100,26 @@ public class Repository extends PathComponent {
         }
     }
 
-    public void init() {
-        Path path = Path.of(storageLocation);
-        if (!path.toFile().isDirectory()) {
-            createDirectory(path);
-            if (hasPosixAccessControl()) {
+    public void init(List<CacheRule> defaultCache, Path storagePath) {
+        if (initialized) {
+            throw new IllegalStateException("Already initialized");
+        }
+        if (defaultCache != null && cache == null) {
+            cache = defaultCache;
+        }
+        this.storagePath = storagePath;
+        if (!storagePath.toFile().isDirectory()) {
+            createDirectory(storagePath);
+            if (isPosixAccessControl()) {
                 logger.warn("Repository '{}' was created no posix access control configured", getName());
             }
         }
         if (hasPaths()) {
             for (PathComponent pathComponent : getPaths()) {
-                pathComponent.init(storageLocation);
+                pathComponent.init(storagePath);
             }
         }
+        initialized = true;
     }
 
     public void validate(boolean onlyPublic) {
@@ -93,54 +128,21 @@ public class Repository extends PathComponent {
         validateRepositoryName();
 
         AccessControl readAccess = getReadAccess();
-        if (readAccess.isPublic && (readAccess.hasGroupAccess() || readAccess.hasUserAccess() || readAccess.hasExpressionAccess() || readAccess.hasNetworkAccess() || hasPosixAccessControl())) {
+        if (readAccess.isPublic() && (readAccess.hasGroupAccess() || readAccess.hasUserAccess() || readAccess.hasExpressionAccess() || readAccess.hasNetworkAccess() || isPosixAccessControl())) {
             throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add read access control properties to a public repo", getName()));
         }
 
         AccessControl writeAccess = getWriteAccess();
-        if (writeAccess.getPublic() && (writeAccess.hasGroupAccess() || writeAccess.hasUserAccess() || writeAccess.hasExpressionAccess() || writeAccess.hasNetworkAccess() || hasPosixAccessControl())) {
+        if (writeAccess.isPublic() && (writeAccess.hasGroupAccess() || writeAccess.hasUserAccess() || writeAccess.hasExpressionAccess() || writeAccess.hasNetworkAccess() || isPosixAccessControl())) {
             throw new IllegalArgumentException(String.format("Repository %s is invalid, cannot add write access control properties to a public repo", getName()));
         }
     }
 
-    public boolean hasPosixAccessControl() {
-        return posixAccessControl;
-    }
-
-    public void setPosixAccessControl(Boolean posixAccessControl) {
-        this.posixAccessControl = posixAccessControl;
-    }
-
     public String getStorageLocation() {
+        if (initialized) {
+            throw new IllegalStateException("Repository is already initialized, use getStoragePath");
+        }
         return storageLocation;
-    }
-
-    public void setStorageLocation(String storageLocation) {
-        this.storageLocation = storageLocation;
-    }
-
-    public Path getStoragePath() {
-        return storagePath;
-    }
-
-    public void setStoragePath(Path storagePath) {
-        this.storagePath = storagePath;
-    }
-
-    public String getOnErrorExpression() {
-        return onErrorExpression;
-    }
-
-    public void setOnErrorExpression(String onErrorExpression) {
-        this.onErrorExpression = onErrorExpression;
-    }
-
-    public List<RewriteRule> getRewrites() {
-        return rewrites;
-    }
-
-    public void setRewrites(List<RewriteRule> redirects) {
-        this.rewrites = redirects;
     }
 
     public boolean usesS3() {

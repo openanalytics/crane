@@ -20,75 +20,74 @@
  */
 package eu.openanalytics.crane.model.config;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
+import org.springframework.boot.context.properties.bind.Name;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+@EqualsAndHashCode
 public class AccessControl {
 
-    protected List<String> groups;
-    protected List<String> users;
-    protected boolean isPublic = false;
-    protected List<String> network;
-    protected Boolean anyAuthenticatedUser;
-    protected List<IpAddressMatcher> networkMatchers;
-    protected String expression;
+    private final List<String> network;
 
-    public AccessControl() {}
+    @Getter
+    private final boolean anyAuthenticatedUser;
 
-    public List<String> getGroups() {
-        return groups;
-    }
+    @Getter
+    private final boolean isPublic;
 
-    public void setGroups(List<String> groups) {
+    @Getter
+    private final List<String> groups;
+
+    @Getter
+    private final List<String> users;
+
+    @Getter
+    private final String expression;
+
+    @Getter
+    @EqualsAndHashCode.Exclude
+    private final List<IpAddressMatcher> networkMatchers;
+
+    @ConstructorBinding
+    public AccessControl(List<String> groups, List<String> users, @Name("public") boolean isPublic, List<String> network, Boolean anyAuthenticatedUser, String expression) {
         this.groups = groups;
-    }
-
-    public List<String> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<String> users) {
         this.users = users;
+        this.network = network;
+        this.isPublic = isPublic;
+        if (network != null) {
+            this.networkMatchers = network.stream().map(IpAddressMatcher::new).collect(Collectors.toList());
+        } else {
+            this.networkMatchers = null;
+        }
+        this.expression = expression;
+
+        if (anyAuthenticatedUser != null && anyAuthenticatedUser && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
+            throw new IllegalArgumentException("Cannot add user-based access control properties when any-authenticated-user is enabled");
+        }
+
+        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess() || anyAuthenticatedUser != null)) {
+            throw new IllegalArgumentException("Cannot add access control properties to a public repo");
+        }
+
+        this.anyAuthenticatedUser = Objects.requireNonNullElse(anyAuthenticatedUser, false);
+    }
+
+    public AccessControl() {
+        this(null, null, false, null, null, null);
     }
 
     public boolean hasGroupAccess() {
-        return groups != null && groups.size() > 0;
+        return groups != null && !groups.isEmpty();
     }
 
     public boolean hasUserAccess() {
-        return users != null && users.size() > 0;
-    }
-
-    public boolean getPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
-    public List<String> getNetwork() {
-        return network;
-    }
-
-    public void setNetwork(List<String> accessIpRanges) {
-        this.network = accessIpRanges;
-        this.networkMatchers = accessIpRanges.stream()
-                .map(IpAddressMatcher::new).collect(Collectors.toList());
-    }
-
-    public List<IpAddressMatcher> getNetworkMatchers() {
-        return networkMatchers;
-    }
-
-    public String getExpression() {
-        return expression;
-    }
-
-    public void setExpression(String expression) {
-        this.expression = expression;
+        return users != null && !users.isEmpty();
     }
 
     public boolean hasNetworkAccess() {
@@ -99,26 +98,4 @@ public class AccessControl {
         return expression != null && !expression.isEmpty();
     }
 
-    public boolean isAnyAuthenticatedUser() {
-        return anyAuthenticatedUser;
-    }
-
-    public void setAnyAuthenticatedUser(boolean anyAuthenticatedUser) {
-        this.anyAuthenticatedUser = anyAuthenticatedUser;
-    }
-
-    public void validate() {
-        if (anyAuthenticatedUser != null && anyAuthenticatedUser && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess())) {
-            throw new IllegalArgumentException("Cannot add user-based access control properties when any-authenticated-user is enabled");
-        }
-
-        if (isPublic && (hasGroupAccess() || hasUserAccess() || hasExpressionAccess() || hasNetworkAccess() || anyAuthenticatedUser != null)) {
-            throw new IllegalArgumentException("Cannot add access control properties to a public repo");
-        }
-
-        if (anyAuthenticatedUser == null){
-            // disable when at least one authorization option is used
-            anyAuthenticatedUser = false;
-        }
-    }
 }

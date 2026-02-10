@@ -28,14 +28,16 @@ import java.nio.file.Path;
 public class UserWorkspaceRepository extends Repository {
 
     public UserWorkspaceRepository(String userHomeStorageLocation, Path userHomeStoragePath) {
-        setStorageLocation(userHomeStorageLocation);
-        setStoragePath(userHomeStoragePath);
-        setName("Workspace");
-        AccessControl accessControl = new AccessControl();
-        accessControl.setAnyAuthenticatedUser(true);
-        setReadAccess(accessControl);
-        setWriteAccess(accessControl);
-        init();
+        super(null,
+            null,
+            userHomeStorageLocation,
+            null,
+            false,
+            null,
+            new AccessControl(null, null, false, null, true, null),
+            new AccessControl(null, null, false, null, true, null),
+            null);
+        init(null, userHomeStoragePath);
     }
 
     private Path getPath() {

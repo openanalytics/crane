@@ -21,14 +21,15 @@
 package eu.openanalytics.crane.model.config;
 
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -41,26 +42,35 @@ public class PathComponent {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
+
+    private final Map<String, PathComponent> components;
+
+    @Getter
     private String name;
-    private Map<String, PathComponent> components = new HashMap<>();
 
-    private AccessControl readAccess = null;
-    private AccessControl writeAccess = null;
+    @Getter
+    private final AccessControl readAccess;
+    @Getter
+    private final AccessControl writeAccess;
 
-    public String getName() {
-        return name;
+    public PathComponent(AccessControl readAccess, AccessControl writeAccess, Map<String, PathComponent> paths) {
+        if (readAccess == null && writeAccess == null) {
+            throw new IllegalArgumentException("PathComponent is invalid: no access control specified");
+        }
+        this.readAccess = Objects.requireNonNullElse(readAccess, new AccessControl());
+        this.writeAccess = Objects.requireNonNullElse(writeAccess, new AccessControl());
+        if (paths != null) {
+            paths.forEach((name, pathComponent) -> pathComponent.setName(name));
+        }
+        this.components = Objects.requireNonNullElse(paths, Map.of());
+
     }
 
     public void setName(String name) {
+        if (this.name != null) {
+            throw new IllegalStateException("Name already set");
+        }
         this.name = name;
-    }
-
-    public AccessControl getReadAccess() {
-        return readAccess;
-    }
-
-    public void setReadAccess(AccessControl readAccess) {
-        this.readAccess = readAccess;
     }
 
     public List<PathComponent> getPaths() {
@@ -68,11 +78,6 @@ public class PathComponent {
             return new ArrayList<>(components.values());
         }
         return null;
-    }
-
-    public void setPaths(Map<String, PathComponent> paths) {
-        paths.forEach((name, pathComponent) -> pathComponent.setName(name));
-        this.components = paths;
     }
 
     public boolean hasPaths() {
@@ -93,32 +98,17 @@ public class PathComponent {
             throw new RuntimeException(String.format("PathComponent name %s contains invalid characters", name));
         }
 
-        if (readAccess == null && writeAccess == null) {
-            throw new IllegalArgumentException(String.format("PathComponent %s is invalid: no access control specified", name));
-        }
-
         validateReadAccess(onlyPublic);
         validateWriteAccess(onlyPublic);
 
-        try {
-            readAccess.validate();
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException(String.format("PathComponent %s has invalid read access control: %s", name, ex.getMessage()));
-        }
-
-        try{
-            writeAccess.validate();
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException(String.format("PathComponent %s has invalid write access control: %s", name, ex.getMessage()));
-        }
         if (components != null) {
             for (PathComponent component : components.values()) {
                 component.validate(onlyPublic);
-                if (component.readAccess.getPublic() && !readAccess.getPublic()) {
+                if (component.readAccess.isPublic() && !readAccess.isPublic()) {
                     throw new IllegalArgumentException(String.format("PathComponent %s has invalid read access control: cannot have a public PathComponent (%s) in a private parent (%s)", component.name, component.name, name));
                 }
 
-                if (component.writeAccess.getPublic() && !writeAccess.getPublic()) {
+                if (component.writeAccess.isPublic() && !writeAccess.isPublic()) {
                     throw new IllegalArgumentException(String.format("PathComponent %s has invalid write access control: cannot have a public PathComponent (%s) in a private parent (%s)", component.name, component.name, name));
                 }
             }
@@ -126,41 +116,31 @@ public class PathComponent {
     }
 
     protected void validateReadAccess(boolean onlyPublic) {
-        if (onlyPublic && readAccess != null && !readAccess.getPublic()) {
+        if (onlyPublic && readAccess != null && !readAccess.isPublic()) {
             throw new IllegalArgumentException("The repository `%s` should have public read access when the `only-public` property is `true`.".formatted(name));
-        }
-        if (readAccess == null) {
-            readAccess = new AccessControl();
         }
     }
 
     protected void validateWriteAccess(boolean onlyPublic) {
-        if (onlyPublic && writeAccess != null && !writeAccess.getPublic()) {
+        if (onlyPublic && writeAccess != null && !writeAccess.isPublic() && !writeAccess.equals(new AccessControl())) {
             throw new IllegalArgumentException("The repository `%s` should not have write access defined (or public) when the `only-public` property is `true`.".formatted(name));
         }
-        if (writeAccess == null) {
-            writeAccess = new AccessControl();
-        }
     }
 
-    public AccessControl getWriteAccess() {
-        return writeAccess;
-    }
-
-    public void init(String storageLocation) {
-        Path path = Path.of(storageLocation).resolve(getName());
+    protected void init(Path storagePath) {
+        Path path = storagePath.resolve(getName());
         if (!path.toFile().isDirectory()) {
             createDirectory(path);
         }
         if (hasPaths()) {
             for (PathComponent pathComponent : getPaths()) {
-                pathComponent.init(path.toString());
+                pathComponent.init(path);
             }
         }
     }
 
     protected void createDirectory(Path path) {
-         if (path.toString().startsWith("/")) {
+        if (path.toString().startsWith("/")) {
             boolean createdDirectory = path.toFile().mkdirs();
             if (!createdDirectory) {
                 logger.warn("Could not create '{}'", path);
@@ -168,7 +148,4 @@ public class PathComponent {
         }
     }
 
-    public void setWriteAccess(AccessControl writeAccess) {
-        this.writeAccess = writeAccess;
-    }
 }

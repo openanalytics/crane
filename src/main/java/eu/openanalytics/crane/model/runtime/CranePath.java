@@ -24,6 +24,7 @@ import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.util.FileSize;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,15 +44,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CranePath {
 
     @Getter
     private final Path storagePath;
 
     @Getter
+    @EqualsAndHashCode.Include
     private final String pathRelativeToRepository;
 
     @Getter
+    @EqualsAndHashCode.Include
     private final Repository repository;
 
     @Getter(lazy = true)
@@ -127,6 +131,9 @@ public class CranePath {
     }
 
     public InputStream asInputStremam() throws IOException {
+        if (isDirectory()) {
+            throw new IllegalStateException("CranePath is a directory and cannot be opened as InputStream");
+        }
         return Files.newInputStream(storagePath);
     }
 
@@ -139,6 +146,9 @@ public class CranePath {
     }
 
     public void walkFileTree(FileVisitor<CranePath> visitor) throws IOException {
+        if (!isDirectory()) {
+            throw new IllegalStateException("CranePath is a file and cannot be walked");
+        }
         Files.walkFileTree(storagePath, new FileVisitor<Path>() {
 
             @Override
@@ -175,4 +185,5 @@ public class CranePath {
             ", webUri='" + getWebUri() + '\'' +
             '}';
     }
+
 }

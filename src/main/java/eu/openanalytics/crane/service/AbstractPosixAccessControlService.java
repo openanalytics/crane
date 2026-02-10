@@ -61,7 +61,7 @@ public abstract class AbstractPosixAccessControlService {
             return false;
         }
 
-        if (!path.getRepository().hasPosixAccessControl()) {
+        if (!path.getRepository().isPosixAccessControl()) {
             return true;
         }
 

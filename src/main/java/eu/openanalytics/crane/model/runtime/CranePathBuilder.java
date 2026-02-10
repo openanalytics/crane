@@ -28,6 +28,7 @@ import org.springframework.http.MediaType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,8 @@ public class CranePathBuilder {
         if (!cranePath.isDirectory()) {
             throw new IllegalStateException("Not a directory");
         }
-        return new CranePath(cranePath.getRepository(), cranePath.getPathRelativeToRepository() + cranePath.getRepository().getIndexFileName());
+        // TODO own concat function
+        return new CranePath(cranePath.getRepository(), Paths.get(cranePath.getPathRelativeToRepository(), cranePath.getRepository().getIndexFileName()).toString());
     }
 
     public static CranePath getParent(CranePath cranePath) {
@@ -68,6 +70,9 @@ public class CranePathBuilder {
     }
 
     public static MediaType getMediaType(CranePath cranePath) {
+        if (cranePath.isDirectory()) {
+            throw new IllegalStateException("CranePath is a directory and has no MediaType");
+        }
         String mimeType = tika.detect(cranePath.getName());
         return MediaType.valueOf(mimeType);
     }

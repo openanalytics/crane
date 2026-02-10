@@ -62,10 +62,13 @@ public class PathAccessControlServiceTest {
     public void testAccessToRestrictedNetworkRepository() {
         PathReadAccessControlService pathReadAccessControlService = inst.getBean("pathReadAccessControlService", PathReadAccessControlService.class);
         String allowed_ip = "192.168.18.123";
-        PathComponent repository = new Repository();
+        PathComponent repository = new Repository(
+            null, null, null, null, false, null,
+            new AccessControl(null, null, false, List.of(allowed_ip), false, null),
+            new AccessControl(),
+            null
+        );
         repository.setName("network_restricted_repo");
-        repository.setReadAccess(new AccessControl());
-        repository.getReadAccess().setNetwork(List.of(allowed_ip));
         repository.validate(false);
 
         Authentication mockedAuthentication = mock(AnonymousAuthenticationToken.class);
@@ -89,11 +92,13 @@ public class PathAccessControlServiceTest {
         PathReadAccessControlService pathReadAccessControlService = inst.getBean("pathReadAccessControlService", PathReadAccessControlService.class);
         String allowed_ip = "192.168.18.123";
 
-        PathComponent repository = new Repository();
+        PathComponent repository = new Repository(
+            null, null, null, null, false, null,
+            new AccessControl(null, List.of("demo"), false, List.of(allowed_ip), false, null),
+            new AccessControl(),
+            null
+        );
         repository.setName("network_restricted_repo");
-        repository.setReadAccess(new AccessControl());
-        repository.getReadAccess().setNetwork(List.of(allowed_ip));
-        repository.getReadAccess().setUsers(List.of("demo"));
         repository.validate(false);
 
         Authentication mockedAuthentication = mock(Authentication.class);
@@ -115,11 +120,13 @@ public class PathAccessControlServiceTest {
         PathReadAccessControlService pathReadAccessControlService = inst.getBean("pathReadAccessControlService", PathReadAccessControlService.class);
         String allowed_ip = "192.168.18.123";
 
-        PathComponent repository = new Repository();
+        PathComponent repository = new Repository(
+            null, null, null, null, false, null,
+            new AccessControl(null, null, false, List.of(allowed_ip), true, null),
+            new AccessControl(),
+            null
+        );
         repository.setName("network_restricted_repo");
-        repository.setReadAccess(new AccessControl());
-        repository.getReadAccess().setNetwork(List.of(allowed_ip));
-        repository.getReadAccess().setAnyAuthenticatedUser(true);
 
         Authentication mockedAuthentication = mock(Authentication.class);
         when(mockedAuthentication.getName()).thenReturn("demo");

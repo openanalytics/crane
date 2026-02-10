@@ -109,7 +109,7 @@ public class UploadController {
                 writeFileToS3(fileItemInput, cranePath);
             } else {
                 FileUtils.copyInputStreamToFile(fileItemInput.getInputStream(), cranePath.getStorageFile());
-                if (repository.hasPosixAccessControl()) {
+                if (repository.isPosixAccessControl()) {
                     setPathAttribute(cranePath);
                 }
             }
@@ -200,7 +200,7 @@ public class UploadController {
                     auditingService.createUploadAuditEvent(request);
                     return ApiResponse.success(Map.of("message", "Directory creation failed"));
                 }
-                if (cranePath.getRepository().hasPosixAccessControl()) {
+                if (cranePath.getRepository().isPosixAccessControl()) {
                     setPathAttribute(cranePath);
                 }
             }

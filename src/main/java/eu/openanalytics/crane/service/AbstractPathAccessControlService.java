@@ -83,7 +83,7 @@ public abstract class AbstractPathAccessControlService {
             return false;
         }
 
-        if (accessControl.getPublic()) {
+        if (accessControl.isPublic()) {
             return true;
         }
 

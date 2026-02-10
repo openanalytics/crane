@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationPropertiesBinding
 public class RepositoryConverter implements Converter<String, Repository> {
+
     /**
      * The RepositoryConverter is required to parse repositories that have no properties defined.
      * Repositories without properties in the application.yml are passed as empty Strings which can't be
@@ -36,6 +37,7 @@ public class RepositoryConverter implements Converter<String, Repository> {
      */
     @Override
     public Repository convert(@NotNull String source) {
-        return new Repository();
+        return new Repository(null, null, "", null, false, null, null , null, null);
     }
+
 }
