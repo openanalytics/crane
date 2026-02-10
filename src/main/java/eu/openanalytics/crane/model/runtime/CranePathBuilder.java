@@ -28,7 +28,6 @@ import org.springframework.http.MediaType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +53,7 @@ public class CranePathBuilder {
         if (!cranePath.isDirectory()) {
             throw new IllegalStateException("Not a directory");
         }
-        // TODO own concat function
-        return new CranePath(cranePath.getRepository(), Paths.get(cranePath.getPathRelativeToRepository(), cranePath.getRepository().getIndexFileName()).toString());
+        return cranePath.getPath(cranePath.getRepository().getIndexFileName());
     }
 
     public static CranePath getParent(CranePath cranePath) {
@@ -79,11 +77,13 @@ public class CranePathBuilder {
 
     @SuppressWarnings("resource")
     public static Stream<CranePath> getContents(CranePath cranePath)  {
+        if (!cranePath.isDirectory()) {
+            throw new IllegalStateException("CranePath must be a directory to list its content");
+        }
         try {
-            // TODO check concatenate
             return Files
                 .list(cranePath.getStoragePath())
-                .map(f -> new CranePath(cranePath.getRepository(), cranePath.getPathRelativeToRepository() + "/" + f.getFileName()));
+                .map(f -> cranePath.getPath(f.getFileName().toString()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -76,7 +76,7 @@ public class SpecExpressionContext {
                 ctx.response = (HttpServletResponse) o;
             }
             if (o instanceof CranePath) {
-                ctx.path = Path.of("/" + ((CranePath) o).getPathRelativeToRepository()); // TODO
+                ctx.path = Path.of("/" + ((CranePath) o).getPathRelativeToRepository());
             }
         }
         return ctx;
