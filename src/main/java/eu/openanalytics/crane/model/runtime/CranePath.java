@@ -85,9 +85,10 @@ public class CranePath {
 
     /**
      * Whether this path is a directory (checked by querying the storage).
+     * Uses the cached result from {@link CranePath#basicFileAttributes } to improve performance.
      */
     @Getter(lazy = true)
-    private final boolean directory = Files.isDirectory(storagePath);
+    private final boolean directory = getBasicFileAttributes().isDirectory();
 
     /**
      * Gets the path to the index file.
@@ -170,24 +171,28 @@ public class CranePath {
 
     /**
      * Gets the last modified timestamp of this path.
+     * Uses the cached result from {@link CranePath#basicFileAttributes } to improve performance.
      */
     @Getter(lazy = true)
     private final Instant lastModifiedTime = getBasicFileAttributes().lastModifiedTime().toInstant();
 
     /**
      * Gets the last modified timestamp of this path (in milliseconds).
+     * Uses the cached result from {@link CranePath#basicFileAttributes } to improve performance.
      */
     @Getter(lazy = true)
     private final long lastModifiedTimeInMillis = getBasicFileAttributes().lastModifiedTime().toMillis();
 
     /**
      * Gets the size of this path.
+     * Uses the cached result from {@link CranePath#basicFileAttributes } to improve performance.
      */
     @Getter(lazy = true)
     private final Long size = getBasicFileAttributes().size();
 
     /**
      * Gets a formatted, human-readable representation of the size of this path.
+     * Uses the cached result from {@link CranePath#basicFileAttributes } to improve performance.
      */
     @Getter(lazy = true)
     private final String formattedSize = FileSize.bytesToHumanReadableBinary(getSize());
@@ -204,6 +209,12 @@ public class CranePath {
         storagePath = repository.getStoragePath().resolve(this.pathRelativeToRepository);
     }
 
+    public CranePath(Repository repository, String pathRelativeToRepository, Path path) {
+        this.repository = repository;
+        this.pathRelativeToRepository = Strings.CS.removeStart(Strings.CS.removeEnd(pathRelativeToRepository, "/"), "/");
+        storagePath = path;
+    }
+
     /**
      * Gets a sub-path for this path.
      * @param pathRelativeToThisPath the sub-path to create
@@ -212,6 +223,17 @@ public class CranePath {
     public CranePath getPath(String pathRelativeToThisPath) {
         pathRelativeToThisPath = Strings.CS.removeStart(pathRelativeToThisPath, "/");
         return new CranePath(repository, pathRelativeToRepository + "/" + pathRelativeToThisPath);
+    }
+
+    /**
+     * Gets a sub-path for this path. Re-uses existing {@link Path} object for performance.
+     * @param pathRelativeToThisPath the sub-path to create
+     * @param path existing path object
+     * @return the sub-path
+     */
+    public CranePath getPath(String pathRelativeToThisPath, Path path) {
+        pathRelativeToThisPath = Strings.CS.removeStart(pathRelativeToThisPath, "/");
+        return new CranePath(repository, pathRelativeToRepository + "/" + pathRelativeToThisPath, path);
     }
 
     /**

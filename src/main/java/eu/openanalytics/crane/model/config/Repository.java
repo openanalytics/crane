@@ -108,15 +108,17 @@ public class Repository extends PathComponent {
             cache = defaultCache;
         }
         this.storagePath = storagePath;
-        if (!storagePath.toFile().isDirectory()) {
-            createDirectory(storagePath);
-            if (isPosixAccessControl()) {
-                logger.warn("Repository '{}' was created no posix access control configured", getName());
+        if (!usesS3()) {
+            if (!storagePath.toFile().isDirectory()){
+                createDirectory(storagePath);
+                if (isPosixAccessControl()) {
+                    logger.warn("Repository '{}' was created no posix access control configured", getName());
+                }
             }
-        }
-        if (hasPaths()) {
-            for (PathComponent pathComponent : getPaths()) {
-                pathComponent.init(storagePath);
+            if (hasPaths()) {
+                for (PathComponent pathComponent : getPaths()) {
+                    pathComponent.init(storagePath);
+                }
             }
         }
         initialized = true;

@@ -23,6 +23,7 @@ package eu.openanalytics.crane.service;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import org.springframework.data.util.Pair;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -34,9 +35,11 @@ import java.util.stream.Stream;
 public class IndexPageService {
 
     private final ReadAccessControlService readAccessControlService;
+    private final UserService userService;
 
-    public IndexPageService(ReadAccessControlService readAccessControlService) {
+    public IndexPageService(ReadAccessControlService readAccessControlService, UserService userService) {
         this.readAccessControlService = readAccessControlService;
+        this.userService = userService;
     }
 
     public String getTemplateName(Repository repository) {
@@ -47,9 +50,10 @@ public class IndexPageService {
         List<CranePath> craneFiles = new ArrayList<>();
         List<CranePath> craneDirectories = new ArrayList<>();
 
+        Authentication auth = userService.getUser();
         try (Stream<CranePath> dirListing = path.getContents()) {
             dirListing.forEach(p -> {
-                if (readAccessControlService.canAccess(p)) {
+                if (readAccessControlService.canAccess(p, auth)) {
                     if (p.isDirectory()) {
                         craneDirectories.add(p);
                     } else {

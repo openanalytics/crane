@@ -25,13 +25,10 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.DeletionService;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
-import org.apache.commons.io.FileUtils;
-import org.carlspring.cloud.storage.s3fs.S3Path;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,20 +42,15 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import software.amazon.awssdk.core.async.AsyncRequestBody;
-import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.transfer.s3.S3TransferManager;
-import software.amazon.awssdk.transfer.s3.model.Upload;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Map;
 
 @Controller
 public class UploadController {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-    private S3TransferManager transferManager;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final CraneConfig config;
     private final UploadAuditing auditingService;
     private final DeletionService deletionService;
@@ -67,14 +59,6 @@ public class UploadController {
         this.config = config;
         this.auditingService = auditingService;
         this.deletionService = deletionService;
-    }
-
-    @PostConstruct
-    private void init() {
-        if (config.usesS3()) {
-            S3AsyncClient s3AsyncClient = S3AsyncClient.builder().multipartEnabled(true).build();
-            transferManager = S3TransferManager.builder().s3Client(s3AsyncClient).build();
-        }
     }
 
     @PreAuthorize("@uploadAccessControlService.canAccess(#r, #p)")
@@ -105,13 +89,13 @@ public class UploadController {
                 auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
                 return ApiResponse.fail(Map.of("message", "Upload failed. No parameter named `file` found"));
             }
-            if (repository.usesS3())  {
-                writeFileToS3(fileItemInput, cranePath);
-            } else {
-                FileUtils.copyInputStreamToFile(fileItemInput.getInputStream(), cranePath.getStorageFile());
-                if (repository.isPosixAccessControl()) {
-                    setPathAttribute(cranePath);
-                }
+            CranePath parent =  cranePath.getParent();
+            if (!parent.isExists()) {
+                Files.createDirectories(parent.getStoragePath());
+            }
+            Files.copy(fileItemInput.getInputStream(), cranePath.getStoragePath());
+            if (repository.isPosixAccessControl()) {
+                setPathAttribute(cranePath);
             }
             auditingService.createUploadAuditEvent(request);
             return ApiResponse.success(Map.of("message", "File upload succeeded"));
@@ -172,43 +156,22 @@ public class UploadController {
         return null;
     }
 
-    private void writeFileToS3(FileItemInput fileItemInput, CranePath path) throws IOException {
-        BlockingInputStreamAsyncRequestBody body = AsyncRequestBody.forBlockingInputStream(null);
-
-        S3Path s3Path = (S3Path) path.getStoragePath();
-        Upload s3UploadRequest = transferManager.upload(builder -> builder
-            .requestBody(body)
-            .putObjectRequest(req -> req.bucket(s3Path.getBucketName()).key(s3Path.getKey()))
-            .build());
-
-        body.writeInputStream(fileItemInput.getInputStream());
-        s3UploadRequest.completionFuture().join();
-    }
-
     private ResponseEntity<ApiResponse<Map<String, Object>>> createDirectory(HttpServletRequest request, CranePath cranePath) {
         if (cranePath.isExists()) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "Directory %s already exists".formatted(cranePath)));
         }
         try {
-            if (cranePath.getRepository().usesS3()) {
-                logger.warn("S3 Directory creation is not supported");
-                return ApiResponse.fail(Map.of("message", "S3 Directory creation is not supported"));
-            } else {
-                boolean createdDirectory = cranePath.getStorageFile().mkdirs();
-                if (!createdDirectory) {
-                    auditingService.createUploadAuditEvent(request);
-                    return ApiResponse.success(Map.of("message", "Directory creation failed"));
-                }
-                if (cranePath.getRepository().isPosixAccessControl()) {
-                    setPathAttribute(cranePath);
-                }
+            Files.createDirectory(cranePath.getStoragePath());
+            if (cranePath.getRepository().isPosixAccessControl()) {
+                setPathAttribute(cranePath);
             }
         } catch (SecurityException | IOException e) {
-            auditingService.createUploadAuditEvent(request);
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.success(Map.of("message", "Directory creation failed"));
         }
         auditingService.createUploadAuditEvent(request);
         return ApiResponse.success(Map.of("message", "Directory creation succeeded"));
     }
+
 }

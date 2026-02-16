@@ -83,7 +83,7 @@ public class CranePathBuilder {
         try {
             return Files
                 .list(cranePath.getStoragePath())
-                .map(f -> cranePath.getPath(f.getFileName().toString()));
+                .map(f -> cranePath.getPath(f.getFileName().toString(), f));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
