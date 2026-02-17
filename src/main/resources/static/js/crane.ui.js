@@ -85,14 +85,14 @@ Crane.ui = {
     startDeleting(button, data) {
         let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
         if (deleteInfo !== null || deleteInfo !== undefined) {
-            deleteInfo.innerText = `${data.deleted}/${data.todo + data.deleted}`
+            deleteInfo.innerText = `${data.deleted}/${data.total}`
         }
     },
 
     updateDeleting(button, data) {
         let deleteInfo = document.getElementById(`progress-${button.dataset.dirname || button.dataset.filename}`);
         if (deleteInfo !== null || deleteInfo !== undefined) {
-            deleteInfo.innerText = `${data.deleted}/${data.todo + data.deleted}`
+            deleteInfo.innerText = `${data.deleted}/${data.total}`
         }
     },
 

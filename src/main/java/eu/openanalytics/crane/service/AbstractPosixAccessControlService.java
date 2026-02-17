@@ -84,7 +84,7 @@ public abstract class AbstractPosixAccessControlService {
         }
         // only check permissions of last component if the path actually exists
         // i.e. when uploading the file does not exist and we don't check the permission
-        if (lastPathComponent.getStorageFile().exists() && !canAccessPosix(auth, lastPathComponent)) {
+        if (lastPathComponent.isExists() && !canAccessPosix(auth, lastPathComponent)) {
             logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, lastPathComponent);
             return false;
         }

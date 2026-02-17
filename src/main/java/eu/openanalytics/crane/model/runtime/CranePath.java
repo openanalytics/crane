@@ -70,6 +70,8 @@ public class CranePath {
     @EqualsAndHashCode.Include
     private final Repository repository;
 
+    private final BasicFileAttributes preLoadedBasicFileAttributes;
+
     /**
      * The {@link PathComponent} (coming from the Crane config) corresponding to this path.
      * May be null when path is not configured in the Crane config.
@@ -141,10 +143,10 @@ public class CranePath {
     /**
      * Gets all components (i.e. all parent paths) of this path.
      * The path "test_path/my/complex/path" returns:
-     *  - CranePath(repository, "test_path"),
-     *  - CranePath(repository, "test_path/my"),
-     *  - CranePath(repository, "test_path/my/complex"),
-     *  - CranePath(repository, "test_path/my/complex/path")
+     * - CranePath(repository, "test_path"),
+     * - CranePath(repository, "test_path/my"),
+     * - CranePath(repository, "test_path/my/complex"),
+     * - CranePath(repository, "test_path/my/complex/path")
      */
     @Getter(lazy = true)
     private final List<CranePath> components = CranePathBuilder.getComponents(this);
@@ -164,10 +166,10 @@ public class CranePath {
     private final AccessControl writeAccess = CranePathBuilder.getWriteAccess(this);
 
     /**
-     * Wrapper for {@link java.nio.file.Files#readAttributes}.
+     * Wrapper for {@link Files#readAttributes}.
      */
     @Getter(lazy = true)
-    private final BasicFileAttributes basicFileAttributes = CranePathBuilder.getBasicFileAttributes(this);
+    private final BasicFileAttributes basicFileAttributes =  preLoadedBasicFileAttributes != null ? preLoadedBasicFileAttributes : CranePathBuilder.getBasicFileAttributes(this);
 
     /**
      * Gets the last modified timestamp of this path.
@@ -203,20 +205,30 @@ public class CranePath {
     @Getter(lazy = true)
     private final File storageFile = getStoragePath().toFile();
 
-    public CranePath(Repository repository, String pathRelativeToRepository)  {
+    public CranePath(Repository repository, String pathRelativeToRepository) {
         this.repository = repository;
         this.pathRelativeToRepository = Strings.CS.removeStart(Strings.CS.removeEnd(pathRelativeToRepository, "/"), "/");
-        storagePath = repository.getStoragePath().resolve(this.pathRelativeToRepository);
+        this.storagePath = repository.getStoragePath().resolve(this.pathRelativeToRepository);
+        this.preLoadedBasicFileAttributes = null;
     }
 
     public CranePath(Repository repository, String pathRelativeToRepository, Path path) {
         this.repository = repository;
         this.pathRelativeToRepository = Strings.CS.removeStart(Strings.CS.removeEnd(pathRelativeToRepository, "/"), "/");
-        storagePath = path;
+        this.storagePath = path;
+        this.preLoadedBasicFileAttributes = null;
+    }
+
+    public CranePath(Repository repository, String pathRelativeToRepository, Path path, BasicFileAttributes basicFileAttributes) {
+        this.repository = repository;
+        this.pathRelativeToRepository = Strings.CS.removeStart(Strings.CS.removeEnd(pathRelativeToRepository, "/"), "/");
+        this.storagePath = path;
+        this.preLoadedBasicFileAttributes = basicFileAttributes;
     }
 
     /**
      * Gets a sub-path for this path.
+     *
      * @param pathRelativeToThisPath the sub-path to create
      * @return the sub-path
      */
@@ -227,8 +239,9 @@ public class CranePath {
 
     /**
      * Gets a sub-path for this path. Re-uses existing {@link Path} object for performance.
+     *
      * @param pathRelativeToThisPath the sub-path to create
-     * @param path existing path object
+     * @param path                   existing path object
      * @return the sub-path
      */
     public CranePath getPath(String pathRelativeToThisPath, Path path) {
@@ -238,6 +251,7 @@ public class CranePath {
 
     /**
      * Returns the file as an {@link InputStream}
+     *
      * @return the file as an {@link InputStream}
      * @throws IOException if an I/O error occurs
      */
@@ -249,7 +263,8 @@ public class CranePath {
     }
 
     /**
-     * Wrapper for {@link java.nio.file.Files#readAttributes}.
+     * Wrapper for {@link Files#readAttributes}.
+     *
      * @param attributes the attributes to read
      * @return map of attributes
      * @throws IOException if an I/O error occurs
@@ -259,9 +274,10 @@ public class CranePath {
     }
 
     /**
-     * Wrapper for {@link java.nio.file.Files#setAttribute}.
+     * Wrapper for {@link Files#setAttribute}.
+     *
      * @param attribute the attribute to set
-     * @param value the attribute value
+     * @param value     the attribute value
      * @throws IOException if an I/O error occurs
      */
     public void setAttribute(String attribute, Object value) throws IOException {
@@ -269,7 +285,8 @@ public class CranePath {
     }
 
     /**
-     * Wrapper for {@link java.nio.file.Files#walkFileTree} using {@link FileVisitor<CranePath>}.
+     * Wrapper for {@link Files#walkFileTree} using {@link FileVisitor<CranePath>}.
+     *
      * @param visitor visitor to use while walking the path
      * @throws IOException if an I/O error occurs
      */
@@ -277,16 +294,16 @@ public class CranePath {
         if (!isDirectory()) {
             throw new IllegalStateException("CranePath is a file and cannot be walked");
         }
-        Files.walkFileTree(storagePath, new FileVisitor<Path>() {
+        Files.walkFileTree(storagePath, new FileVisitor<>() {
 
             @Override
             public @NotNull FileVisitResult preVisitDirectory(Path path, @NotNull BasicFileAttributes basicFileAttributes) throws IOException {
-                return visitor.preVisitDirectory(repository.getPathFromStoragePath(path), basicFileAttributes);
+                return visitor.preVisitDirectory(repository.getPathFromStoragePath(path, basicFileAttributes), basicFileAttributes);
             }
 
             @Override
             public @NotNull FileVisitResult visitFile(Path path, @NotNull BasicFileAttributes basicFileAttributes) throws IOException {
-                return visitor.visitFile(repository.getPathFromStoragePath(path), basicFileAttributes);
+                return visitor.visitFile(repository.getPathFromStoragePath(path, basicFileAttributes), basicFileAttributes);
             }
 
             @Override
@@ -303,10 +320,11 @@ public class CranePath {
     }
 
     /**
-     * Wrapper for {@link java.nio.file.Files#getFileAttributeView}.
+     * Wrapper for {@link Files#getFileAttributeView}.
+     *
      * @param posixFileAttributeViewClass the Class object corresponding to the file attribute view
+     * @param <V>                         The {@link FileAttributeView} type
      * @return a file attribute view of the specified type, or null if the attribute view type is not available
-     * @param <V> The {@link FileAttributeView} type
      */
     public <V extends FileAttributeView> V getFileAttributeView(Class<V> posixFileAttributeViewClass) {
         return Files.getFileAttributeView(storagePath, posixFileAttributeViewClass);

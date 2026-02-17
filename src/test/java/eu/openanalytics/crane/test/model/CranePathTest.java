@@ -55,7 +55,6 @@ public class CranePathTest {
 
         CranePath testPath = repository.getPath("test_path/my/complex/path");
         Assertions.assertEquals(Path.of("/tmp/test_repository/test_path/my/complex/path"), testPath.getStoragePath());
-        Assertions.assertEquals(Path.of("/tmp/test_repository/test_path/my/complex/path").toFile(), testPath.getStorageFile());
         Assertions.assertEquals("test_path/my/complex/path", testPath.getPathRelativeToRepository());
         Assertions.assertEquals(repository, testPath.getRepository());
         Assertions.assertNull(testPath.getPathComponent());

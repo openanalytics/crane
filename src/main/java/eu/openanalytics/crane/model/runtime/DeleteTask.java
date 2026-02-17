@@ -21,72 +21,61 @@
 package eu.openanalytics.crane.model.runtime;
 
 import eu.openanalytics.crane.service.DeletionService;
-import eu.openanalytics.crane.upload.UploadAccessControlService;
-import org.apache.commons.lang3.NotImplementedException;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public class DeleteTask extends SimpleFileVisitor<CranePath> {
+public class DeleteTask {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final UploadAccessControlService uploadAccessControlService;
     private final DeletionService deletionService;
     private final CranePath cranePath;
-    private final Authentication auth;
+    private final DeletionService.StateEntry state;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public DeleteTask(DeletionService deletionService, UploadAccessControlService uploadAccessControlService, CranePath cranePath, Authentication auth) {
+    public DeleteTask(DeletionService deletionService, CranePath cranePath, DeletionService.StateEntry state) {
         this.deletionService = deletionService;
-        this.uploadAccessControlService = uploadAccessControlService;
         this.cranePath = cranePath;
-        this.auth = auth;
+        this.state = state;
     }
 
     public void startDeletion() {
         try {
-            cranePath.walkFileTree(this);
+            // delete files in parallel
+            state.files().parallelStream().forEach((file) -> {
+                try {
+                    Files.deleteIfExists(file);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                state.deleted().incrementAndGet();
+            });
+
+            // delete directories sequentially, otherwise directories might no be empty
+            state.directories().forEach((file) -> {
+                try {
+                    try (final DirectoryStream<Path> stream = Files.newDirectoryStream(file)) {
+                        if (stream.iterator().hasNext()) {
+                            // ignore non-empty directories
+                            // new files could have been written or it contains a directory the user has no access to
+                            state.deleted().incrementAndGet();
+                            return;
+                        }
+                    }
+                    Files.deleteIfExists(file);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                state.deleted().incrementAndGet();
+            });
+        } catch (Exception e) {
+            logger.warn("Deletion of {} failed", cranePath, e);
+        } finally {
             deletionService.removeFromState(cranePath);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
         }
     }
 
-    @Override
-    public @NotNull FileVisitResult preVisitDirectory(@NotNull CranePath dir, @NotNull BasicFileAttributes attributes) {
-        if (!uploadAccessControlService.canAccess(dir, auth)) {
-            return FileVisitResult.SKIP_SUBTREE;
-        }
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public @NotNull FileVisitResult postVisitDirectory(@NotNull CranePath dir, IOException exception) {
-        if (!cranePath.isExistsInConfig()) {
-            delete(dir);
-        }
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public @NotNull FileVisitResult visitFile(@NotNull CranePath file, @NotNull BasicFileAttributes attributes) {
-        if (!uploadAccessControlService.canAccess(file, auth)) {
-            return FileVisitResult.CONTINUE;
-        }
-        delete(file);
-        return FileVisitResult.CONTINUE;
-    }
-
-    private void delete(@NotNull CranePath path) {
-        if (path.getRepository().usesS3()) {
-            throw new NotImplementedException("S3 directory deletion not implemented yet");
-        } else {
-            path.getStorageFile().delete();
-        }
-    }
 }

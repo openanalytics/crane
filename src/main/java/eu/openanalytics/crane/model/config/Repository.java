@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -155,8 +156,12 @@ public class Repository extends PathComponent {
         return new CranePath(this, pathRelativeToRepository);
     }
 
+    public CranePath getPathFromStoragePath(Path fullStoragePath, BasicFileAttributes basicFileAttributes) {
+        return new CranePath(this,storagePath.relativize(fullStoragePath).toString(), fullStoragePath, basicFileAttributes);
+    }
+
     public CranePath getPathFromStoragePath(Path fullStoragePath) {
-        return new CranePath(this,storagePath.relativize(fullStoragePath).toString());
+        return new CranePath(this,storagePath.relativize(fullStoragePath).toString(), fullStoragePath);
     }
 
 }

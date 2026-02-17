@@ -20,26 +20,31 @@
  */
 package eu.openanalytics.crane.service;
 
-import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.model.runtime.DeleteTask;
 import eu.openanalytics.crane.upload.UploadAccessControlService;
 import eu.openanalytics.crane.util.ExecutorServiceFactory;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class DeletionService {
+
     private final ExecutorService executor = ExecutorServiceFactory.create("DeletionService");
     private final UploadAccessControlService uploadAccessControlService;
     private final UserService userService;
@@ -51,35 +56,34 @@ public class DeletionService {
         this.state = new ConcurrentHashMap<>();
     }
 
-    synchronized public Progress initDeletion(Repository repository, CranePath cranePath) throws InterruptedException, IOException, IllegalAccessException {
+    synchronized public Progress initDeletion(CranePath cranePath) throws InterruptedException, IOException, IllegalAccessException {
         if (!state.containsKey(cranePath)) {
-            CountFiles countFiles = new CountFiles( uploadAccessControlService);
+            CountFiles countFiles = new CountFiles(uploadAccessControlService);
             cranePath.walkFileTree(countFiles);
 
             Authentication authentication = userService.getUser();
 
-            DeleteTask deleteTask = new DeleteTask(this, uploadAccessControlService, cranePath, authentication);
+            StateEntry stateEntry = new StateEntry(
+                authentication.getName(),
+                countFiles.getFiles().size() + countFiles.getDirectories().size(),
+                new AtomicLong(0),
+                countFiles.getFiles(),
+                countFiles.getDirectories());
+
+            DeleteTask deleteTask = new DeleteTask(this, cranePath, stateEntry);
             executor.execute(deleteTask::startDeletion);
 
-            StateEntry stateEntry = new StateEntry(authentication.getName(), countFiles.count);
             state.put(cranePath, stateEntry);
         } else if (state.containsKey(cranePath) && !state.get(cranePath).initiator.equals(userService.getUser().getName())) {
             throw new IllegalAccessException("This directory is already being deleted");
         }
-        return getProgress(repository, cranePath);
+        return getProgress(cranePath);
     }
 
-    public Progress getProgress(Repository repository, CranePath path) throws IOException {
+    public Progress getProgress(CranePath path) throws IOException {
         if (state.containsKey(path)) {
-            long totalFiles = state.get(path).totalFiles;
-            CountFiles remainingFiles = new CountFiles( uploadAccessControlService);
-            path.walkFileTree(remainingFiles);
-            long todo = remainingFiles.count;
-            long deleted = totalFiles - remainingFiles.count;
-            if (todo == 0) {
-                state.remove(path);
-            }
-            return new Progress(todo, deleted);
+            StateEntry stateEntry = state.get(path);
+            return new Progress(stateEntry.totalFiles, stateEntry.deleted.get());
         } else {
             throw new IOException("File %s doesn't exist".formatted(path.toString()));
         }
@@ -89,24 +93,28 @@ public class DeletionService {
         state.remove(cranePath);
     }
 
-    private static class CountFiles extends SimpleFileVisitor<CranePath> {
+    public static class CountFiles extends SimpleFileVisitor<CranePath> {
 
         private final UploadAccessControlService uploadAccessControlService;
-        private long count = 0;
+
+        @Getter
+        private final List<Path> directories;
+
+        @Getter
+        private final List<Path> files;
 
         public CountFiles(UploadAccessControlService uploadAccessControlService) {
             this.uploadAccessControlService = uploadAccessControlService;
-        }
-
-        private void count() {
-            count += 1;
+            this.directories = new ArrayList<>();
+            this.files = new ArrayList<>();
         }
 
         @Override
-        public @NotNull FileVisitResult preVisitDirectory(@NotNull CranePath dir, @NotNull BasicFileAttributes attributes) {
+        public @NotNull FileVisitResult postVisitDirectory(@NotNull CranePath dir, @Nullable IOException exc) throws IOException {
             if (!uploadAccessControlService.canAccess(dir)) {
                 return FileVisitResult.SKIP_SUBTREE;
             }
+            directories.add(dir.getStoragePath());
             return FileVisitResult.CONTINUE;
         }
 
@@ -115,7 +123,7 @@ public class DeletionService {
             if (!uploadAccessControlService.canAccess(file)) {
                 return FileVisitResult.CONTINUE;
             }
-            count();
+            files.add(file.getStoragePath());
             return FileVisitResult.CONTINUE;
         }
 
@@ -123,10 +131,13 @@ public class DeletionService {
         public @NotNull FileVisitResult visitFileFailed(@NotNull CranePath file, @NotNull IOException exc) {
             return FileVisitResult.CONTINUE;
         }
+
     }
 
-    private record StateEntry(String initiator, long totalFiles) {}
+    public record StateEntry(String initiator, long totalFiles, AtomicLong deleted, List<Path> files, List<Path> directories) {
+    }
 
-    public record Progress(long todo, long deleted) {}
+    public record Progress(long total, long deleted) {
+    }
 
 }

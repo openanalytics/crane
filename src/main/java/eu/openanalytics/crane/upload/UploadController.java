@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.Map;
 
 @Controller
@@ -120,9 +121,18 @@ public class UploadController {
             return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
         }
         try {
-            DeletionService.Progress progress = deletionService.initDeletion(repository, cranePath);
-            auditingService.createUploadAuditEvent(request);
-            return ApiResponse.accepted(progress);
+            if (cranePath.isDirectory()) {
+                DeletionService.Progress progress = deletionService.initDeletion(cranePath);
+                auditingService.createUploadAuditEvent(request);
+                return ApiResponse.accepted(progress);
+            } else {
+                Files.deleteIfExists(cranePath.getStoragePath());
+                return ApiResponse.success();
+            }
+        } catch (NoSuchFileException e) {
+            // file or directory deleted in background
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
         } catch (InterruptedException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "Directory deletion was interrupted"));

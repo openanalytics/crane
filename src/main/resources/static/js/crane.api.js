@@ -59,12 +59,25 @@ Crane.api = {
             headers: {[Crane.api.csrfHeader]: Crane.api.csrfToken}
         };
         fetch(url, options).then(async (resp) => {
-            if (resp.status === 202) {
+            if (resp.status === 200) {
+                // this is an immediate (sync) delete
+                const otherInProgress = Crane.ui.otherDeleteInProgress()
+                if (!isPathComponent) {
+                    if (!otherInProgress) {
+                        location.reload();
+                    } else {
+                        button.closest("tr").hidden = true;
+                    }
+                }
+                Crane.ui.stopDeleting(button);
+                return;
+            } else if (resp.status === 202) {
+                // this is an async delete
                 let response = resp;
                 let json = await resp.json();
                 Crane.ui.startDeleting(button, json.data);
 
-                while (response.status === 202 && json.data.todo !== 0) {
+                while (response.status === 202 && json.data.total !== 0) {
                     await delay(250)
                     response = await fetch(url, options);
                     json = await response.json();

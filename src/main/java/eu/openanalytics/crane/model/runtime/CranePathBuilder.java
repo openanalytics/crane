@@ -60,11 +60,11 @@ public class CranePathBuilder {
         if (cranePath.getPathRelativeToRepository().isEmpty()) {
             return null;
         }
-        Path parent = Path.of(cranePath.getPathRelativeToRepository()).getParent();
+        Path parent = cranePath.getStoragePath().getParent();
         if (parent == null) {
             return new CranePath(cranePath.getRepository(), "");
         }
-        return new CranePath(cranePath.getRepository(), parent.toString());
+        return cranePath.getRepository().getPathFromStoragePath(parent);
     }
 
     public static MediaType getMediaType(CranePath cranePath) {
