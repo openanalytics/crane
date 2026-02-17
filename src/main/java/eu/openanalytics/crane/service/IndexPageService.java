@@ -26,7 +26,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -46,7 +45,7 @@ public class IndexPageService {
         return "default-index";
     }
 
-    public Pair<List<CranePath>, List<CranePath>> getFilesAndDirectoriesInPath(CranePath path) throws IOException {
+    public Pair<List<CranePath>, List<CranePath>> getFilesAndDirectoriesInPath(CranePath path) {
         List<CranePath> craneFiles = new ArrayList<>();
         List<CranePath> craneDirectories = new ArrayList<>();
 

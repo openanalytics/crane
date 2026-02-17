@@ -167,6 +167,36 @@ public class CranePathTest {
         Assertions.assertTrue(testPath.isExistsInConfig());
     }
 
+    @Test
+    public void testNonExistingPath() throws IOException {
+        Repository repository = new Repository(null,
+            null,
+            "/tmp/test_repository",
+            null,
+            false,
+            null,
+            new AccessControl(null, null, true, null, null, null),
+            null,
+            null
+        );
+        repository.setName("test_repository");
+        repository.validate(false);
+        repository.init(null, Path.of("/tmp/test_repository"));
+
+        CranePath somePath = new CranePath(repository, "a/path/that/does/not/exist");
+        Assertions.assertFalse(somePath.isExists());
+        Assertions.assertFalse(somePath.isExistsInConfig());
+        Assertions.assertFalse(somePath.isAnIndexFile());
+        Assertions.assertFalse(somePath.isDirectory());
+        Assertions.assertNull(somePath.getSize());
+        Assertions.assertNull(somePath.getFormattedSize());
+        Assertions.assertNull(somePath.getLastModifiedTime());
+        Assertions.assertNull(somePath.getLastModifiedTimeInMillis());
+        Assertions.assertNull(somePath.getBasicFileAttributes());
+        Assertions.assertNull(somePath.getMediaType());
+        Assertions.assertThrows(IllegalStateException.class, somePath::getContents);
+    }
+
     /**
      * Creates a PathComponent just to fill the config.
      * @return dummy PathComponent

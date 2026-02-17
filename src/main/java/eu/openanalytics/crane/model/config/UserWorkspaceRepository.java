@@ -23,11 +23,13 @@ package eu.openanalytics.crane.model.config;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class UserWorkspaceRepository extends Repository {
 
-    public UserWorkspaceRepository(String userHomeStorageLocation, Path userHomeStoragePath) {
+    public UserWorkspaceRepository(String userHomeStorageLocation, Path userHomeStoragePath) throws IOException {
         super(null,
             null,
             userHomeStorageLocation,
@@ -40,30 +42,34 @@ public class UserWorkspaceRepository extends Repository {
         init(null, userHomeStoragePath);
     }
 
-    private Path getPath() {
+    private Path getPath() throws IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) {
             throw new IllegalStateException("Cannot read UserWorkspaceRepository without authentication");
         }
         Path path = super.getStoragePath().resolve(auth.getName());
-        if (!path.toFile().isDirectory()) {
-            createDirectory(path);
+        if (!Files.exists(path)) {
+            Files.createDirectory(path);
         }
         return path;
     }
 
     @Override
     public String getStorageLocation() {
-        return getPath().toString();
+        try {
+            return getPath().toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Path getStoragePath() {
-        return getPath();
+        try {
+            return getPath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Override
-    public boolean usesS3() {
-        return false; // TODO #35659
-    }
 }

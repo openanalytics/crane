@@ -25,7 +25,6 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.config.UserWorkspaceRepository;
 import jakarta.annotation.PostConstruct;
 import org.carlspring.cloud.storage.s3fs.S3Factory;
-import org.carlspring.cloud.storage.s3fs.S3FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +93,7 @@ public class CraneConfig {
     }
 
     @PostConstruct
-    public void init() throws URISyntaxException {
+    public void init() throws URISyntaxException, IOException {
         logoUrl = resolveImageURI(logoUrl);
         if (storageLocation == null) {
             throw new IllegalArgumentException("Incorrect configuration detected: app.storage-location not set");
@@ -367,18 +366,6 @@ public class CraneConfig {
 
     public void setOpenidPosixGIDSClaim(String openidPosixGIDSClaim) {
         this.openidPosixGIDSClaim = openidPosixGIDSClaim;
-    }
-
-    public boolean usesS3() {
-        if (root.getFileSystem() instanceof S3FileSystem) {
-            return true;
-        }
-        for (Repository repository : repositories.values()) {
-            if (repository.usesS3()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void setOnlyPublic(boolean onlyPublic) {

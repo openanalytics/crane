@@ -66,8 +66,7 @@ public abstract class AbstractPathAccessControlService {
                 if (accessControl == null) {
                     throw new IllegalStateException("Should not be empty");
                 }
-                if (canAccess(auth, accessControl)) {
-                } else {
+                if (!canAccess(auth, accessControl)) {
                     logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, pathComponent);
                     return false;
                 }

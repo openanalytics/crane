@@ -56,7 +56,7 @@ public class DeletionService {
         this.state = new ConcurrentHashMap<>();
     }
 
-    synchronized public Progress initDeletion(CranePath cranePath) throws InterruptedException, IOException, IllegalAccessException {
+    synchronized public Progress initDeletion(CranePath cranePath) throws IOException, IllegalAccessException {
         if (!state.containsKey(cranePath)) {
             CountFiles countFiles = new CountFiles(uploadAccessControlService);
             cranePath.walkFileTree(countFiles);
@@ -110,7 +110,7 @@ public class DeletionService {
         }
 
         @Override
-        public @NotNull FileVisitResult postVisitDirectory(@NotNull CranePath dir, @Nullable IOException exc) throws IOException {
+        public @NotNull FileVisitResult postVisitDirectory(@NotNull CranePath dir, @Nullable IOException exc) {
             if (!uploadAccessControlService.canAccess(dir)) {
                 return FileVisitResult.SKIP_SUBTREE;
             }

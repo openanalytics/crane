@@ -22,13 +22,17 @@ package eu.openanalytics.crane.model.runtime;
 
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
+import eu.openanalytics.crane.util.FileSize;
 import org.apache.tika.Tika;
 import org.springframework.http.MediaType;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -71,12 +75,15 @@ public class CranePathBuilder {
         if (cranePath.isDirectory()) {
             throw new IllegalStateException("CranePath is a directory and has no MediaType");
         }
+        if (!cranePath.isExists()) {
+            return null;
+        }
         String mimeType = tika.detect(cranePath.getName());
         return MediaType.valueOf(mimeType);
     }
 
     @SuppressWarnings("resource")
-    public static Stream<CranePath> getContents(CranePath cranePath)  {
+    public static Stream<CranePath> getContents(CranePath cranePath) {
         if (!cranePath.isDirectory()) {
             throw new IllegalStateException("CranePath must be a directory to list its content");
         }
@@ -115,11 +122,59 @@ public class CranePathBuilder {
         return res.getReadAccess();
     }
 
-    public static BasicFileAttributes getBasicFileAttributes(CranePath cranePath) {
+    public static @Nullable BasicFileAttributes getBasicFileAttributes(CranePath cranePath) {
         try {
             return Files.readAttributes(cranePath.getStoragePath(), BasicFileAttributes.class);
+        } catch (NoSuchFileException e) {
+            return null;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    public static boolean isDirectory(CranePath cranePath) {
+        BasicFileAttributes basicFileAttributes = cranePath.getBasicFileAttributes();
+        if (basicFileAttributes == null) {
+            return false;
+        }
+        return basicFileAttributes.isDirectory();
+    }
+
+    public static boolean exists(CranePath cranePath) {
+        BasicFileAttributes basicFileAttributes = cranePath.getBasicFileAttributes();
+        return basicFileAttributes != null;
+    }
+
+    public static Instant getLastModifiedTime(CranePath cranePath) {
+        BasicFileAttributes basicFileAttributes = cranePath.getBasicFileAttributes();
+        if (basicFileAttributes == null) {
+            return null;
+        }
+        return basicFileAttributes.lastModifiedTime().toInstant();
+    }
+
+    public static Long getLastModifiedTimeMillis(CranePath cranePath) {
+        BasicFileAttributes basicFileAttributes = cranePath.getBasicFileAttributes();
+        if (basicFileAttributes == null) {
+            return null;
+        }
+        return basicFileAttributes.lastModifiedTime().toMillis();
+    }
+
+    public static Long getSize(CranePath cranePath) {
+        BasicFileAttributes basicFileAttributes = cranePath.getBasicFileAttributes();
+        if (basicFileAttributes == null) {
+            return null;
+        }
+        return basicFileAttributes.size();
+    }
+
+    public static String getFormattedSize(CranePath cranePath) {
+        BasicFileAttributes basicFileAttributes = cranePath.getBasicFileAttributes();
+        if (basicFileAttributes == null) {
+            return null;
+        }
+        return FileSize.bytesToHumanReadableBinary(basicFileAttributes.size());
+    }
+
 }

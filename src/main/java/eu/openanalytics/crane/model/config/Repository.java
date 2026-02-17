@@ -22,11 +22,12 @@ package eu.openanalytics.crane.model.config;
 
 import eu.openanalytics.crane.model.runtime.CranePath;
 import lombok.Getter;
-import org.carlspring.cloud.storage.s3fs.S3FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
@@ -101,7 +102,7 @@ public class Repository extends PathComponent {
         }
     }
 
-    public void init(List<CacheRule> defaultCache, Path storagePath) {
+    public void init(List<CacheRule> defaultCache, Path storagePath) throws IOException {
         if (initialized) {
             throw new IllegalStateException("Already initialized");
         }
@@ -109,17 +110,15 @@ public class Repository extends PathComponent {
             cache = defaultCache;
         }
         this.storagePath = storagePath;
-        if (!usesS3()) {
-            if (!storagePath.toFile().isDirectory()){
-                createDirectory(storagePath);
-                if (isPosixAccessControl()) {
-                    logger.warn("Repository '{}' was created no posix access control configured", getName());
-                }
+        if (!Files.exists(storagePath)) {
+            Files.createDirectories(storagePath);
+            if (isPosixAccessControl()) {
+                logger.warn("Repository '{}' was created no posix access control configured", getName());
             }
-            if (hasPaths()) {
-                for (PathComponent pathComponent : getPaths()) {
-                    pathComponent.init(storagePath);
-                }
+        }
+        if (hasPaths()) {
+            for (PathComponent pathComponent : getPaths()) {
+                pathComponent.init(storagePath);
             }
         }
         initialized = true;
@@ -148,20 +147,16 @@ public class Repository extends PathComponent {
         return storageLocation;
     }
 
-    public boolean usesS3() {
-        return storagePath.getFileSystem() instanceof S3FileSystem;
-    }
-
     public CranePath getPath(String pathRelativeToRepository) {
         return new CranePath(this, pathRelativeToRepository);
     }
 
     public CranePath getPathFromStoragePath(Path fullStoragePath, BasicFileAttributes basicFileAttributes) {
-        return new CranePath(this,storagePath.relativize(fullStoragePath).toString(), fullStoragePath, basicFileAttributes);
+        return new CranePath(this, storagePath.relativize(fullStoragePath).toString(), fullStoragePath, basicFileAttributes);
     }
 
     public CranePath getPathFromStoragePath(Path fullStoragePath) {
-        return new CranePath(this,storagePath.relativize(fullStoragePath).toString(), fullStoragePath);
+        return new CranePath(this, storagePath.relativize(fullStoragePath).toString(), fullStoragePath);
     }
 
 }

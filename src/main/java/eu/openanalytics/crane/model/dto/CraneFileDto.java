@@ -23,7 +23,6 @@ package eu.openanalytics.crane.model.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.openanalytics.crane.model.runtime.CranePath;
 
-import java.io.IOException;
 import java.time.Instant;
 
 public record CraneFileDto(@JsonIgnore CranePath cranePath) {
@@ -32,17 +31,17 @@ public record CraneFileDto(@JsonIgnore CranePath cranePath) {
         return cranePath.getName();
     }
 
-    public long getSize() throws IOException {
+    public long getSize() {
         return cranePath.getSize();
     }
 
     @SuppressWarnings("unused")
-    public String getFormattedSize() throws IOException {
+    public String getFormattedSize() {
         return cranePath.getFormattedSize();
     }
 
     @SuppressWarnings("unused")
-    public Instant getLastModifiedTiime() throws IOException {
+    public Instant getLastModifiedTiime() {
         return cranePath.getLastModifiedTime();
     }
 

@@ -133,9 +133,6 @@ public class UploadController {
             // file or directory deleted in background
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
-        } catch (InterruptedException e) {
-            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
-            return ApiResponse.fail(Map.of("message", "Directory deletion was interrupted"));
         } catch (IOException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File deletion failed"));

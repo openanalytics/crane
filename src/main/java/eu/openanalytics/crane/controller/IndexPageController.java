@@ -99,7 +99,7 @@ public class IndexPageController extends BaseUIController {
 
     @ResponseBody
     @GetMapping(value = "/__index", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Map<String, Object>>> mainJson(HttpServletRequest request, HttpServletResponse response, CsrfToken csrfToken) throws IOException, ServletException {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> mainJson(HttpServletRequest request, HttpServletResponse response, CsrfToken csrfToken) throws ServletException, IOException {
         CranePath path = (CranePath) request.getAttribute("path");
         Repository repo = (Repository) request.getAttribute("repo");
 

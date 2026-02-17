@@ -25,6 +25,8 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,23 +129,14 @@ public class PathComponent {
         }
     }
 
-    protected void init(Path storagePath) {
+    protected void init(Path storagePath) throws IOException {
         Path path = storagePath.resolve(getName());
-        if (!path.toFile().isDirectory()) {
-            createDirectory(path);
+        if (!Files.exists(path)) {
+            Files.createDirectories(path);
         }
         if (hasPaths()) {
             for (PathComponent pathComponent : getPaths()) {
                 pathComponent.init(path);
-            }
-        }
-    }
-
-    protected void createDirectory(Path path) {
-        if (path.toString().startsWith("/")) {
-            boolean createdDirectory = path.toFile().mkdirs();
-            if (!createdDirectory) {
-                logger.warn("Could not create '{}'", path);
             }
         }
     }
