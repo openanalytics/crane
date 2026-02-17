@@ -39,7 +39,6 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.StsException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -227,8 +226,8 @@ public class CraneConfig {
         if (!storageLocation.startsWith("/") || !storageLocation.endsWith("/")) {
             throw new IllegalArgumentException(String.format("Incorrect configuration detected: %s must either start and end with / OR start with s3:// and end with /", option));
         }
-        File path = new File(storageLocation);
-        if (!path.exists() || !path.isDirectory()) {
+        Path path = Path.of(storageLocation);
+        if (!Files.exists(path) || !Files.isDirectory(path)) {
             throw new IllegalArgumentException(String.format("Incorrect configuration detected: %s does not exists or is not a directory", option));
         }
         return storageLocation;

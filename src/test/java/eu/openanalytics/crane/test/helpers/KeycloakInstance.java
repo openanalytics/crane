@@ -21,13 +21,13 @@
 package eu.openanalytics.crane.test.helpers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.okhttp.OkDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.shaded.com.github.dockerjava.core.DefaultDockerClientConfig;
-import org.testcontainers.shaded.com.github.dockerjava.core.DockerClientImpl;
 
 import java.util.List;
 

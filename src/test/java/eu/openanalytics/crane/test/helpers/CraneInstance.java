@@ -32,13 +32,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.web.firewall.FirewalledRequest;
 import org.springframework.security.web.firewall.RequestRejectedException;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.util.FileSystemUtils;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.sts.StsClient;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -171,13 +170,13 @@ public class CraneInstance {
     }
 
     private void copyResourcesToTmp() {
-        String source = "src/test/resources/repository";
-        String destination = "/tmp/repository/";
+        Path source = Path.of("src/test/resources/repository");
+        Path destination = Path.of("/tmp/repository/");
         try {
-            if (Files.isDirectory(Path.of(destination))) {
-                FileUtils.cleanDirectory(new File(destination));
+            if (Files.isDirectory(destination)) {
+                FileSystemUtils.deleteRecursively(destination);
             }
-            FileUtils.copyDirectory(new File(source), new File(destination));
+            FileSystemUtils.copyRecursively(source, destination);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

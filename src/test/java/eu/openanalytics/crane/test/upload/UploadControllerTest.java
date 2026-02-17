@@ -20,7 +20,6 @@
  */
 package eu.openanalytics.crane.test.upload;
 
-import com.google.common.io.Files;
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
@@ -42,6 +41,7 @@ import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,19 +97,19 @@ public class UploadControllerTest {
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("test");
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
     }
 
     @ParameterizedTest
@@ -139,7 +139,7 @@ public class UploadControllerTest {
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
@@ -159,7 +159,7 @@ public class UploadControllerTest {
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
@@ -168,7 +168,7 @@ public class UploadControllerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
     }
 
     @ParameterizedTest
@@ -180,7 +180,7 @@ public class UploadControllerTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
     }
 
     @ParameterizedTest
@@ -194,19 +194,19 @@ public class UploadControllerTest {
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("test");
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
     }
 
     @ParameterizedTest
@@ -220,7 +220,7 @@ public class UploadControllerTest {
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("unauthenticated");
         // Cannot upload to this repo since user cannot get csrf token
@@ -231,7 +231,7 @@ public class UploadControllerTest {
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
     }
 
     @ParameterizedTest
@@ -272,38 +272,38 @@ public class UploadControllerTest {
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("test", "test");
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("demo", "demo");
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         genericPath = "/public_repo/testUpload_%s_nested/directory/path/testUpload_%s.txt";
         path = genericPath.formatted("unauthenticated", "unauthenticated");
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("test", "test");
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
 
         path = genericPath.formatted("demo", "demo");
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
         response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.toByteArray(fileToUpload.toFile()), StandardCharsets.UTF_8));
+        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
     }
 
     @ParameterizedTest
