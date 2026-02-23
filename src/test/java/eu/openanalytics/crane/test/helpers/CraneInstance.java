@@ -39,6 +39,9 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.sts.StsClient;
 
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -106,7 +109,7 @@ public class CraneInstance {
             }
             application.setDefaultProperties(allProperties);
 
-            copyResourcesToTmp();
+            copyResourcesToTestLocation();
 
             client = new CraneClient(port);
             AtomicReference<Throwable> exception = new AtomicReference<>();
@@ -169,16 +172,36 @@ public class CraneInstance {
         return app.getBean(name, requiredType);
     }
 
-    private void copyResourcesToTmp() {
+    public void copyResourcesToTestLocation() {
         Path source = Path.of("src/test/resources/repository");
-        Path destination = Path.of("/tmp/repository/");
+
+        FileSystem fs = null;
+        Path storageLocationPath;
         try {
-            if (Files.isDirectory(destination)) {
-                FileSystemUtils.deleteRecursively(destination);
+            if (configName.contains("s3")) {
+                fs = FileSystems.newFileSystem(URI.create("s3:///"), Map.of(), Thread.currentThread().getContextClassLoader());
+                storageLocationPath = fs.getPath("/oa-test-crane-bucket/repository");
+            } else {
+                fs = FileSystems.getFileSystem(URI.create("file:///"));
+                storageLocationPath = fs.getPath("/tmp/repository");
             }
-            FileSystemUtils.copyRecursively(source, destination);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            if (Files.isDirectory(storageLocationPath)) {
+                FileSystemUtils.deleteRecursively(storageLocationPath);
+            }
+            FileSystemUtils.copyRecursively(source, storageLocationPath);
+        } catch (IOException ex) {
+            throw new TestHelperException("Failure while preparing test directory", ex);
+        } finally {
+            if (fs != null) {
+                try {
+                    fs.close();
+                } catch (UnsupportedOperationException ex) {
+                    // ignore
+                } catch (IOException ex) {
+                    throw new TestHelperException("Failure while preparing test directory", ex);
+                }
+            }
         }
     }
 

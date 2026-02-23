@@ -110,11 +110,18 @@ public class DeletionService {
         }
 
         @Override
-        public @NotNull FileVisitResult postVisitDirectory(@NotNull CranePath dir, @Nullable IOException exc) {
+        public @NotNull FileVisitResult preVisitDirectory(@NotNull CranePath dir, @NotNull BasicFileAttributes attributes) {
             if (!uploadAccessControlService.canAccess(dir)) {
                 return FileVisitResult.SKIP_SUBTREE;
             }
-            directories.add(dir.getStoragePath());
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public @NotNull FileVisitResult postVisitDirectory(@NotNull CranePath dir, @Nullable IOException exc) {
+            if (!dir.isExistsInConfig()) {
+                directories.add(dir.getStoragePath());
+            }
             return FileVisitResult.CONTINUE;
         }
 

@@ -48,7 +48,7 @@ public class CsrfTokenInterceptor implements Interceptor {
         if (cookie != null && csrfToken != null) {
             return request.newBuilder().addHeader("Cookie", cookie).addHeader("X-CSRF-TOKEN", csrfToken).build();
         }
-        if (request.method().equals("POST") && !request.url().uri().getPath().equals("/logout")) {
+        if ((request.method().equals("POST") || request.method().equals("DELETE")) && !request.url().uri().getPath().equals("/logout")) {
             String url = request.url().toString();
             url = url.substring(0, url.indexOf("/", url.lastIndexOf(":") + 6) + 1);
             Request indexToIndexPage = request.newBuilder().url(url).get().build();

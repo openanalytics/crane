@@ -81,6 +81,10 @@ public class Response {
         assertContentTypeWithCode(200, "text/html");
     }
 
+    public void assertJsonAccepted() {
+        assertContentTypeWithCode(202, "application/json");
+    }
+
     private void checkResponseCode(int expectedResponseCode, int actualResponseCode) {
         String message = String.format("Unexpected response code %d expected %d from request %s %s made by user %s", actualResponseCode, expectedResponseCode, method(), path(), user());
         Assertions.assertEquals(expectedResponseCode, actualResponseCode, message);

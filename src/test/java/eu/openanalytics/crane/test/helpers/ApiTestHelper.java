@@ -152,6 +152,10 @@ public class ApiTestHelper {
         }
     }
 
+    public Request.Builder createDeleteRequest(String path) {
+        return new Request.Builder().url(baseUrl + path).delete().addHeader("Accept", "*/*");
+    }
+
     /**
      * Uses the native JDK HttpClient to perform the request.
      */
