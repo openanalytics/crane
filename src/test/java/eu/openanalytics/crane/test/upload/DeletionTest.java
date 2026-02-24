@@ -22,7 +22,6 @@ package eu.openanalytics.crane.test.upload;
 
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
-import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -33,7 +32,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
-import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,23 +41,12 @@ import java.util.List;
 public class DeletionTest {
 
     private static final Logger logger = LoggerFactory.getLogger(DeletionTest.class);
-    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final List<CraneInstance> instances = new ArrayList<>();
-    private static S3Client client;
 
     @BeforeAll
     public static void beforeAll() {
-        keycloakInstance.start();
         instances.add(new CraneInstance("application-test-upload-api.yml"));
         CraneInstance.addInstanceWithAwsAccess(instances, "application-test-upload-api-with-s3.yml", 7275, logger);
-    }
-
-    public static S3Client getClient() {
-        return client;
-    }
-
-    public static void setClient(S3Client client) {
-        DeletionTest.client = client;
     }
 
     @BeforeEach

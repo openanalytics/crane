@@ -22,7 +22,6 @@ package eu.openanalytics.crane.test.api;
 
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
-import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -39,13 +38,11 @@ import java.util.Map;
 
 public class ControllerTest {
     private static final Logger logger = LoggerFactory.getLogger(ControllerTest.class);
-    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static CraneInstance redisInst;
     private static final List<CraneInstance> instances = new ArrayList<>();
 
     @BeforeAll
     public static void beforeAll() {
-        keycloakInstance.start();
         instances.add(new CraneInstance("application-test-api.yml"));
         CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
         redisInst = new CraneInstance("application-test-api.yml", 7071, Map.of("spring.session.store-type", "redis"), true, false);

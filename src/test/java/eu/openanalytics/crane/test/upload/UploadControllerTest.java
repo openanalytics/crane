@@ -22,7 +22,6 @@ package eu.openanalytics.crane.test.upload;
 
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
-import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -32,12 +31,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.S3Object;
-import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -51,31 +44,13 @@ import java.util.List;
 public class UploadControllerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadControllerTest.class);
-    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final List<CraneInstance> instances = new ArrayList<>();
-    private static S3Client client;
-    private static final String bucket = "oa-test-crane-bucket";
 
     @BeforeAll
     public static void beforeAll() {
-        keycloakInstance.start();
         instances.add(new CraneInstance("application-test-upload-api.yml"));
-        if (CraneInstance.addInstanceWithAwsAccess(instances, "application-test-upload-api-with-s3.yml", 7275, logger)) {
-            ListObjectsV2Request initialRequest = ListObjectsV2Request.builder()
-                    .bucket(bucket)
-                    .build();
-
-            ListObjectsV2Iterable pagination = getClient().listObjectsV2Paginator(initialRequest);
-            pagination.forEach(listObjectsV2Response -> {
-                listObjectsV2Response.contents().forEach(s3Object -> {
-                    if (s3Object.key().contains("testUpload")) {
-                        deleteS3Object(s3Object);
-                    }
-                });
-            });
-        }
+        CraneInstance.addInstanceWithAwsAccess(instances, "application-test-upload-api-with-s3.yml", 7275, logger);
     }
-
 
     private static List<CraneInstance> instances() {
         return instances;
@@ -317,28 +292,6 @@ public class UploadControllerTest {
         Assertions.assertTrue(response.body().contains("\"message\":"), response.body());
         Assertions.assertTrue(response.body().contains("\"status\":"), response.body());
         Assertions.assertTrue(response.body().contains("\"fail\""), response.body());
-    }
-
-    private static void deleteS3Object(S3Object s3Object) {
-        String key = s3Object.key();
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .build();
-
-        DeleteObjectResponse response = getClient().deleteObject(deleteObjectRequest);
-        if (response != null) {
-            logger.info("{} was deleted", key);
-        } else {
-            throw new RuntimeException("An S3 exception occurred during delete");
-        }
-    }
-
-    private static S3Client getClient() {
-        if (client == null) {
-            client = S3Client.create();
-        }
-        return client;
     }
 
 }

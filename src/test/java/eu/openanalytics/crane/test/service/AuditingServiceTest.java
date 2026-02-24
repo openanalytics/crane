@@ -27,7 +27,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.openanalytics.crane.security.auditing.FileAuditEventRepository;
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
-import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,7 +48,6 @@ import java.util.Map;
 @Testcontainers
 public class AuditingServiceTest {
 
-    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final String ANONYMOUS_USER = "anonymousUser";
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
     private static final Logger logger = LoggerFactory.getLogger(AuditingServiceTest.class);
@@ -69,7 +67,6 @@ public class AuditingServiceTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        keycloakInstance.start();
         Map<String, String> properties = new HashMap<>();
         properties.put("app.audit-logging", auditLogsFile.getAbsolutePath());
         instances.add(new CraneInstance("application-test-api.yml", properties));

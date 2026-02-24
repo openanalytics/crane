@@ -22,7 +22,6 @@ package eu.openanalytics.crane.test.api;
 
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
-import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.crane.test.helpers.NativeResponse;
 import eu.openanalytics.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
@@ -41,15 +40,14 @@ import java.util.List;
 
 @Testcontainers
 public class DownloadControllerTest {
+
     private static final Logger logger = LoggerFactory.getLogger(DownloadControllerTest.class);
-    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static final List<CraneInstance> instances = new ArrayList<>();
     private static final List<CraneInstance> instanceWithoutFirewall = new ArrayList<>();
     private static CraneInstance groupsInst;
 
     @BeforeAll
     public static void beforeAll() {
-        keycloakInstance.start();
         instances.add(new CraneInstance("application-test-api.yml"));
         CraneInstance.addInstanceWithAwsAccess(instances, "application-test-api-with-s3.yml", 7275, logger);
         groupsInst = new CraneInstance("application-test-keycloak-groups.yml", 7273);

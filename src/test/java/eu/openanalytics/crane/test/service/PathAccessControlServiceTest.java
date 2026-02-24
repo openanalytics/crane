@@ -49,7 +49,6 @@ public class PathAccessControlServiceTest {
 
     @BeforeAll
     public static void beforeAll() {
-        keycloakInstance.start();
         inst = new CraneInstance("application-test-api.yml");
     }
 

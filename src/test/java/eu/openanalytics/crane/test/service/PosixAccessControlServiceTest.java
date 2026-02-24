@@ -46,17 +46,16 @@ import java.util.Set;
 
 @Testcontainers
 public class PosixAccessControlServiceTest {
+
     private static final int cranePort = 7127;
     private static final String targetDirectory = "/tmp/target";
     private static final Logger logger = LoggerFactory.getLogger(PosixAccessControlServiceTest.class);
-    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     private static GenericContainer craneApp = new GenericContainer();
     private final String craneUrl = String.format("http://%s:%s", craneApp.getHost(), cranePort);
 
     @BeforeAll
     public static void beforeAll() throws IOException, InterruptedException {
         buildJar();
-        keycloakInstance.start();
 
         craneApp = new GenericContainer(new ImageFromDockerfile()
                 .withBuildArg("CONFIGURATION", "application.yml")
@@ -65,9 +64,9 @@ public class PosixAccessControlServiceTest {
                 .withFileFromPath("crane.jar", Path.of(targetDirectory + "/crane-exec.jar"))
                 .withFileFromClasspath("Dockerfile", "testcontainers/PosixAccessControlDockerfile")
         )
-                .withEnv("OPENID_URL", KeycloakInstance.getURI())
+                .withEnv("OPENID_URL", KeycloakInstance.inst.getURI())
                 .withEnv("CRANE_PORT", String.valueOf(cranePort))
-                .withNetwork(keycloakInstance.getNetwork())
+                .withNetwork(KeycloakInstance.inst.getNetwork())
                 .withExposedPorts(cranePort);
         craneApp.setPortBindings(List.of(String.format("%s:%s", cranePort, cranePort)));
         craneApp.withLogConsumer(new Slf4jLogConsumer(logger));

@@ -26,57 +26,99 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.okhttp.OkDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
+import lombok.Getter;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.List;
 
-public class KeycloakInstance implements AutoCloseable {
+public class KeycloakInstance implements BeforeAllCallback {
 
+    private static final String RE_USABLE_NETWORK_NAME = "565a287f-0771-47ee-9649-aa2f450b2e1a";
     private static final int exposedPort = 9189;
-    private static final Network network = Network.newNetwork();
+
+    private static boolean initialized = false;
+    private static String containerIp;
+
+    public static KeycloakInstance inst;
+
+    @Getter
+    private final Network network = getOrCreateNetwork();
+
     @Container
-    public static final KeycloakContainer keycloak = new KeycloakContainer()
+    private final KeycloakContainer keycloak = new KeycloakContainer()
             .withEnv("KC_HTTP_PORT", String.valueOf(exposedPort))
             .withRealmImportFiles("crane-realm.json")
             .withExposedPorts(new Integer[]{8080, 8443, 9000, exposedPort})
-            .withNetwork(network);
-    public static boolean isKeycloakRunning = false;
-    private static String containerIp;
+            .withNetwork(network)
+            .withReuse(true); // todo opt-in
 
-    public static String getURI() {
+
+    public String getURI() {
         return String.format("http://%s:%d/realms/crane", containerIp, exposedPort);
     }
 
-    private static String getKeycloakIp() {
+    private String getKeycloakIp() {
         String networkId = network.getId();
         DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
         DockerHttpClient httpClient = new OkDockerHttpClient.Builder().dockerHost(config.getDockerHost()).build();
         DockerClient docker = DockerClientImpl.getInstance(config, httpClient);
 
         com.github.dockerjava.api.model.Network network = docker.inspectNetworkCmd().withNetworkId(networkId).exec();
-        String keycloakIp = network.getContainers().get(KeycloakInstance.keycloak.getContainerId()).getIpv4Address();
+        String keycloakIp = network.getContainers().get(keycloak.getContainerId()).getIpv4Address();
         return keycloakIp.substring(0, keycloakIp.indexOf('/'));
     }
 
-    public void start() {
-        if (!isKeycloakRunning) {
+    @Override
+    public void beforeAll(ExtensionContext context) throws Exception {
+        if (!initialized) {
             keycloak.setPortBindings(List.of(String.format("%d:%d", exposedPort, exposedPort)));
             keycloak.start();
             containerIp = getKeycloakIp();
-            isKeycloakRunning = true;
+            initialized = true;
+            inst = this;
         }
     }
 
-    public Network getNetwork() {
+    private Network getOrCreateNetwork() {
+        if (!TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
+            return Network.newNetwork();
+        }
+        return createReusableNetwork();
+    }
+
+    private Network createReusableNetwork() {
+        String networkName = RE_USABLE_NETWORK_NAME;
+        Network network = new Network() {
+            @Override
+            public String getId() {
+                return networkName;
+            }
+
+            @Override
+            public void close() {}
+
+            @Override
+            public Statement apply(Statement base, Description description) {
+                return null;
+            }
+        };
+
+        List<com.github.dockerjava.api.model.Network> networks = DockerClientFactory
+            .lazyClient()
+            .listNetworksCmd()
+            .withNameFilter(networkName)
+            .exec();
+        if (networks.isEmpty()) {
+            Network.builder().createNetworkCmdModifier(cmd -> cmd.withName(networkName)).build().getId();
+        }
         return network;
     }
 
-    @Override
-    public void close() {
-        if (isKeycloakRunning) {
-            keycloak.stop();
-            keycloak.close();
-        }
-    }
 }

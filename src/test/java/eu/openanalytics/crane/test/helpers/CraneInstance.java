@@ -95,8 +95,8 @@ public class CraneInstance {
             allProperties.put("management.server.port", mgmtPort);
             allProperties.put("proxy.kubernetes.namespace", "test");
             if (setupKeycloak) {
-                allProperties.put("app.openid-issuer-uri", KeycloakInstance.getURI());
-                allProperties.put("spring.security.oauth2.client.provider.crane.issuer-uri", KeycloakInstance.getURI());
+                allProperties.put("app.openid-issuer-uri", KeycloakInstance.inst.getURI());
+                allProperties.put("spring.security.oauth2.client.provider.crane.issuer-uri", KeycloakInstance.inst.getURI());
                 allProperties.put("spring.security.oauth2.client.registration.crane.client-id", "crane_client");
                 allProperties.put("spring.security.oauth2.client.registration.crane.client-secret", "secret");
                 allProperties.put("spring.security.oauth2.client.registration.crane.scope", "openid");

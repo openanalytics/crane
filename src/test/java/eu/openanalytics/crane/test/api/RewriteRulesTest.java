@@ -22,7 +22,6 @@ package eu.openanalytics.crane.test.api;
 
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
-import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,12 +35,10 @@ import java.util.List;
 @Testcontainers
 public class RewriteRulesTest {
 
-    private static final KeycloakInstance keycloakInstance = new KeycloakInstance();
     static List<CraneInstance> instances = new ArrayList<>();
 
     @BeforeAll
     public static void beforeAll() {
-        keycloakInstance.start();
         instances.add(new CraneInstance("application-test-api-rewrite-rules.yml"));
     }
 
