@@ -41,6 +41,7 @@
         <s3fs-nio.version>1.0.4</s3fs-nio.version>
         <tika-core.version>3.2.3</tika-core.version>
         <uppy.version>5.1.1</uppy.version>
+        <matomo.version>3.4.0</matomo.version>
         <!-- Test dependency versions -->
         <testcontainers-keycloak.version>3.9.1</testcontainers-keycloak.version>
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
@@ -218,6 +219,11 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.piwik.java.tracking</groupId>
+            <artifactId>matomo-java-tracker-spring-boot-starter</artifactId>
+            <version>${matomo.version}</version>
         </dependency>
 
         <!-- Test dependencies -->

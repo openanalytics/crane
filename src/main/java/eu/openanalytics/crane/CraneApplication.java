@@ -70,6 +70,7 @@ public class CraneApplication {
         properties.put("management.health.redis.enabled", false);
         // enable Kubernetes probes
         properties.put("management.endpoint.health.probes.enabled", true);
+        // ====================
 
         // use in-memory session storage by default. Can be overwritten in application.yml
         properties.put("spring.session.store-type", "none");
@@ -83,7 +84,10 @@ public class CraneApplication {
 
         // disable spring multipart parsing
         properties.put("spring.servlet.multipart.enabled", false);
-        // ====================
+
+        // disable matomo by default
+        properties.put("matomo.tracker.enabled", false);
+        properties.put("matomo.tracker.filter.enabled", false);
 
         return properties;
     }
