@@ -37,8 +37,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -103,13 +102,13 @@ public class ApiTestHelper {
     }
 
 
-    public Request.Builder createMultiPartRequest(String path, Path fileToUpload) throws IOException {
-        return createMultiPartRequest(path, fileToUpload, "file", "file.txt");
+    public Request.Builder createMultiPartRequest(String path, String body) {
+        return createMultiPartRequest(path, body, "file", "file.txt");
     }
 
-    public Request.Builder createMultiPartRequest(String path, Path fileToUpload, String parameterName, String fileName) throws IOException {
-        MultipartBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart(parameterName, fileName, RequestBody.create(Files.readAllBytes(fileToUpload))).build();
-        return new Request.Builder().url(baseUrl + path).addHeader("Accept", "*/*").post(body);
+    public Request.Builder createMultiPartRequest(String path, String body, String parameterName, String fileName) {
+        MultipartBody multipartBody = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart(parameterName, fileName, RequestBody.create(body.getBytes(StandardCharsets.UTF_8))).build();
+        return new Request.Builder().url(baseUrl + path).addHeader("Accept", "*/*").post(multipartBody);
     }
 
     public Response callWithTokenAuthDemoUser(Request.Builder request) {

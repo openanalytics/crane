@@ -37,7 +37,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -103,216 +102,205 @@ public class PosixUploadAccessControlServiceTest {
     public void testAccessToPublicRepository() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
     }
 
     @Test
     public void testIndexPageOfPrivateRepository() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/private/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
     }
 
     @Test
     public void testAccessToGroupRepositoryWithMultipleUsers() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/only_group_mathematicians_gid/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
     }
 
     @Test
     public void testAccessToRepositoryWithOwnerRestrictionAccess() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/only_owner_demo/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
     }
 
     @Test
     public void testAccessToRepositoryRestrictedToGroupOfSingleUser() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/only_group_scientists/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
     }
 
     @Test
     public void testAccessToRepositoryWithNoAccessInPosix() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/no_posix_access/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
     }
 
     @Test
     public void testAccessToRepositoryWithNoPathAccess() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/restricted_to_groups_repo/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
     }
 
     @Test
     public void testAccessToNestedGroupRepositoryWithMultipleUsers() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/only_group_mathematicians_gid/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         response = apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
     }
 
     @Test
     public void testAccessToNestedRepositoryWithOwnerRestrictionAccess() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/only_owner_demo/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
     }
 
     @Test
     public void testAccessToNestedRepositoryRestrictedToGroupOfSingleUser() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/only_group_scientists/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
-        Assertions.assertEquals(response.body(), new String(Files.readAllBytes(fileToUpload), StandardCharsets.UTF_8));
+        Assertions.assertEquals("testing upload\n", response.body());
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
     }
 
     @Test
     public void testAccessToNestedRepositoryWithNoPathAccess() throws IOException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/restricted_to_groups_repo/testUpload_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
     }
 
     // TODO: add tests to throw error that crane does not have the permissions to create the requested file

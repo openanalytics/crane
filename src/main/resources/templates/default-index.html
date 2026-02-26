@@ -32,7 +32,13 @@
             <div id="uppy" th:action="@{${resource}}"></div>
             <div class="flex flex-space-between">
                 <button id="cancel-uppy-upload" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
-                <button id="uppy-upload" type="button" class="button create" th:text="#{index.upload.button}"></button>
+                <div class="flex-right">
+                    <label class="checkbox-label">
+                        <input id="uppy-replace" type="checkbox" class="checkbox">
+                        <span>Replace existing</span>
+                    </label>
+                    <button id="uppy-upload" type="button" class="button create" th:text="#{index.upload.button}"></button>
+                </div>
             </div>
         </dialog>
 

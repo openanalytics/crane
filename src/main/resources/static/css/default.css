@@ -193,6 +193,12 @@ dialog form div label {
     margin: 1rem;
 }
 
+.flex-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .button, button.dt-button[tabindex='0'], button.uppy-DashboardContent-back, .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload, button.uppy-DashboardContent-addMore {
     text-decoration: none;
     padding: .5rem 1.5rem;
@@ -380,4 +386,23 @@ dialog form div input[type="text"] {
 .dropdown-toggle {
     display: inline-block;
     width: 150px;
+}
+
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 10px;
+    border: 1px solid #32a6d3;
+    font-weight: bold;
+    font-size: 14px;
+    color: rgb(0, 0, 0);
+    padding: .5rem 1.5rem;
+}
+
+.checkbox {
+    accent-color: #32a6d3;
+    cursor: pointer;
 }

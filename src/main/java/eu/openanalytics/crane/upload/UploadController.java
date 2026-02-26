@@ -41,11 +41,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 @Controller
@@ -67,7 +69,8 @@ public class UploadController {
     @PostMapping(value = "/__file/{repository}/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> createResource(HttpServletRequest request,
                                                                            @P("r") @PathVariable(name = "repository") String stringRepository,
-                                                                           @P("p") @PathVariable(name = "path") String stringPath) {
+                                                                           @P("p") @PathVariable(name = "path") String stringPath,
+                                                                           @RequestParam(value = "replace", defaultValue = "false") Boolean replace) {
         boolean isMultipartForm = JakartaServletFileUpload.isMultipartContent(request);
 
         JakartaServletFileUpload upload = new JakartaServletFileUpload();
@@ -79,7 +82,7 @@ public class UploadController {
             return createDirectory(request, cranePath);
         }
 
-        if (cranePath.isExists()) {
+        if (!replace && cranePath.isExists()) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(stringRepository + stringPath)));
         }
@@ -90,11 +93,15 @@ public class UploadController {
                 auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
                 return ApiResponse.fail(Map.of("message", "Upload failed. No parameter named `file` found"));
             }
-            CranePath parent =  cranePath.getParent();
+            CranePath parent = cranePath.getParent();
             if (!parent.isExists()) {
                 Files.createDirectories(parent.getStoragePath());
             }
-            Files.copy(fileItemInput.getInputStream(), cranePath.getStoragePath());
+            if (!replace) {
+                Files.copy(fileItemInput.getInputStream(), cranePath.getStoragePath());
+            } else {
+                Files.copy(fileItemInput.getInputStream(), cranePath.getStoragePath(), StandardCopyOption.REPLACE_EXISTING);
+            }
             if (repository.isPosixAccessControl()) {
                 setPathAttribute(cranePath);
             }
@@ -110,8 +117,8 @@ public class UploadController {
     @ResponseBody
     @DeleteMapping(value = "/__file/{repository}/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Object>> deleteResource(HttpServletRequest request,
-                                                                           @P("r") @PathVariable(name = "repository") String stringRepository,
-                                                                           @P("p") @PathVariable(name = "path") String stringPath) {
+                                                              @P("r") @PathVariable(name = "repository") String stringRepository,
+                                                              @P("p") @PathVariable(name = "path") String stringPath) {
         Repository repository = config.getRepository(stringRepository);
         CranePath cranePath = repository.getPath(stringPath);
 

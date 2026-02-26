@@ -40,7 +40,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,21 +100,20 @@ public class UploadAuditingServiceTest {
     public void testAuditingEventUploadToPrivateRepo(CraneInstance instance) throws IOException, InterruptedException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/private_repo/testUpload_private_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
         checkUnauthenticatedAuditLog(path, "AUTHORIZATION_FAILURE");
 
         path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
         checkTwoAuditLogs(
                 path, "AUTHENTICATION_SUCCESS", "demo",
                 path, "AUTHORIZATION_FAILURE", "demo"
         );
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertForbidden();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
         checkTwoAuditLogs(
                 path, "AUTHENTICATION_SUCCESS", "test",
                 path, "AUTHORIZATION_FAILURE", "test"
@@ -127,14 +125,13 @@ public class UploadAuditingServiceTest {
     public void testAuditingEventUploadToPublicRepo(CraneInstance instance) throws IOException, InterruptedException {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/public_repo/testUpload_public_%s.txt";
-        Path fileToUpload = Path.of("src", "test", "resources", "testUpload.txt");
 
         String path = genericPath.formatted("unauthenticated");
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         checkUnauthenticatedAuditLog(path, "UPLOAD");
 
         path = genericPath.formatted("demo");
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         readAuditEventData();
         readAuditEventData();
         checkTwoAuditLogs(
@@ -143,7 +140,7 @@ public class UploadAuditingServiceTest {
         );
 
         path = genericPath.formatted("test");
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, fileToUpload)).assertSuccess();
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         checkTwoAuditLogs(
                 path, "AUTHENTICATION_SUCCESS", "test",
                 path, "UPLOAD", "test"

@@ -207,11 +207,16 @@ Crane.ui = {
             fileManagerSelectionType: "both",
         }).use(Uppy.XHRUpload, {
             endpoint: (file) => {
-                const uppy = document.getElementById("uppy")
-                if (file.meta.relativePath) {
-                    return uppy.attributes.action.value + file.meta.relativePath;
+                const uppy = document.getElementById("uppy");
+                const uppyReplace = document.getElementById("uppy-replace");
+                let query = "";
+                if (uppyReplace.checked) {
+                    query = "?replace=true";
                 }
-                return uppy.attributes.action.value + file.name;
+                if (file.meta.relativePath) {
+                    return uppy.attributes.action.value + file.meta.relativePath + query;
+                }
+                return uppy.attributes.action.value + file.name + query;
             },
             headers: () => {
                 return {[Crane.api.csrfHeader]: Crane.api.csrfToken}
