@@ -21,15 +21,23 @@
 package eu.openanalytics.crane;
 
 import io.undertow.UndertowOptions;
+import io.undertow.server.handlers.SameSiteCookieHandler;
+import io.undertow.servlet.api.ServletSessionConfig;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.session.web.http.DefaultCookieSerializer;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
@@ -45,6 +53,20 @@ import java.util.Properties;
 public class CraneApplication {
 
     private static final Path TERMINATION_LOG_FILE = Path.of("/dev/termination-log");
+    private static final String PROP_PROXY_SAME_SITE_COOKIE = "app.same-site-cookie";
+    private static final String SAME_SITE_COOKIE_DEFAULT_VALUE = "Lax";
+    private static final String PROP_SERVER_SECURE_COOKIES = "app.secure-cookies";
+    private static final Boolean SECURE_COOKIES_DEFAULT_VALUE = false;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    public static Boolean secureCookiesEnabled;
+    public static String sameSiteCookiePolicy;
+
+    @Autowired
+    private Environment environment;
+
+    @Autowired
+    private DefaultCookieSerializer defaultCookieSerializer;
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(CraneApplication.class);
@@ -117,9 +139,34 @@ public class CraneApplication {
         System.exit(1);
     }
 
+    @PostConstruct
+    public void init() {
+
+        sameSiteCookiePolicy = environment.getProperty(PROP_PROXY_SAME_SITE_COOKIE, SAME_SITE_COOKIE_DEFAULT_VALUE);
+        secureCookiesEnabled = environment.getProperty(PROP_SERVER_SECURE_COOKIES, Boolean.class, SECURE_COOKIES_DEFAULT_VALUE);
+
+        logger.debug("Setting sameSiteCookie policy to {}", sameSiteCookiePolicy);
+        defaultCookieSerializer.setSameSite(sameSiteCookiePolicy);
+        defaultCookieSerializer.setUseSecureCookie(secureCookiesEnabled);
+
+        if (sameSiteCookiePolicy.equalsIgnoreCase("none") && !secureCookiesEnabled) {
+            logger.warn("WARNING: Invalid configuration detected: same-site-cookie policy is set to None, but secure-cookies are not enabled. Secure cookies must be enabled when using None as same-site-cookie policy ");
+        }
+
+    }
+
     @Bean
     public UndertowServletWebServerFactory servletContainer() {
         UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
+        factory.addDeploymentInfoCustomizers(info -> {
+            logger.debug("Setting sameSiteCookie policy for session cookies to {}", sameSiteCookiePolicy);
+            info.addOuterHandlerChainWrapper(defaultHandler -> new SameSiteCookieHandler(defaultHandler, sameSiteCookiePolicy, null, true, true, false));
+
+            ServletSessionConfig sessionConfig = new ServletSessionConfig();
+            sessionConfig.setHttpOnly(true);
+            sessionConfig.setSecure(secureCookiesEnabled);
+            info.setServletSessionConfig(sessionConfig);
+        });
         factory.addBuilderCustomizers(builder -> {
             // allow uploads of unlimited size
             builder.setServerOption(UndertowOptions.MAX_ENTITY_SIZE, -1L);
@@ -133,8 +180,8 @@ public class CraneApplication {
     public LocaleResolver localeResolver() {
         // no default language is configured, therefore the Accept header will determine the language if there is no cookie
         CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver("shinyproxy_language");
-//        cookieLocaleResolver.setCookieSecure(secureCookiesEnabled); // TODO
-//        cookieLocaleResolver.setCookieSameSite(sameSiteCookiePolicy);
+        cookieLocaleResolver.setCookieSecure(secureCookiesEnabled);
+        cookieLocaleResolver.setCookieSameSite(sameSiteCookiePolicy);
         cookieLocaleResolver.setCookieHttpOnly(true);
         return cookieLocaleResolver;
     }
