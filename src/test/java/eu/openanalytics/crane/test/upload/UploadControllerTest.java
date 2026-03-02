@@ -26,13 +26,13 @@ import eu.openanalytics.crane.test.helpers.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +49,11 @@ public class UploadControllerTest {
         CraneInstance.addInstanceWithAwsAccess(instances, "application-test-upload-api-with-s3.yml", 7275, logger);
     }
 
+    @BeforeEach
+    public void beforeEach() {
+        instances.forEach(CraneInstance::copyResourcesToTestLocation);
+    }
+
     private static List<CraneInstance> instances() {
         return instances;
     }
@@ -60,7 +65,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadToPublicRepository(CraneInstance instance) throws IOException {
+    public void testUploadToPublicRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/public_repo/testUpload_%s.txt";
 
@@ -85,7 +90,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadToPrivateRepository(CraneInstance instance) throws IOException {
+    public void testUploadToPrivateRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/private_repo/testUpload_token_%s.txt";
         String path = genericPath.formatted("demo");
@@ -100,7 +105,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadToPrivateRepositoryWithRestrictedAccess(CraneInstance instance) throws IOException {
+    public void testUploadToPrivateRepositoryWithRestrictedAccess(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/restricted_repo/testUpload_%s.txt";
 
@@ -119,7 +124,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadToNestedMultiUserRestrictedRepositories(CraneInstance instance) throws IOException {
+    public void testUploadToNestedMultiUserRestrictedRepositories(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/public_repo/restricted_to_users_repo/testUpload_%s.txt";
 
@@ -141,7 +146,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadToPublicInPublicRepository(CraneInstance instance) throws IOException {
+    public void testUploadToPublicInPublicRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/public_repo/public_in_public_repo/testUpload_%s.txt";
 
@@ -166,7 +171,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadToOnlyWritePublicRepository(CraneInstance instance) throws IOException {
+    public void testUploadToOnlyWritePublicRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/write_public_repo/testUpload_%s.txt";
 
@@ -190,7 +195,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testAccessToInaccessiblePathsInUserRestrictedRepositories(CraneInstance instance) throws IOException {
+    public void testAccessToInaccessiblePathsInUserRestrictedRepositories(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/restricted_to_users_repo/inaccessible_path/testUpload_%s.txt";
 
@@ -206,7 +211,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadInvalidPath(CraneInstance instance) throws IOException {
+    public void testUploadInvalidPath(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String path = "/invalid/path";
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
@@ -215,7 +220,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadToRepositoryWithMissingDirectory(CraneInstance instance) throws IOException {
+    public void testUploadToRepositoryWithMissingDirectory(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String genericPath = "/public_repo/testUpload_%s_directory/testUpload_%s.txt";
 
@@ -259,7 +264,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testUploadNoFileParameter(CraneInstance instance) throws IOException {
+    public void testUploadNoFileParameter(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String path = "/public_repo/public_in_public_repo/testUpload.txt";
         Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n", "NotFile", "file.txt"));
@@ -271,7 +276,7 @@ public class UploadControllerTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testReplace(CraneInstance instance) throws IOException {
+    public void testReplace(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String path = "/public_repo/testUpload.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
@@ -298,6 +303,61 @@ public class UploadControllerTest {
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path));
         response.assertSuccess();
         Assertions.assertEquals("testing replace upload\n", response.body());
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testCreateDirectory(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String path = "/public_repo/some/long/directory/path/";
+
+        // path doesn't yet exist
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertNotFound();
+
+        // create path
+        Response response = apiTestHelper.callWithoutAuth(apiTestHelper.createPostRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals("{\"status\":\"success\",\"data\":{\"message\":\"Directory creation succeeded\"}}", response.body());
+
+        // path exists now
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertSuccess();
+
+        // create path
+        response = apiTestHelper.callWithoutAuth(apiTestHelper.createPostRequest(path));
+        response.assertBadRequest();
+        Assertions.assertEquals("{\"status\":\"fail\",\"data\":{\"message\":\"Directory /public_repo/some/long/directory/path already exists\"}}", response.body());
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    public void testCreateMetadataDirectory(CraneInstance instance) {
+        ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
+        String path = "/public_repo/some/long/directory/path/.crane/";
+
+        // path doesn't yet exist, anonymously -> no permission
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
+
+        // path doesn't yet exist as user too
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path)).assertNotFound();
+
+        // create path, anonymously -> no permission
+        apiTestHelper.callWithoutAuth(apiTestHelper.createPostRequest(path)).assertForbidden();
+
+        // create path as user
+        Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createPostRequest(path));
+        response.assertSuccess();
+        Assertions.assertEquals("{\"status\":\"success\",\"data\":{\"message\":\"Directory creation succeeded\"}}", response.body());
+
+        // path exists now, but anonymous user has no access
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
+
+        // path exists now, demo use has access
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path)).assertSuccess();
+
+        // create directory in metadata directory
+        response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createPostRequest(path + "some_dir"));
+        response.assertBadRequest();
+        Assertions.assertEquals("{\"status\":\"fail\",\"data\":{\"message\":\"Cannot create directories in a metadata directory\"}}", response.body());
     }
 
 }

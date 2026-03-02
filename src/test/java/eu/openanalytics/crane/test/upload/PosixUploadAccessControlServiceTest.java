@@ -99,7 +99,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToPublicRepository() throws IOException {
+    public void testAccessToPublicRepository() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/testUpload_%s.txt";
 
@@ -121,7 +121,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testIndexPageOfPrivateRepository() throws IOException {
+    public void testIndexPageOfPrivateRepository() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/private/testUpload_%s.txt";
 
@@ -136,7 +136,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToGroupRepositoryWithMultipleUsers() throws IOException {
+    public void testAccessToGroupRepositoryWithMultipleUsers() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/only_group_mathematicians_gid/testUpload_%s.txt";
 
@@ -157,7 +157,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToRepositoryWithOwnerRestrictionAccess() throws IOException {
+    public void testAccessToRepositoryWithOwnerRestrictionAccess() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/only_owner_demo/testUpload_%s.txt";
 
@@ -175,7 +175,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToRepositoryRestrictedToGroupOfSingleUser() throws IOException {
+    public void testAccessToRepositoryRestrictedToGroupOfSingleUser() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/only_group_scientists/testUpload_%s.txt";
 
@@ -193,7 +193,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToRepositoryWithNoAccessInPosix() throws IOException {
+    public void testAccessToRepositoryWithNoAccessInPosix() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/no_posix_access/testUpload_%s.txt";
 
@@ -217,7 +217,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToRepositoryWithNoPathAccess() throws IOException {
+    public void testAccessToRepositoryWithNoPathAccess() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/restricted_to_groups_repo/testUpload_%s.txt";
 
@@ -232,7 +232,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToNestedGroupRepositoryWithMultipleUsers() throws IOException {
+    public void testAccessToNestedGroupRepositoryWithMultipleUsers() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/only_group_mathematicians_gid/testUpload_%s.txt";
 
@@ -253,7 +253,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToNestedRepositoryWithOwnerRestrictionAccess() throws IOException {
+    public void testAccessToNestedRepositoryWithOwnerRestrictionAccess() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/only_owner_demo/testUpload_%s.txt";
 
@@ -271,7 +271,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToNestedRepositoryRestrictedToGroupOfSingleUser() throws IOException {
+    public void testAccessToNestedRepositoryRestrictedToGroupOfSingleUser() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/only_group_scientists/testUpload_%s.txt";
 
@@ -289,7 +289,7 @@ public class PosixUploadAccessControlServiceTest {
     }
 
     @Test
-    public void testAccessToNestedRepositoryWithNoPathAccess() throws IOException {
+    public void testAccessToNestedRepositoryWithNoPathAccess() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
         String genericPath = "/repository_with_paths/restricted_to_groups_repo/testUpload_%s.txt";
 

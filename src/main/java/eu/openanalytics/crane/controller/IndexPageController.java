@@ -94,6 +94,7 @@ public class IndexPageController extends BaseUIController {
         map.put("files", filesAndDirectoriesInPath.getFirst());
         map.put("directories", filesAndDirectoriesInPath.getSecond());
         map.put("hasWriteAccess", uploadAccessControlService.canAccess(path));
+        map.put("hasCreateDirectoryAccess", uploadAccessControlService.canAccess(path) && !path.isMetadataDirectory());
         map.put("breadcrumbs", path.getComponents());
 
         return indexPageService.getTemplateName(repo);

@@ -178,15 +178,15 @@ public class PosixAccessControlServiceTest {
     @Test
     public void testAccessToPublicRepository() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/repository_with_paths";
+        String repository = "/repository_with_paths/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
 
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
@@ -197,14 +197,14 @@ public class PosixAccessControlServiceTest {
     @Test
     public void testAccessToGroupRepositoryWithMultipleUsers() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(craneUrl);
-        String repository = "/only_group_mathematicians_gid";
+        String repository = "/only_group_mathematicians_gid/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();

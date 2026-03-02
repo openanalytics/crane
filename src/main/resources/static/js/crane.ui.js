@@ -150,21 +150,27 @@ Crane.ui = {
                 Crane.ui.elements.table.css("visibility", "visible");
             }
         };
-        if (Crane.ui.elements.table.data("has-write-access")) {
-            dataTableOptions["layout"] = {
-                topStart: {
-                    buttons: [
-                        {
-                            action: () => Crane.ui.elements.uppyDialog.showModal(),
-                            text: Crane.internationalization.t("index.upload.button")
-                        },
-                        {
-                            action: () => Crane.ui.elements.createDirectoryDialog.showModal(),
-                            text: Crane.internationalization.t("index.create_directory.button")
-                        }
-                    ]
-                }
+        const hasWriteAccess = Crane.ui.elements.table.data("has-write-access");
+        const hasCreateDirectoryAccess = Crane.ui.elements.table.data("has-create-directory-access");
+        if (hasWriteAccess || hasCreateDirectoryAccess) {
+            const buttons = [];
+            if (hasWriteAccess) {
+                buttons.push(
+                    {
+                        action: () => Crane.ui.elements.uppyDialog.showModal(),
+                        text: Crane.internationalization.t("index.upload.button")
+                    },
+                );
             }
+            if (hasCreateDirectoryAccess) {
+                buttons.push(
+                    {
+                        action: () => Crane.ui.elements.createDirectoryDialog.showModal(),
+                        text: Crane.internationalization.t("index.create_directory.button")
+                    },
+                );
+            }
+            dataTableOptions["layout"] = {topStart: {buttons: buttons}}
         }
         Crane.ui.elements.table.DataTable(dataTableOptions);
 

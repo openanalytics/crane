@@ -74,7 +74,7 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToPublicRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/public_repo";
+        String repository = "/public_repo/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -82,7 +82,7 @@ public class DownloadControllerTest {
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
 
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
@@ -94,14 +94,14 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToPrivateRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/private_repo";
+        String repository = "/private_repo/";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
@@ -113,14 +113,14 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToPrivateRepositoryWithRestrictedAccess(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/restricted_repo";
+        String repository = "/restricted_repo/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
@@ -132,14 +132,14 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToRepositoryRestrictedToMultipleUsers(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/restricted_to_users_repo";
+        String repository = "/restricted_to_users_repo/";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
@@ -151,14 +151,14 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupKeycloakRoles(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/restricted_to_group_repo";
+        String repository = "/restricted_to_group_repo/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
@@ -170,14 +170,14 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakRoles(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/restricted_to_groups_repo";
+        String repository = "/restricted_to_groups_repo/";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
@@ -188,14 +188,14 @@ public class DownloadControllerTest {
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupKeycloakGroups() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(groupsInst);
-        String repository = "/restricted_to_group_repo";
+        String repository = "/restricted_to_group_repo/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
@@ -206,14 +206,14 @@ public class DownloadControllerTest {
     @Test
     public void testAccessToPrivateRepositoryWithRestrictedAccessUsingGroupsKeycloakGroups() {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(groupsInst);
-        String repository = "/restricted_to_groups_repo";
+        String repository = "/restricted_to_groups_repo/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
@@ -225,14 +225,14 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToSimpleExpressionRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/restricted_simple_expression_repo";
+        String repository = "/restricted_simple_expression_repo/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
@@ -244,14 +244,14 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToExpressionUsingAndRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/restricted_expression_using_and_repo";
+        String repository = "/restricted_expression_using_and_repo/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccessWithRedirect();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertNotFound();
 
-        String file = repository + "/file.txt";
+        String file = repository + "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(file)).assertNotFound();
@@ -299,8 +299,8 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToNestedPublicRepositories(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/public_repo/public_repo";
-        String file = "/file.txt";
+        String repository = "/public_repo/public_repo/";
+        String file = "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -318,13 +318,13 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToNestedPrivateRepositories(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String privateRepo = "/public_repo/private_repo";
-        String file = "/file.txt";
+        String privateRepo = "/public_repo/private_repo/";
+        String file = "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(privateRepo)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(privateRepo)).assertSuccessWithRedirect();
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(privateRepo + file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(privateRepo + file)).assertSuccess();
@@ -338,12 +338,12 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToNestedRestrictedRepositories(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String restrictedRepo = "/public_repo/restricted_repo";
-        String file = "/file.txt";
+        String restrictedRepo = "/public_repo/restricted_repo/";
+        String file = "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedRepo)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedRepo)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(restrictedRepo)).assertNotFound();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedRepo)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedRepo)).assertSuccessWithRedirect();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(restrictedRepo)).assertNotFound();
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedRepo + file)).assertUnauthorizedRedirectToLogIn();
@@ -358,13 +358,13 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testAccessToNestedMultiUserRestrictedRepositories(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String restrictedToMultipleUsers = "/public_repo/restricted_to_users_repo";
-        String file = "/file.txt";
+        String restrictedToMultipleUsers = "/public_repo/restricted_to_users_repo/";
+        String file = "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccessWithRedirect();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers)).assertSuccessWithRedirect();
 
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(restrictedToMultipleUsers + file)).assertSuccess();
@@ -425,27 +425,27 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testMultipleCacheRules(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/cache_txt_and_csv_repo";
+        String repository = "/cache_txt_and_csv_repo/";
 
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository))
             .assertHasNoCachingHeader();
 
-        String text = repository + "/file.txt";
+        String text = repository + "file.txt";
         Response resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(text));
         resp.assertMissingNoCachingHeader();
         resp.assertMaxAgeInSeconds(60);
 
-        String html = repository + "/file.html";
+        String html = repository + "file.html";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(html));
         resp.assertHasNoCachingHeader();
         resp.assertMaxAgeInSeconds(0);
 
-        String csv = repository + "/file.csv";
+        String csv = repository + "file.csv";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(csv));
         resp.assertMissingNoCachingHeader();
         resp.assertMaxAgeInSeconds(50);
 
-        String json = repository + "/file.json";
+        String json = repository + "file.json";
         resp = apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(json));
         resp.assertHasNoCachingHeader();
         resp.assertMaxAgeInSeconds(0);
@@ -510,8 +510,8 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testPublicInPublicRepository(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/public_repo/public_in_public_repo";
-        String file = "/file.txt";
+        String repository = "/public_repo/public_in_public_repo/";
+        String file = "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -525,8 +525,8 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testOnErrorExpressionOption(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/on_error_expression";
-        String file = "/file.txt";
+        String repository = "/on_error_expression/";
+        String file = "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -535,18 +535,18 @@ public class DownloadControllerTest {
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
 
-        file = "/public_repo/file.txt";
-        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
-        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
-        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo" + file);
+        file = "public_repo/file.txt";
+        apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo/" + file);
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo/" + file);
+        apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertRedirectedTo("/public_repo/" + file);
     }
 
     @ParameterizedTest
     @MethodSource("instances")
     public void testOnErrorExpressionOptionReturnFalse(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/on_error_expression_return_false";
-        String file = "/file.txt";
+        String repository = "/on_error_expression_return_false/";
+        String file = "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
@@ -559,7 +559,7 @@ public class DownloadControllerTest {
         apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
 
-        file = "/public_repo/file.txt";
+        file = "public_repo/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertNotFound();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertNotFound();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertNotFound();
@@ -571,22 +571,22 @@ public class DownloadControllerTest {
     @MethodSource("instances")
     public void testCustomRepositoryStorageLocation(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String repository = "/custom_storage_location";
+        String repository = "/custom_storage_location/";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
-        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertSuccess();
+        apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
+        apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository)).assertUnauthorizedRedirectToLogIn();
 
 
-        String file = "/file.txt";
+        String file = "file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
         apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
         apiTestHelper.callWithOidcAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
 
-        file = "/in_custom_storage_location/file.txt";
+        file = "in_custom_storage_location/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(repository + file)).assertUnauthorizedRedirectToLogIn();
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();
         apiTestHelper.callWithTokenAuthTestUser(apiTestHelper.createHtmlRequest(repository + file)).assertSuccess();

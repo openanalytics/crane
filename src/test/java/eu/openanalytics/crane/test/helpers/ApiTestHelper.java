@@ -43,6 +43,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static okhttp3.internal.Util.EMPTY_REQUEST;
+
 public class ApiTestHelper {
 
     private final String baseUrl;
@@ -83,8 +85,7 @@ public class ApiTestHelper {
         Pattern pattern = Pattern.compile("<input name=\"_csrf\" type=\"hidden\" value=\"(.*)\"");
         Matcher matcher = pattern.matcher(responseBody);
         String csrfToken = "";
-        if (matcher.find())
-        {
+        if (matcher.find()) {
             csrfToken = matcher.group(1);
         }
         RequestBody requestBody = RequestBody.create("_csrf=%s".formatted(csrfToken), MediaType.get("application/x-www-form-urlencoded"));
@@ -153,6 +154,10 @@ public class ApiTestHelper {
 
     public Request.Builder createDeleteRequest(String path) {
         return new Request.Builder().url(baseUrl + path).delete().addHeader("Accept", "*/*");
+    }
+
+    public Request.Builder createPostRequest(String path) {
+        return new Request.Builder().url(baseUrl + path).post(EMPTY_REQUEST).addHeader("Accept", "*/*");
     }
 
     /**

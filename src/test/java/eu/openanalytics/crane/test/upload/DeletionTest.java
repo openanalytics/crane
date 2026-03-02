@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +64,7 @@ public class DeletionTest {
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testDeleteSingleFile(CraneInstance instance) throws IOException, InterruptedException {
+    public void testDeleteSingleFile(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String path = "/public_repo/public_in_public_repo/file.txt";
 
@@ -85,12 +84,12 @@ public class DeletionTest {
         // delete file -> gives 404
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createDeleteRequest(path));
         response.assertBadRequest();
-        Assertions.assertEquals("{\"status\":\"fail\",\"data\":{\"message\":\"File public_repo/public_in_public_repo/file.txt doesn't exist\"}}", response.body());
+        Assertions.assertEquals("{\"status\":\"fail\",\"data\":{\"message\":\"File /public_repo/public_in_public_repo/file.txt doesn't exist\"}}", response.body());
     }
 
     @ParameterizedTest
     @MethodSource("instances")
-    public void testDeleteComplexDirectory(CraneInstance instance) throws IOException, InterruptedException {
+    public void testDeleteComplexDirectory(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
         String path = "/public_repo/";
 

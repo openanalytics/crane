@@ -85,7 +85,7 @@ public class DeletionService {
             StateEntry stateEntry = state.get(path);
             return new Progress(stateEntry.totalFiles, stateEntry.deleted.get());
         } else {
-            throw new IOException("File %s doesn't exist".formatted(path.toString()));
+            throw new IOException("File %s doesn't exist".formatted(path.getWebUri()));
         }
     }
 

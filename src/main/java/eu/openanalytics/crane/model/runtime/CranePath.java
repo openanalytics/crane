@@ -81,7 +81,7 @@ public class CranePath {
      * Whether this path exists as a {@link PathComponent} in the Crane config.
      */
     @Getter(lazy = true)
-    private final boolean existsInConfig = isMetadataDirectory() || getPathComponent() != null;
+    private final boolean existsInConfig = CranePathBuilder.existsInConfig(this);
 
     /**
      * Whether this path is a directory (checked by querying the storage).
@@ -120,6 +120,12 @@ public class CranePath {
      */
     @Getter(lazy = true)
     private final boolean metadataDirectoryOrFile = isMetadataFile() || isMetadataDirectory();
+
+    /**
+     * Whether this path is an invalid metadata path, i.e. directories nested in a metadata directory.
+     */
+    @Getter(lazy = true)
+    private final boolean invalidMetadataPath = CranePathBuilder.isInvalidMetadataPath(this);
 
     /**
      * Whether this path exists (checked by querying the storage).

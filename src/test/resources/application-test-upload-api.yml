@@ -10,6 +10,10 @@ app:
         public: true
       write-access:
         public: true
+      metadata-read-access:
+        users: demo
+      metadata-write-access:
+        users: demo
       paths:
         public_in_public_repo:
           read-access:

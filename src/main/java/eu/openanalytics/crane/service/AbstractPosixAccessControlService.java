@@ -78,14 +78,14 @@ public abstract class AbstractPosixAccessControlService {
         CranePath lastPathComponent = pathComponents.remove(pathComponents.size() - 1);
         for (CranePath subsequentPath : pathComponents) {
             if (!canAccessPosix(auth, subsequentPath)) {
-                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, subsequentPath);
+                logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path.getWebUri(), subsequentPath);
                 return false;
             }
         }
         // only check permissions of last component if the path actually exists
         // i.e. when uploading the file does not exist and we don't check the permission
         if (lastPathComponent.isExists() && !canAccessPosix(auth, lastPathComponent)) {
-            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, lastPathComponent);
+            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path.getWebUri(), lastPathComponent);
             return false;
         }
         return true;

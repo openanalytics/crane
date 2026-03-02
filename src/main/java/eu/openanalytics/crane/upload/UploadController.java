@@ -84,7 +84,7 @@ public class UploadController {
 
         if (!replace && cranePath.isExists()) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
-            return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(stringRepository + stringPath)));
+            return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(cranePath.getWebUri())));
         }
 
         try {
@@ -125,7 +125,7 @@ public class UploadController {
         if (!cranePath.isExists()) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             deletionService.removeFromState(cranePath);
-            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
+            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(cranePath.getWebUri())));
         }
         try {
             if (cranePath.isDirectory()) {
@@ -139,7 +139,7 @@ public class UploadController {
         } catch (NoSuchFileException e) {
             // file or directory deleted in background
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
-            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(stringRepository + stringPath)));
+            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(cranePath.getWebUri())));
         } catch (IOException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "File deletion failed"));
@@ -173,16 +173,20 @@ public class UploadController {
     private ResponseEntity<ApiResponse<Map<String, Object>>> createDirectory(HttpServletRequest request, CranePath cranePath) {
         if (cranePath.isExists()) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
-            return ApiResponse.fail(Map.of("message", "Directory %s already exists".formatted(cranePath)));
+            return ApiResponse.fail(Map.of("message", "Directory %s already exists".formatted(cranePath.getWebUri())));
+        }
+        if (cranePath.getParent().isMetadataDirectory()) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "Cannot create directories in a metadata directory"));
         }
         try {
-            Files.createDirectory(cranePath.getStoragePath());
+            Files.createDirectories(cranePath.getStoragePath());
             if (cranePath.getRepository().isPosixAccessControl()) {
                 setPathAttribute(cranePath);
             }
         } catch (SecurityException | IOException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
-            return ApiResponse.success(Map.of("message", "Directory creation failed"));
+            return ApiResponse.fail(Map.of("message", "Directory creation failed"));
         }
         auditingService.createUploadAuditEvent(request);
         return ApiResponse.success(Map.of("message", "Directory creation succeeded"));

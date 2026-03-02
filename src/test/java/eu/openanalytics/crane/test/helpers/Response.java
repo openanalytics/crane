@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import java.io.IOException;
 
 public class Response {
+
     private final okhttp3.Response response;
 
     private String body;
@@ -53,11 +54,8 @@ public class Response {
 
     public void assertSuccess() {
         checkResponseCode(200, code());
-        if (response.priorResponse() != null && !response.priorResponse().request().url().toString().contains("/login")) {
-            String url = response.request().url().toString();
-            String priorUrl = response.priorResponse().request().url().toString();
-            Assertions.assertEquals(url.substring(0, url.length() - 1), priorUrl.replaceFirst("/__file", ""));
-        }
+        // there should be no redirect
+        Assertions.assertNull(response.priorResponse());
     }
 
     public void assertPlainSuccess() {

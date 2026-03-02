@@ -57,20 +57,24 @@ public abstract class AbstractPathAccessControlService {
     public boolean canAccess(Authentication auth, CranePath path) {
         // first check repository
         if (!canAccess(auth, getAccessControl(path, path.getRepository()))) {
-            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, path.getRepository().getName());
+            logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path.getWebUri(), path.getRepository().getName());
+            return false;
+        }
+        if (path.isInvalidMetadataPath()) {
+            logger.debug("User {} cannot access path {} because it's an invalid metadata path", auth.getName(), path.getWebUri());
             return false;
         }
         // loop over path components
         for (CranePath pathComponent : path.getComponents()) {
             if (!pathComponent.isExistsInConfig()) {
-                logger.debug("User {} can access path {} because there is no access-control for {}", auth.getName(), path, pathComponent.getName());
+                logger.debug("User {} can access path {} because there is no access-control for {}", auth.getName(), path.getWebUri(), pathComponent.getName());
             } else {
                 AccessControl accessControl = getAccessControl(path, pathComponent);
                 if (accessControl == null) {
                     throw new IllegalStateException("Should not be empty");
                 }
                 if (!canAccess(auth, accessControl)) {
-                    logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, pathComponent);
+                    logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path.getWebUri(), pathComponent);
                     return false;
                 }
             }
@@ -128,7 +132,7 @@ public abstract class AbstractPathAccessControlService {
         return false;
     }
 
-    public boolean allowedByUsers(Authentication auth,  AccessControl accessControl) {
+    public boolean allowedByUsers(Authentication auth, AccessControl accessControl) {
         if (!accessControl.hasUserAccess()) {
             // no users defined -> this user has no access based on the users
             return false;

@@ -226,12 +226,14 @@ public class CranePathTest {
         // repository is never a metadata file or directory
         Assertions.assertFalse(root.isMetadataFile());
         Assertions.assertFalse(root.isMetadataDirectory());
+        Assertions.assertFalse(root.isInvalidMetadataPath());
         Assertions.assertTrue(root.getMetadataReadAccess().isPublic());
         Assertions.assertFalse(root.getMetadataWriteAccess().isPublic());
 
         CranePath metadataDirectory = new CranePath(repository, ".crane");
         Assertions.assertFalse(metadataDirectory.isMetadataFile());
         Assertions.assertTrue(metadataDirectory.isMetadataDirectory());
+        Assertions.assertFalse(metadataDirectory.isInvalidMetadataPath());
         Assertions.assertTrue(metadataDirectory.isExistsInConfig()); // metadata directory always exists in config
         Assertions.assertTrue(metadataDirectory.getMetadataReadAccess().isPublic());
         Assertions.assertFalse(metadataDirectory.getMetadataWriteAccess().isPublic());
@@ -239,9 +241,32 @@ public class CranePathTest {
         CranePath metadataFile = new CranePath(repository, ".crane/somefile.txt.json");
         Assertions.assertTrue(metadataFile.isMetadataFile());
         Assertions.assertFalse(metadataFile.isMetadataDirectory());
+        Assertions.assertFalse(metadataFile.isInvalidMetadataPath());
         Assertions.assertFalse(metadataFile.isExistsInConfig());
         Assertions.assertNull(metadataFile.getMetadataReadAccess());
         Assertions.assertNull(metadataFile.getMetadataWriteAccess());
+    }
+
+    @Test
+    public void testInvalidMetadataPath() throws IOException {
+        Repository repository = new Repository(null,
+            null,
+            "/tmp/test_repository",
+            null,
+            false,
+            null,
+            new AccessControl(null, null, true, null, null, null),
+            null,
+            new AccessControl(null, null, true, null, null, null),
+            null,
+            null
+        );
+        repository.setName("test_repository");
+        repository.validate(false);
+        repository.init(null, Path.of("/tmp/test_repository"));
+
+        CranePath nested = new CranePath(repository, "my/test/dir/.crane/invalid/path");
+        Assertions.assertTrue(nested.isInvalidMetadataPath());
     }
 
     /**

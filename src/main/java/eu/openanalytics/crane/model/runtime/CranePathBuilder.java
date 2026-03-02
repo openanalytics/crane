@@ -201,4 +201,25 @@ public class CranePathBuilder {
         return res.getMetadataWriteAccess();
     }
 
+    public static boolean existsInConfig(CranePath cranePath) {
+        if (cranePath.isMetadataDirectory()) {
+            return cranePath.getParent().isExistsInConfig();
+        }
+        return cranePath.getPathComponent() != null;
+    }
+
+    public static boolean isInvalidMetadataPath(CranePath cranePath) {
+        if (cranePath.isMetadataDirectoryOrFile()) {
+            return false;
+        }
+        CranePath parent = cranePath.getParent();
+        while (parent != null) {
+            if (parent.isMetadataDirectory()) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
+    }
+
 }
