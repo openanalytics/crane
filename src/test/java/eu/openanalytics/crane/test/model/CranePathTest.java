@@ -45,6 +45,8 @@ public class CranePathTest {
             null,
             new AccessControl(null, null, true, null, null, null),
             null,
+            null,
+            null,
             null);
         repository.setName("test_repository");
         repository.validate(false);
@@ -105,9 +107,9 @@ public class CranePathTest {
         AccessControl accessControl2 = new AccessControl(null, null, true, null, null, null);
         AccessControl accessControl3 = new AccessControl(null, List.of("demo"), false, null, null, null);
 
-        PathComponent pathComponent3 = new PathComponent(accessControl3, null, null);
-        PathComponent pathComponent2 = new PathComponent(accessControl2, null, Map.of("complex", pathComponent3, "unrelated_path", createUnrelatedPathComponent()));
-        PathComponent pathComponent1 = new PathComponent(accessControl1, null, Map.of("my", pathComponent2, "", createUnrelatedPathComponent()));
+        PathComponent pathComponent3 = new PathComponent(accessControl3, null, null, null, null);
+        PathComponent pathComponent2 = new PathComponent(accessControl2, null, null, null, Map.of("complex", pathComponent3, "unrelated_path", createUnrelatedPathComponent()));
+        PathComponent pathComponent1 = new PathComponent(accessControl1, null, null, null, Map.of("my", pathComponent2, "", createUnrelatedPathComponent()));
 
         Repository repository = new Repository(null,
             null,
@@ -117,11 +119,13 @@ public class CranePathTest {
             null,
             new AccessControl(null, null, true, null, null, null),
             null,
+            null,
+            null,
             Map.of(
                 "other_path", createUnrelatedPathComponent(),
                 "test_path", pathComponent1
             )
-            );
+        );
         repository.setName("test_repository");
         repository.validate(false);
         repository.init(null, Path.of("/tmp/test_repository"));
@@ -140,31 +144,31 @@ public class CranePathTest {
         Assertions.assertEquals(pathComponent3, testPath.getPathComponent());
         Assertions.assertEquals("complex", testPath.getPathComponent().getName());
         Assertions.assertEquals(accessControl3, testPath.getReadAccess());
-        Assertions.assertNotNull( testPath.getWriteAccess());
+        Assertions.assertNotNull(testPath.getWriteAccess());
         Assertions.assertTrue(testPath.isExistsInConfig());
 
         testPath = repository.getPath("test_path/my");
         Assertions.assertEquals("my", testPath.getName());
-        Assertions.assertEquals(pathComponent2,  testPath.getPathComponent());
+        Assertions.assertEquals(pathComponent2, testPath.getPathComponent());
         Assertions.assertEquals("my", testPath.getPathComponent().getName());
         Assertions.assertEquals(accessControl2, testPath.getReadAccess());
-        Assertions.assertNotNull( testPath.getWriteAccess());
+        Assertions.assertNotNull(testPath.getWriteAccess());
         Assertions.assertTrue(testPath.isExistsInConfig());
 
         testPath = repository.getPath("test_path");
         Assertions.assertEquals("test_path", testPath.getName());
-        Assertions.assertEquals(pathComponent1,  testPath.getPathComponent());
+        Assertions.assertEquals(pathComponent1, testPath.getPathComponent());
         Assertions.assertEquals("test_path", testPath.getPathComponent().getName());
         Assertions.assertEquals(accessControl1, testPath.getReadAccess());
-        Assertions.assertNotNull( testPath.getWriteAccess());
+        Assertions.assertNotNull(testPath.getWriteAccess());
         Assertions.assertTrue(testPath.isExistsInConfig());
 
         testPath = repository.getPath("");
         Assertions.assertEquals("test_repository", testPath.getName());
-        Assertions.assertEquals(repository,  testPath.getPathComponent());
+        Assertions.assertEquals(repository, testPath.getPathComponent());
         Assertions.assertEquals("test_repository", testPath.getPathComponent().getName());
         Assertions.assertEquals(repository.getReadAccess(), testPath.getReadAccess());
-        Assertions.assertNotNull( testPath.getWriteAccess());
+        Assertions.assertNotNull(testPath.getWriteAccess());
         Assertions.assertTrue(testPath.isExistsInConfig());
     }
 
@@ -177,6 +181,8 @@ public class CranePathTest {
             false,
             null,
             new AccessControl(null, null, true, null, null, null),
+            null,
+            null,
             null,
             null
         );
@@ -198,13 +204,54 @@ public class CranePathTest {
         Assertions.assertThrows(IllegalStateException.class, somePath::getContents);
     }
 
+    @Test
+    public void testMetadataFile() throws IOException {
+        Repository repository = new Repository(null,
+            null,
+            "/tmp/test_repository",
+            null,
+            false,
+            null,
+            new AccessControl(null, null, true, null, null, null),
+            null,
+            new AccessControl(null, null, true, null, null, null),
+            null,
+            null
+        );
+        repository.setName("test_repository");
+        repository.validate(false);
+        repository.init(null, Path.of("/tmp/test_repository"));
+
+        CranePath root = new CranePath(repository, "");
+        // repository is never a metadata file or directory
+        Assertions.assertFalse(root.isMetadataFile());
+        Assertions.assertFalse(root.isMetadataDirectory());
+        Assertions.assertTrue(root.getMetadataReadAccess().isPublic());
+        Assertions.assertFalse(root.getMetadataWriteAccess().isPublic());
+
+        CranePath metadataDirectory = new CranePath(repository, ".crane");
+        Assertions.assertFalse(metadataDirectory.isMetadataFile());
+        Assertions.assertTrue(metadataDirectory.isMetadataDirectory());
+        Assertions.assertTrue(metadataDirectory.isExistsInConfig()); // metadata directory always exists in config
+        Assertions.assertTrue(metadataDirectory.getMetadataReadAccess().isPublic());
+        Assertions.assertFalse(metadataDirectory.getMetadataWriteAccess().isPublic());
+
+        CranePath metadataFile = new CranePath(repository, ".crane/somefile.txt.json");
+        Assertions.assertTrue(metadataFile.isMetadataFile());
+        Assertions.assertFalse(metadataFile.isMetadataDirectory());
+        Assertions.assertFalse(metadataFile.isExistsInConfig());
+        Assertions.assertNull(metadataFile.getMetadataReadAccess());
+        Assertions.assertNull(metadataFile.getMetadataWriteAccess());
+    }
+
     /**
      * Creates a PathComponent just to fill the config.
+     *
      * @return dummy PathComponent
      */
     private PathComponent createUnrelatedPathComponent() {
         AccessControl accessControl = new AccessControl(null, null, true, null, null, null);
-        return new PathComponent(accessControl, null, null);
+        return new PathComponent(accessControl, null, null, null, null);
     }
 
 }

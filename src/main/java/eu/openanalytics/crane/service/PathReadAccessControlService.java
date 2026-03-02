@@ -22,7 +22,7 @@ package eu.openanalytics.crane.service;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
-import eu.openanalytics.crane.model.config.PathComponent;
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import org.springframework.stereotype.Service;
@@ -34,12 +34,18 @@ public class PathReadAccessControlService extends AbstractPathAccessControlServi
     }
 
     @Override
-    protected AccessControl getAccessControl(PathComponent pathComponent) {
-        return pathComponent.getReadAccess();
+    protected AccessControl getAccessControl(CranePath fullPath, Repository repository) {
+        if (fullPath.isMetadataDirectoryOrFile()) {
+            return repository.getMetadataReadAccess();
+        }
+        return repository.getReadAccess();
     }
 
     @Override
-    protected AccessControl getAccessControl(CranePath pathComponent) {
+    protected AccessControl getAccessControl(CranePath fullPath, CranePath pathComponent) {
+        if (fullPath.isMetadataDirectoryOrFile()) {
+            return pathComponent.getMetadataReadAccess();
+        }
         return pathComponent.getReadAccess();
     }
 

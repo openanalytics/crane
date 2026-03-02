@@ -22,8 +22,6 @@ package eu.openanalytics.crane.model.config;
 
 
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,7 +40,6 @@ import java.util.regex.Pattern;
  */
 public class PathComponent {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Pattern namePattern = Pattern.compile("^[a-zA-Z0-9_\\-]*$");
 
     private final Map<String, PathComponent> components;
@@ -52,15 +49,28 @@ public class PathComponent {
 
     @Getter
     private final AccessControl readAccess;
+
     @Getter
     private final AccessControl writeAccess;
 
-    public PathComponent(AccessControl readAccess, AccessControl writeAccess, Map<String, PathComponent> paths) {
-        if (readAccess == null && writeAccess == null) {
+    @Getter
+    private final AccessControl metadataReadAccess;
+
+    @Getter
+    private final AccessControl metadataWriteAccess;
+
+    public PathComponent(AccessControl readAccess,
+                         AccessControl writeAccess,
+                         AccessControl metadataReadAccess,
+                         AccessControl metadataWriteAccess,
+                         Map<String, PathComponent> paths) {
+        if (readAccess == null && writeAccess == null && metadataReadAccess == null && metadataWriteAccess == null) {
             throw new IllegalArgumentException("PathComponent is invalid: no access control specified");
         }
         this.readAccess = Objects.requireNonNullElse(readAccess, new AccessControl());
         this.writeAccess = Objects.requireNonNullElse(writeAccess, new AccessControl());
+        this.metadataReadAccess = Objects.requireNonNullElse(metadataReadAccess, new AccessControl());
+        this.metadataWriteAccess = Objects.requireNonNullElse(metadataWriteAccess, new AccessControl());
         if (paths != null) {
             paths.forEach((name, pathComponent) -> pathComponent.setName(name));
         }

@@ -38,6 +38,8 @@ public class UserWorkspaceRepository extends Repository {
             null,
             new AccessControl(null, null, false, null, true, null),
             new AccessControl(null, null, false, null, true, null),
+            null,
+            null,
             null);
         init(null, userHomeStoragePath);
     }

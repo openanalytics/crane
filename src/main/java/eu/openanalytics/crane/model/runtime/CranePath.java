@@ -81,7 +81,7 @@ public class CranePath {
      * Whether this path exists as a {@link PathComponent} in the Crane config.
      */
     @Getter(lazy = true)
-    private final boolean existsInConfig = getPathComponent() != null;
+    private final boolean existsInConfig = isMetadataDirectory() || getPathComponent() != null;
 
     /**
      * Whether this path is a directory (checked by querying the storage).
@@ -102,6 +102,24 @@ public class CranePath {
      */
     @Getter(lazy = true)
     private final boolean anIndexFile = getName().equals(repository.getIndexFileName());
+
+    /**
+     * Whether this path is a metadata file.
+     */
+    @Getter(lazy = true)
+    private final boolean metadataFile = getParent() != null && getParent().getName().equals(repository.getMetadataDirectoryName());
+
+    /**
+     * Whether this path is a metadata directory.
+     */
+    @Getter(lazy = true)
+    private final boolean metadataDirectory = getName().equals(repository.getMetadataDirectoryName());
+
+    /**
+     * Whether this path is a metadata directory or file.
+     */
+    @Getter(lazy = true)
+    private final boolean metadataDirectoryOrFile = isMetadataFile() || isMetadataDirectory();
 
     /**
      * Whether this path exists (checked by querying the storage).
@@ -165,6 +183,20 @@ public class CranePath {
      */
     @Getter(lazy = true)
     private final AccessControl writeAccess = CranePathBuilder.getWriteAccess(this);
+
+    /**
+     * Gets the read access to metadata files in the {@link PathComponent} (coming from the Crane config) corresponding to this path.
+     * Returns null when path is not configured in the Crane config.
+     */
+    @Getter(lazy = true)
+    private final AccessControl metadataReadAccess = CranePathBuilder.getMetadataReadAccess(this);
+
+    /**
+     * Gets the write access to metadata files in the {@link PathComponent} (coming from the Crane config) corresponding to this path.
+     * Returns null when path is not configured in the Crane config.
+     */
+    @Getter(lazy = true)
+    private final AccessControl metadataWriteAccess = CranePathBuilder.getMetadataWriteAccess(this);
 
     /**
      * Wrapper for {@link Files#readAttributes}.

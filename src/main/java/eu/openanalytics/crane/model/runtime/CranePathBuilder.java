@@ -177,4 +177,28 @@ public class CranePathBuilder {
         return FileSize.bytesToHumanReadableBinary(basicFileAttributes.size());
     }
 
+    public static AccessControl getMetadataReadAccess(CranePath cranePath) {
+        if (cranePath.isMetadataDirectory()) {
+            // if this is the metadata directory or a specific metadata file, use the parent folder to check the permission
+            cranePath = cranePath.getParent();
+        }
+        PathComponent res = cranePath.getPathComponent();
+        if (res == null) {
+            return null;
+        }
+        return res.getMetadataReadAccess();
+    }
+
+    public static AccessControl getMetadataWriteAccess(CranePath cranePath) {
+        if (cranePath.isMetadataDirectory()) {
+            // if this is the metadata directory or a specific metadata file, use the parent folder to check the permission
+            cranePath = cranePath.getParent();
+        }
+        PathComponent res = cranePath.getPathComponent();
+        if (res == null) {
+            return null;
+        }
+        return res.getMetadataWriteAccess();
+    }
+
 }

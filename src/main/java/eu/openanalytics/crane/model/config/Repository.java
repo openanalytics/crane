@@ -54,6 +54,9 @@ public class Repository extends PathComponent {
     private final String indexFileName;
 
     @Getter
+    private final String metadataDirectoryName = ".crane";
+
+    @Getter
     private final String onErrorExpression;
 
     @Getter
@@ -68,8 +71,10 @@ public class Repository extends PathComponent {
                       List<RewriteRule> rewrites,
                       AccessControl readAccess,
                       AccessControl writeAccess,
+                      AccessControl metadataReadAccess,
+                      AccessControl metadataWriteAccess,
                       Map<String, PathComponent> paths) {
-        super(readAccess, writeAccess, paths);
+        super(readAccess, writeAccess, metadataReadAccess, metadataWriteAccess, paths);
         this.indexFileName = Objects.requireNonNullElse(indexFileName, "index.html");
         this.cache = cache;
         this.storageLocation = storageLocation;

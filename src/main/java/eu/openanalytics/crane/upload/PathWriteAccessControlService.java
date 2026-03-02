@@ -22,7 +22,7 @@ package eu.openanalytics.crane.upload;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
-import eu.openanalytics.crane.model.config.PathComponent;
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.AbstractPathAccessControlService;
 import eu.openanalytics.crane.service.UserService;
@@ -31,17 +31,24 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PathWriteAccessControlService extends AbstractPathAccessControlService {
+
     public PathWriteAccessControlService(SpecExpressionResolver specExpressionResolver, UserService userService, CraneConfig craneConfig) {
         super(specExpressionResolver, userService, craneConfig);
     }
 
     @Override
-    protected AccessControl getAccessControl(PathComponent pathComponent) {
-        return pathComponent.getWriteAccess();
+    protected AccessControl getAccessControl(CranePath fullPath, Repository repository) {
+        if (fullPath.isMetadataDirectoryOrFile()) {
+            return repository.getMetadataWriteAccess();
+        }
+        return repository.getWriteAccess();
     }
 
     @Override
-    protected AccessControl getAccessControl(CranePath pathComponent) {
+    protected AccessControl getAccessControl(CranePath fullPath, CranePath pathComponent) {
+        if (fullPath.isMetadataDirectoryOrFile()) {
+            return pathComponent.getMetadataWriteAccess();
+        }
         return pathComponent.getWriteAccess();
     }
 

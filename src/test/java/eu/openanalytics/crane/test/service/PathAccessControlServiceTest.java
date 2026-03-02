@@ -65,6 +65,8 @@ public class PathAccessControlServiceTest {
             null, null, null, null, false, null,
             new AccessControl(null, null, false, List.of(allowed_ip), false, null),
             new AccessControl(),
+            null,
+            null,
             null
         );
         repository.setName("network_restricted_repo");
@@ -95,6 +97,8 @@ public class PathAccessControlServiceTest {
             null, null, null, null, false, null,
             new AccessControl(null, List.of("demo"), false, List.of(allowed_ip), false, null),
             new AccessControl(),
+            null,
+            null,
             null
         );
         repository.setName("network_restricted_repo");
@@ -123,6 +127,8 @@ public class PathAccessControlServiceTest {
             null, null, null, null, false, null,
             new AccessControl(null, null, false, List.of(allowed_ip), true, null),
             new AccessControl(),
+            null,
+            null,
             null
         );
         repository.setName("network_restricted_repo");

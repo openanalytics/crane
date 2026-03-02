@@ -37,6 +37,6 @@ public class PathComponentConverter implements Converter<String, PathComponent> 
 
     @Override
     public PathComponent convert(@NotNull String source) {
-        return new PathComponent(null, null, null);
+        return new PathComponent(null, null, null, null, null);
     }
 }

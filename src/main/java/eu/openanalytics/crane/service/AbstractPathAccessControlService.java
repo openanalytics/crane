@@ -22,7 +22,7 @@ package eu.openanalytics.crane.service;
 
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.AccessControl;
-import eu.openanalytics.crane.model.config.PathComponent;
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.spel.SpecExpressionContext;
 import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
@@ -34,6 +34,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
 public abstract class AbstractPathAccessControlService {
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected final SpecExpressionResolver specExpressionResolver;
     protected final UserService userService;
@@ -45,7 +46,9 @@ public abstract class AbstractPathAccessControlService {
         this.craneConfig = craneConfig;
     }
 
-    protected abstract AccessControl getAccessControl(PathComponent pathComponent);
+    protected abstract AccessControl getAccessControl(CranePath fullPath, Repository repository);
+
+    protected abstract AccessControl getAccessControl(CranePath fullPath, CranePath pathComponent);
 
     public boolean canAccess(CranePath path) {
         return canAccess(userService.getUser(), path);
@@ -53,7 +56,7 @@ public abstract class AbstractPathAccessControlService {
 
     public boolean canAccess(Authentication auth, CranePath path) {
         // first check repository
-        if (!canAccess(auth, getAccessControl(path.getRepository()))) {
+        if (!canAccess(auth, getAccessControl(path, path.getRepository()))) {
             logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path, path.getRepository().getName());
             return false;
         }
@@ -62,7 +65,7 @@ public abstract class AbstractPathAccessControlService {
             if (!pathComponent.isExistsInConfig()) {
                 logger.debug("User {} can access path {} because there is no access-control for {}", auth.getName(), path, pathComponent.getName());
             } else {
-                AccessControl accessControl = getAccessControl(pathComponent);
+                AccessControl accessControl = getAccessControl(path, pathComponent);
                 if (accessControl == null) {
                     throw new IllegalStateException("Should not be empty");
                 }
@@ -74,8 +77,6 @@ public abstract class AbstractPathAccessControlService {
         }
         return true;
     }
-
-    protected abstract AccessControl getAccessControl(CranePath pathComponent);
 
     public boolean canAccess(Authentication auth, AccessControl accessControl) {
         if (auth == null || accessControl == null) {
