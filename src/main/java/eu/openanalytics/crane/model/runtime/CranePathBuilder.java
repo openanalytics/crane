@@ -53,7 +53,7 @@ public class CranePathBuilder {
         return pathComponent;
     }
 
-    public static CranePath getIndexFile(CranePath cranePath) {
+    public static CranePath getIndexFilePath(CranePath cranePath) {
         if (!cranePath.isDirectory()) {
             throw new IllegalStateException("Not a directory");
         }

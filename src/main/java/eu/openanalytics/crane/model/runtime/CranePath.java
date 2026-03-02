@@ -95,13 +95,13 @@ public class CranePath {
      * Gets the path to the index file.
      */
     @Getter(lazy = true)
-    private final CranePath indexFile = CranePathBuilder.getIndexFile(this);
+    private final CranePath indexFilePath = CranePathBuilder.getIndexFilePath(this);
 
     /**
      * Whether this path is an index file.
      */
     @Getter(lazy = true)
-    private final boolean anIndexFile = getName().equals(repository.getIndexFileName());
+    private final boolean indexFile = getName().equals(repository.getIndexFileName());
 
     /**
      * Whether this path is a metadata file.

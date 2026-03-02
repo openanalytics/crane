@@ -96,11 +96,11 @@ public class DownloadController {
         }
 
         if (cranePath.isDirectory()) {
-            cranePath = cranePath.getIndexFile();
+            cranePath = cranePath.getIndexFilePath();
         }
 
         if (!cranePath.isExists()) {
-            if (cranePath.isAnIndexFile()) {
+            if (cranePath.isIndexFile()) {
                 CranePath directory = cranePath.getParent();
                 if (directory != null && directory.isDirectory()) {
                     request.setAttribute("path", directory);

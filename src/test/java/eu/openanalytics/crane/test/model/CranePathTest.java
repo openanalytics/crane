@@ -62,9 +62,9 @@ public class CranePathTest {
         Assertions.assertNull(testPath.getPathComponent());
         Assertions.assertFalse(testPath.isExistsInConfig());
         Assertions.assertTrue(testPath.isDirectory());
-        Assertions.assertEquals(new CranePath(repository, "test_path/my/complex/path/index.html"), testPath.getIndexFile());
-        Assertions.assertFalse(testPath.isAnIndexFile());
-        Assertions.assertTrue(testPath.getIndexFile().isAnIndexFile());
+        Assertions.assertEquals(new CranePath(repository, "test_path/my/complex/path/index.html"), testPath.getIndexFilePath());
+        Assertions.assertFalse(testPath.isIndexFile());
+        Assertions.assertTrue(testPath.getIndexFilePath().isIndexFile());
         Assertions.assertTrue(testPath.isExists());
         Assertions.assertEquals(new CranePath(repository, "test_path/my/complex"), testPath.getParent());
         Assertions.assertEquals(new CranePath(repository, "test_path/my"), testPath.getParent().getParent());
@@ -98,7 +98,7 @@ public class CranePathTest {
         exception = Assertions.assertThrows(IllegalStateException.class, testPath::asInputStremam);
         Assertions.assertEquals("CranePath is a directory and cannot be opened as InputStream", exception.getMessage());
 
-        Assertions.assertFalse(testPath.getPath("test.index.html").isAnIndexFile());
+        Assertions.assertFalse(testPath.getPath("test.index.html").isIndexFile());
     }
 
     @Test
@@ -193,7 +193,7 @@ public class CranePathTest {
         CranePath somePath = new CranePath(repository, "a/path/that/does/not/exist");
         Assertions.assertFalse(somePath.isExists());
         Assertions.assertFalse(somePath.isExistsInConfig());
-        Assertions.assertFalse(somePath.isAnIndexFile());
+        Assertions.assertFalse(somePath.isIndexFile());
         Assertions.assertFalse(somePath.isDirectory());
         Assertions.assertNull(somePath.getSize());
         Assertions.assertNull(somePath.getFormattedSize());
