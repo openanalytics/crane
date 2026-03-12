@@ -77,6 +77,8 @@ public abstract class BaseUIController {
             map.put("username", userService.getUser().getName());
         }
         setLanguageConfig(map, httpServletRequest, httpServletResponse);
+        map.put("request", httpServletRequest);
+        map.put("response", httpServletResponse);
     }
 
     private void setLanguageConfig(ModelMap map, HttpServletRequest request, HttpServletResponse response) {
