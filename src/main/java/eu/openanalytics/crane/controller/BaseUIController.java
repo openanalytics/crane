@@ -21,6 +21,7 @@
 package eu.openanalytics.crane.controller;
 
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.service.IdentifierService;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
 import eu.openanalytics.crane.util.ContextPathHelper;
@@ -43,17 +44,19 @@ public abstract class BaseUIController {
     protected final LanguageService languageService;
     protected final MessageSource messageSource;
     protected final ContextPathHelper contextPathHelper;
+    protected final IdentifierService identifierService;
 
     public BaseUIController(UserService userService,
                             CraneConfig craneConfig,
                             LanguageService languageService,
                             MessageSource messageSource,
-                            ContextPathHelper contextPathHelper) {
+                            ContextPathHelper contextPathHelper, IdentifierService identifierService) {
         this.userService = userService;
         this.config = craneConfig;
         this.languageService = languageService;
         this.messageSource = messageSource;
         this.contextPathHelper = contextPathHelper;
+        this.identifierService = identifierService;
     }
 
     protected void prepareMap(ModelMap map) {
@@ -68,6 +71,8 @@ public abstract class BaseUIController {
         map.put("isOnlyPublic", config.isOnlyPublic());
         map.put("language", languageService.getAndUpdateLanguageOfUser(httpServletRequest, httpServletResponse));
         map.put("contextPath", contextPathHelper.withEndingSlash());
+        map.put("resourcePrefix", "/__assets/" + identifierService.instanceId);
+        map.put("instanceId", identifierService.instanceId);
         if (authenticated) {
             map.put("username", userService.getUser().getName());
         }

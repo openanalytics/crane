@@ -26,6 +26,7 @@ import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.model.dto.LanguageDto;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.security.auditing.AuditingService;
+import eu.openanalytics.crane.service.IdentifierService;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
 import eu.openanalytics.crane.service.PosixReadAccessControlService;
@@ -67,8 +68,9 @@ public class MainController extends BaseUIController {
                           AuditingService auditingService,
                           LanguageService languageService,
                           MessageSource messageSource,
-                          ContextPathHelper contextPathHelper) {
-        super(userService, config, languageService, messageSource, contextPathHelper);
+                          ContextPathHelper contextPathHelper,
+                          IdentifierService identifierService) {
+        super(userService, config, languageService, messageSource, contextPathHelper, identifierService);
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
         this.auditingService = auditingService;

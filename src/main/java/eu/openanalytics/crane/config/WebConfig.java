@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.config;
 
+import eu.openanalytics.crane.service.IdentifierService;
 import eu.openanalytics.crane.util.ThymeleafLayoutInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import org.jetbrains.annotations.NotNull;
@@ -44,15 +45,16 @@ import java.util.Map;
 public class WebConfig implements WebMvcConfigurer {
 
     private final boolean cacheEnabled;
-    private static final Map<String, String> PATHS = Map.of(
-        "/__assets/webjars/**", "classpath:/META-INF/resources/webjars/",
-        "/__assets/css/**", "classpath:/static/css/",
-        "/__assets/js/**", "classpath:/static/js/",
-        "/__assets/svg/**", "classpath:/static/svg/"
-    );
+    private final Map<String, String> paths;
 
-    public WebConfig(Environment environment) {
+    public WebConfig(Environment environment, IdentifierService identifierService) {
         cacheEnabled = environment.getProperty("spring.thymeleaf.cache", Boolean.class, true);
+        paths = Map.of(
+            "/__assets/" + identifierService.instanceId + "/webjars/**", "classpath:/META-INF/resources/webjars/",
+            "/__assets/" + identifierService.instanceId + "/css/**", "classpath:/static/css/",
+            "/__assets/" + identifierService.instanceId + "/js/**", "classpath:/static/js/",
+            "/__assets/" + identifierService.instanceId + "/svg/**", "classpath:/static/svg/"
+        );
     }
 
     @Override
@@ -60,7 +62,7 @@ public class WebConfig implements WebMvcConfigurer {
         if (cacheEnabled) {
             LoadInMemoryResolver resolver = new LoadInMemoryResolver();
 
-            for (Map.Entry<String, String> path : PATHS.entrySet()) {
+            for (Map.Entry<String, String> path : paths.entrySet()) {
                 registry
                     .addResourceHandler(path.getKey())
                     .addResourceLocations(path.getValue())
@@ -72,7 +74,7 @@ public class WebConfig implements WebMvcConfigurer {
 
             }
         } else {
-            for (Map.Entry<String, String> path : PATHS.entrySet()) {
+            for (Map.Entry<String, String> path : paths.entrySet()) {
                 registry
                     .addResourceHandler(path.getKey())
                     .addResourceLocations(path.getValue())

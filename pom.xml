@@ -225,6 +225,10 @@
             <artifactId>matomo-java-tracker-spring-boot-starter</artifactId>
             <version>${matomo.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>

@@ -52,6 +52,7 @@ import java.util.Properties;
 @SpringBootApplication(exclude = {RedisAutoConfiguration.class, AuditAutoConfiguration.class})
 public class CraneApplication {
 
+    public static final String CONFIG_FILENAME = "application.yml";
     private static final Path TERMINATION_LOG_FILE = Path.of("/dev/termination-log");
     private static final String PROP_PROXY_SAME_SITE_COOKIE = "app.same-site-cookie";
     private static final String SAME_SITE_COOKIE_DEFAULT_VALUE = "Lax";

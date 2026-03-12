@@ -23,6 +23,7 @@ Crane.api = {
     csrfToken: document.querySelector("meta[name='_csrf']")?.content,
     csrfHeader: document.querySelector("meta[name='_csrf_header']")?.content,
     contextPath: document.querySelector("meta[name='_contextPath']")?.content,
+    instanceId: document.querySelector("meta[name='_instanceId']")?.content,
 
     buildURL(location) {
         const baseURL = new URL(Crane.api.contextPath, window.location.origin);
@@ -44,7 +45,7 @@ Crane.api = {
 
     async getLanguageMessages() {
         const lang = document.documentElement.lang;
-        const resp = await fetch(Crane.api.buildURL(`__language/messages/${lang}`));
+        const resp = await fetch(Crane.api.buildURL(`__language/messages/${lang}?instanceId=${Crane.api.instanceId}`));
         const json = await Crane.api._getResponseJson(resp);
         return json.data;
     },

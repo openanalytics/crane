@@ -26,6 +26,7 @@ import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.model.dto.CraneDirectoryDto;
 import eu.openanalytics.crane.model.dto.CraneFileDto;
 import eu.openanalytics.crane.model.runtime.CranePath;
+import eu.openanalytics.crane.service.IdentifierService;
 import eu.openanalytics.crane.service.IndexPageService;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
@@ -63,8 +64,9 @@ public class IndexPageController extends BaseUIController {
                                LanguageService languageService,
                                MessageSource messageSource,
                                ContextPathHelper contextPathHelper,
-                               UploadAccessControlService uploadAccessControlService) {
-        super(userService, craneConfig, languageService, messageSource, contextPathHelper);
+                               UploadAccessControlService uploadAccessControlService,
+                               IdentifierService identifierService) {
+        super(userService, craneConfig, languageService, messageSource, contextPathHelper, identifierService);
         this.indexPageService = indexPageService;
         this.uploadAccessControlService = uploadAccessControlService;
     }
