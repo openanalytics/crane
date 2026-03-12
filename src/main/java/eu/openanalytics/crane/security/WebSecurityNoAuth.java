@@ -50,6 +50,7 @@ public class WebSecurityNoAuth {
                     "/__file/**",
                     "/__index",
                     "/__assets/**",
+                    "/__csrf",
                     "/actuator/health",
                     "/actuator/health/liveness",
                     "/actuator/health/readiness",

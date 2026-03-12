@@ -39,6 +39,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -178,6 +179,13 @@ public class MainController extends BaseUIController {
         return ResponseEntity.ok()
             .cacheControl(CacheControl.maxAge(Duration.ofDays(1)))
             .body(new ApiResponse<>("success", internationalizationMessages));
+    }
+
+    @ResponseBody
+    @GetMapping("/__csrf")
+    public ResponseEntity<ApiResponse<CsrfToken>> csrf(CsrfToken csrfToken) {
+        // see https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-mobile
+        return ApiResponse.success( csrfToken);
     }
 
 }
