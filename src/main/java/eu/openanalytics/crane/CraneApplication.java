@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane;
 
+import eu.openanalytics.crane.service.LanguageService;
 import io.undertow.UndertowOptions;
 import io.undertow.server.handlers.SameSiteCookieHandler;
 import io.undertow.servlet.api.ServletSessionConfig;
@@ -189,9 +190,9 @@ public class CraneApplication {
     }
 
     @Bean
-    public LocaleResolver localeResolver() {
+    public LocaleResolver localeResolver(LanguageService languageService) {
         // no default language is configured, therefore the Accept header will determine the language if there is no cookie
-        CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver("shinyproxy_language");
+        CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver(languageService.getLanguageCookieName());
         cookieLocaleResolver.setCookieSecure(secureCookiesEnabled);
         cookieLocaleResolver.setCookieSameSite(sameSiteCookiePolicy);
         cookieLocaleResolver.setCookieHttpOnly(true);

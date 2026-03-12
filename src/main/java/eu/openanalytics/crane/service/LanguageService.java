@@ -23,6 +23,7 @@ package eu.openanalytics.crane.service;
 import eu.openanalytics.crane.util.EnvironmentUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,9 @@ import java.util.Map;
 @Service
 public class LanguageService {
 
-    private static final String PROP_PROXY_AVAILABLE_LANGUAGES = "app.available-languages";
+    private static final String PROP_APP_AVAILABLE_LANGUAGES = "app.available-languages";
+    private static final String PROP_APP_LANGUAGE_COOKIE_NAME = "app.language-cookie-name";
+    private static final String DEFAULT_LANGUAGE_COOKIE_NAME = "crane_language";
 
     private static final Map<String, Language> DEFAULT_AVAILABLE_LANGUAGES = Map.of(
         "en", new Language("en", "English"),
@@ -49,16 +52,23 @@ public class LanguageService {
         "fr", new Language("fr", "French"),
         "es", new Language("es", "Spanish")
     );
-    private static final String PROP_PROXY_FALLBACK_LANGUAGE = "app.fallback-language";
+    private static final String PROP_APP_FALLBACK_LANGUAGE = "app.fallback-language";
     private static final String DEFAULT_FALLBACK_LANGUAGE = "en";
 
-    private final Map<String, Language> enabledLanguages;
     private final String fallbackLanguage;
+
+    @Getter
+    private final Map<String, Language> enabledLanguages;
+
+    @Getter
+    private final String languageCookieName;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public LanguageService(Environment environment) {
         enabledLanguages = readEnabledLanguages(environment);
-        fallbackLanguage = environment.getProperty(PROP_PROXY_FALLBACK_LANGUAGE, DEFAULT_FALLBACK_LANGUAGE);
+        fallbackLanguage = environment.getProperty(PROP_APP_FALLBACK_LANGUAGE, DEFAULT_FALLBACK_LANGUAGE);
+        languageCookieName = environment.getProperty(PROP_APP_LANGUAGE_COOKIE_NAME, DEFAULT_LANGUAGE_COOKIE_NAME);
     }
 
     public void updateLanguageOfUser(HttpServletRequest request, HttpServletResponse response, String language) {
@@ -89,7 +99,7 @@ public class LanguageService {
     }
 
     private Map<String, Language> readEnabledLanguages(Environment environment) {
-        List<String> configuredLanguages = EnvironmentUtils.readList(environment, PROP_PROXY_AVAILABLE_LANGUAGES);
+        List<String> configuredLanguages = EnvironmentUtils.readList(environment, PROP_APP_AVAILABLE_LANGUAGES);
         if (configuredLanguages == null) {
             return DEFAULT_AVAILABLE_LANGUAGES;
         }
@@ -103,10 +113,6 @@ public class LanguageService {
             }
         }
         return result;
-    }
-
-    public Map<String, Language> getEnabledLanguages() {
-        return enabledLanguages;
     }
 
     public record Language(String key, String displayName) {

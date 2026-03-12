@@ -102,7 +102,7 @@ public abstract class BaseUIController {
         if (file == null) {
             return ""; // fallback to en
         }
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/__assets/webjars/datatables.net-plugins/2.3.6/i18n/" + file).toUriString();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/__assets/" + identifierService.instanceId + "/webjars/datatables.net-plugins/2.3.6/i18n/" + file).toUriString();
     }
 
 }
