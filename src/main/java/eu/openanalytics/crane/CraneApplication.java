@@ -58,6 +58,8 @@ public class CraneApplication {
     private static final String SAME_SITE_COOKIE_DEFAULT_VALUE = "Lax";
     private static final String PROP_SERVER_SECURE_COOKIES = "app.secure-cookies";
     private static final Boolean SECURE_COOKIES_DEFAULT_VALUE = false;
+    private static final String PROP_FORCE_HTTPS_IN_REDIRECTS = "app.force-https-in-redirects";
+    private static final Boolean FORCE_HTTPS_IN_REDIRECTS_DEFAULT_VALUE = false;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static Boolean secureCookiesEnabled;
@@ -167,6 +169,15 @@ public class CraneApplication {
             sessionConfig.setHttpOnly(true);
             sessionConfig.setSecure(secureCookiesEnabled);
             info.setServletSessionConfig(sessionConfig);
+            if (environment.getProperty(PROP_FORCE_HTTPS_IN_REDIRECTS, Boolean.class, FORCE_HTTPS_IN_REDIRECTS_DEFAULT_VALUE)) {
+                logger.debug("Enforcing redirects to always use https.");
+                info.addInitialHandlerChainWrapper(handler ->
+                    exchange -> {
+                        exchange.setRequestScheme("https");
+                        handler.handleRequest(exchange);
+                    }
+                );
+            }
         });
         factory.addBuilderCustomizers(builder -> {
             // allow uploads of unlimited size
