@@ -45,7 +45,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final boolean cacheEnabled;
     private static final Map<String, String> PATHS = Map.of(
-        "/__assets/webjars/**", "/webjars/",
+        "/__assets/webjars/**", "classpath:/META-INF/resources/webjars/",
         "/__assets/css/**", "classpath:/static/css/",
         "/__assets/js/**", "classpath:/static/js/",
         "/__assets/svg/**", "classpath:/static/svg/"
