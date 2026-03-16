@@ -18,15 +18,27 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.crane.util;
+package eu.openanalytics.crane.service;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class Thymeleaf {
+@Service
+public class ThymeleafService {
 
+    private final String iconBasePath;
+
+    public ThymeleafService(IdentifierService identifierService) {
+        iconBasePath = "/__assets/" + identifierService.instanceId + "/webjars/mdi__svg/7.4.47/svg/";
+    }
+
+    /**
+     * Returns path to an icon.
+     * Search for icons on <a href="https://pictogrammers.com/library/mdi/">pictogrammers.com</a>
+     * @param name name of the icon
+     * @return path to the icon
+     */
     public String icon(String name) {
-        return String.format("/__assets/webjars/mdi__svg/7.4.47/svg/%s.svg", name);
+        return iconBasePath + name + ".svg";
     }
 
 }

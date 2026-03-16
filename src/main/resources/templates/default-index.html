@@ -73,11 +73,11 @@
                     <td>
                         <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button" class="delete-button danger button"
                                 th:title="#{index.delete_directory}">
-                            <img th:src="@{'/__assets/svg/trash-can.svg'}">
+                            <img th:src="@{${@thymeleafService.icon('delete')}}">
                         </button>
                         <button th:if="${@uploadAccessControlService.canAccess(directory) && directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button" class="delete-button danger button"
                                 th:title="#{index.empty_directory}">
-                            <img th:src="@{'/__assets/svg/broom.svg'}">
+                            <img th:src="@{${@thymeleafService.icon('broom')}}">
                         </button>
                         <span class="delete-info" th:id="${'progress-' + directory.name}"></span>
                     </td>
@@ -89,7 +89,7 @@
                     <td th:text="${file.formattedSize}"></td>
                     <td>
                         <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button" th:title="#{index.delete_file}">
-                            <img th:src="@{'/__assets/svg/trash-can.svg'}">
+                            <img th:src="@{${@thymeleafService.icon('delete')}}">
                         </button>
                         <span class="delete-info" th:id="${'progress-' + file.name}"></span>
                     </td>

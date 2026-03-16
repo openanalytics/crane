@@ -42,6 +42,7 @@
         <tika-core.version>3.2.3</tika-core.version>
         <uppy.version>5.1.1</uppy.version>
         <matomo.version>3.4.0</matomo.version>
+        <mdi-svg.version>7.4.47</mdi-svg.version>
         <!-- Test dependency versions -->
         <testcontainers-keycloak.version>3.9.1</testcontainers-keycloak.version>
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
@@ -205,6 +206,11 @@
                     <artifactId>jquery</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>mdi__svg</artifactId>
+            <version>${mdi-svg.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
