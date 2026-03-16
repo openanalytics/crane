@@ -41,7 +41,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -102,7 +101,7 @@ public class IndexPageController extends BaseUIController {
 
     @ResponseBody
     @GetMapping(value = "/__index", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Map<String, Object>>> mainJson(HttpServletRequest request, HttpServletResponse response, CsrfToken csrfToken) throws ServletException, IOException {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> mainJson(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         CranePath path = (CranePath) request.getAttribute("path");
         Repository repo = (Repository) request.getAttribute("repo");
 
@@ -121,7 +120,6 @@ public class IndexPageController extends BaseUIController {
 
         data.put("files", files);
         data.put("directories", directories);
-        data.put(csrfToken.getHeaderName(), csrfToken.getToken());
 
         return ApiResponse.success(data);
     }
