@@ -25,20 +25,20 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 
 public class KeycloakAuthOidcInterceptor implements Interceptor {
+
     private final String username;
     private final String password;
-    private static final CsrfTokenInterceptor csrfTokenInterceptor = new CsrfTokenInterceptor();
+    private final CsrfTokenInterceptor csrfTokenInterceptor;
 
-    public KeycloakAuthOidcInterceptor(String username, String password) {
+    public KeycloakAuthOidcInterceptor(String username, String password, String baseUrl) {
         this.username = username;
         this.password = password;
+        this.csrfTokenInterceptor = new CsrfTokenInterceptor(baseUrl);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class KeycloakAuthOidcInterceptor implements Interceptor {
         Request initialRequest = chain.request().newBuilder().header("user", username).build();
         Response response = chain.proceed(csrfTokenInterceptor.addCsrfToken(initialRequest));
         Request request = response.request();
-        String body = new String(response.peekBody(Integer.MAX_VALUE).bytes());
+        String body = new String(response.peekBody(Integer.MAX_VALUE).bytes()); // TODO
         if (body.contains("action=")) {
             int startOfAuthenticationUrl = body.indexOf("action=") + "action=".length() + 1;
             String authenticationUrl = body.substring(startOfAuthenticationUrl, body.indexOf('"', startOfAuthenticationUrl));

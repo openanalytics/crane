@@ -183,7 +183,7 @@ public class UploadControllerTest {
 
         path = genericPath.formatted("unauthenticated");
         // Cannot upload to this repo since user cannot get csrf token
-        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertForbidden();
+        apiTestHelper.callWithoutAuth(apiTestHelper.createMultiPartRequest(path, "testing upload\n")).assertSuccess();
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
 
         path = genericPath.formatted("test");

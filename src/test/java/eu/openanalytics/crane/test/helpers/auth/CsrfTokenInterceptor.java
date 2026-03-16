@@ -22,6 +22,7 @@ package eu.openanalytics.crane.test.helpers.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.openanalytics.crane.test.helpers.TestHelperException;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -35,9 +36,15 @@ import java.util.Map;
 
 public class CsrfTokenInterceptor implements Interceptor {
 
-    public static OkHttpClient client = new OkHttpClient.Builder().followRedirects(true).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
-    public String cookie = null;
-    public String csrfToken = null;
+    private static final OkHttpClient client = new OkHttpClient.Builder().followRedirects(true).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+    private final String baseUrl;
+    private String cookie = null;
+    private String csrfToken = null;
+
+    public CsrfTokenInterceptor(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
     @NotNull
     @Override
     public Response intercept(@NotNull Interceptor.Chain chain) throws IOException {
@@ -49,38 +56,38 @@ public class CsrfTokenInterceptor implements Interceptor {
             return request.newBuilder().addHeader("Cookie", cookie).addHeader("X-CSRF-TOKEN", csrfToken).build();
         }
         if ((request.method().equals("POST") || request.method().equals("DELETE")) && !request.url().uri().getPath().equals("/logout")) {
-            String url = request.url().toString();
-            url = url.substring(0, url.indexOf("/", url.lastIndexOf(":") + 6) + 1);
-            Request indexToIndexPage = request.newBuilder().url(url).get().build();
-            Response response = client.newCall(indexToIndexPage).execute();
-            ResponseBody responseBody = response.body();
-            if (responseBody == null) {
-                throw new RuntimeException();
-            }
-            if (response.isSuccessful()) {
-                ObjectMapper mapper = new ObjectMapper();
-                CsrfToken csrfToken = mapper.readValue(responseBody.string(), CsrfToken.class);
-                Request.Builder builder = request.newBuilder();
-                String cookie = response.header("Set-Cookie");
-                if (cookie != null) {
-                    builder.addHeader("Cookie", cookie);
-                    this.cookie = cookie;
+            Request csrfRequest = request.newBuilder().url(baseUrl + "/__csrf").get().build();
+            try (Response response = client.newCall(csrfRequest).execute()) {
+                ResponseBody responseBody = response.body();
+                if (responseBody == null) {
+                    throw new TestHelperException("Empty or invalid CSRF response");
                 }
-                if (csrfToken.data.containsKey("X-CSRF-TOKEN")) {
-                    builder.addHeader("X-CSRF-TOKEN", String.valueOf(csrfToken.data.get("X-CSRF-TOKEN")));
-                    this.csrfToken = csrfToken.data.get("X-CSRF-TOKEN").toString();
+                if (response.isSuccessful()) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    ResponseDTO csrfToken = mapper.readValue(responseBody.string(), ResponseDTO.class);
+                    Request.Builder builder = request.newBuilder();
+                    String cookie = response.header("Set-Cookie");
+                    if (cookie != null) {
+                        builder.addHeader("Cookie", cookie);
+                        this.cookie = cookie;
+                    }
+                    if (csrfToken.data.containsKey("token")) {
+                        builder.addHeader("X-CSRF-TOKEN", String.valueOf(csrfToken.data.get("token")));
+                        this.csrfToken = csrfToken.data.get("token").toString();
+                    }
+                    request = builder.build();
                 }
-                request = builder.build();
             }
         }
         return request;
     }
 
-    static class CsrfToken {
+    private static class ResponseDTO {
         @JsonProperty("data")
         public Map<String, Object> data;
 
         @JsonProperty("status")
         public String status;
     }
+
 }

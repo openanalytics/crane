@@ -34,13 +34,14 @@ import java.time.Duration;
 
 public class KeycloakAuthTokenInterceptor implements Interceptor {
 
-    public static final OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
-    private static final CsrfTokenInterceptor csrfTokenInterceptor = new CsrfTokenInterceptor();
+    private static final OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+    private final CsrfTokenInterceptor csrfTokenInterceptor;
     private final String credentials;
     private final String user;
 
-    public KeycloakAuthTokenInterceptor(String user, String password) {
+    public KeycloakAuthTokenInterceptor(String user, String password, String baseUrl) {
         this.user = user;
+        csrfTokenInterceptor = new CsrfTokenInterceptor(baseUrl);
         try {
             eu.openanalytics.crane.test.helpers.Response response = new eu.openanalytics.crane.test.helpers.Response(client.newCall(new Request.Builder().post(RequestBody.create("username=" + user + "&password=" + password + "&grant_type" +
                     "=password" + "&client_id=crane_client" + "&client_secret=secret", MediaType.parse("application/x-www-form-urlencoded")))

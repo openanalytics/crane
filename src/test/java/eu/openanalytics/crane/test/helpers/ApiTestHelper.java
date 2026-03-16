@@ -59,13 +59,13 @@ public class ApiTestHelper {
             throw new TestHelperException(String.format("The passed url '%s' does not start with 'http://' or 'https://'", baseUrl));
         }
         this.baseUrl = baseUrl;
-        clientWithoutAuth = new OkHttpClient.Builder().addInterceptor(new CsrfTokenInterceptor()).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
-        clientTokenDemo = new OkHttpClient.Builder().addInterceptor(new KeycloakAuthTokenInterceptor("demo", "demo")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
-        clientTokenTest = new OkHttpClient.Builder().addInterceptor(new KeycloakAuthTokenInterceptor("test", "test")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+        clientWithoutAuth = new OkHttpClient.Builder().addInterceptor(new CsrfTokenInterceptor(baseUrl)).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+        clientTokenDemo = new OkHttpClient.Builder().addInterceptor(new KeycloakAuthTokenInterceptor("demo", "demo", baseUrl)).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+        clientTokenTest = new OkHttpClient.Builder().addInterceptor(new KeycloakAuthTokenInterceptor("test", "test", baseUrl)).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
         CookieJar demoCookieJar = new JavaNetCookieJar(new CookieManager());
-        clientOidcDemo = new OkHttpClient.Builder().cookieJar(demoCookieJar).addInterceptor(new KeycloakAuthOidcInterceptor("demo", "demo")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+        clientOidcDemo = new OkHttpClient.Builder().cookieJar(demoCookieJar).addInterceptor(new KeycloakAuthOidcInterceptor("demo", "demo", baseUrl)).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
         CookieJar testCookieJar = new JavaNetCookieJar(new CookieManager());
-        clientOidcTest = new OkHttpClient.Builder().cookieJar(testCookieJar).addInterceptor(new KeycloakAuthOidcInterceptor("test", "test")).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
+        clientOidcTest = new OkHttpClient.Builder().cookieJar(testCookieJar).addInterceptor(new KeycloakAuthOidcInterceptor("test", "test", baseUrl)).callTimeout(Duration.ofSeconds(120)).readTimeout(Duration.ofSeconds(120)).build();
     }
 
     public static ApiTestHelper from(CraneInstance inst) {
@@ -180,7 +180,7 @@ public class ApiTestHelper {
     public NativeResponse nativeCallWithTokenAuthDemoUser(HttpRequest.Builder requestBuilder) {
         var client = HttpClient.newHttpClient();
         try {
-            KeycloakAuthTokenInterceptor interceptor = new KeycloakAuthTokenInterceptor("demo", "demo");
+            KeycloakAuthTokenInterceptor interceptor = new KeycloakAuthTokenInterceptor("demo", "demo", baseUrl);
             HttpRequest request = interceptor.intercept(requestBuilder).build();
             return new NativeResponse(client.send(request, HttpResponse.BodyHandlers.ofString()), request);
         } catch (IOException | InterruptedException e) {
