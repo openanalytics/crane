@@ -52,6 +52,7 @@
         <maven.license-plugin.version>4.6</maven.license-plugin.version>
         <maven.build-helper-maven.plugin.version>3.6.0</maven.build-helper-maven.plugin.version>
         <maven.dependency-check-plugin.version>12.1.7</maven.dependency-check-plugin.version>
+        <maven.esbuild-maven-plugin.version>1.0.0</maven.esbuild-maven-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -466,6 +467,111 @@
                         <algorithm>MD5</algorithm>
                     </algorithms>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.mvnpm</groupId>
+                <artifactId>esbuild-maven-plugin</artifactId>
+                <version>${maven.esbuild-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>esbuild</id>
+                        <goals>
+                            <goal>esbuild</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <entryPoint>index.js</entryPoint>
+                    <outputDirectory>target/classes/static/js/bundle</outputDirectory>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>react-dom</artifactId>
+                        <version>18.3.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>react</artifactId>
+                        <version>18.3.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>rjsf__core</artifactId>
+                        <version>6.4.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>rjsf__utils</artifactId>
+                        <version>6.4.1</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.webjars.npm</groupId>
+                                <artifactId>react-is</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>rjsf__validator-ajv8</artifactId>
+                        <version>6.4.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>react-is</artifactId>
+                        <version>16.13.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>x0k__json-schema-merge</artifactId>
+                        <version>1.0.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>scheduler</artifactId>
+                        <version>0.27.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>markdown-to-jsx</artifactId>
+                        <version>8.0.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>lodash-es</artifactId>
+                        <version>4.17.23</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>ajv</artifactId>
+                        <version>8.18.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>ajv-formats</artifactId>
+                        <version>2.1.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>fast-deep-equal</artifactId>
+                        <version>3.1.3</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>json-schema-traverse</artifactId>
+                        <version>1.0.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>jsonpointer</artifactId>
+                        <version>5.0.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.webjars.npm</groupId>
+                        <artifactId>fast-uri</artifactId>
+                        <version>3.1.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

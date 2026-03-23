@@ -122,6 +122,12 @@ public class CranePath {
     private final boolean metadataDirectoryOrFile = isMetadataFile() || isMetadataDirectory();
 
     /**
+     * Whether this path is a metadata file.
+     */
+    @Getter(lazy = true)
+    private final boolean metadataSchemaFile = isMetadataFile() && getName().equals(repository.getMetadataSchemaFileName());
+
+    /**
      * Whether this path is an invalid metadata path, i.e. directories nested in a metadata directory.
      */
     @Getter(lazy = true)
@@ -294,7 +300,7 @@ public class CranePath {
      * @return the file as an {@link InputStream}
      * @throws IOException if an I/O error occurs
      */
-    public InputStream asInputStremam() throws IOException {
+    public InputStream asInputStream() throws IOException {
         if (isDirectory()) {
             throw new IllegalStateException("CranePath is a directory and cannot be opened as InputStream");
         }

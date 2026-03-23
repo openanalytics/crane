@@ -20,7 +20,10 @@
  */
 package eu.openanalytics.crane.model.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.openanalytics.crane.model.runtime.CranePath;
+import eu.openanalytics.crane.util.EnvironmentUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,10 +60,16 @@ public class Repository extends PathComponent {
     private final String metadataDirectoryName = ".crane";
 
     @Getter
+    private final String metadataSchemaFileName = "metadata-schema.json";
+
+    @Getter
     private final String onErrorExpression;
 
     @Getter
     private final List<RewriteRule> rewrites;
+
+    @Getter
+    private final byte[] metadataSchema;
 
     @ConstructorBinding
     public Repository(String indexFileName,
@@ -73,7 +82,8 @@ public class Repository extends PathComponent {
                       AccessControl writeAccess,
                       AccessControl metadataReadAccess,
                       AccessControl metadataWriteAccess,
-                      Map<String, PathComponent> paths) {
+                      Map<String, PathComponent> paths,
+                      Map<String, Object> metadataSchema) {
         super(readAccess, writeAccess, metadataReadAccess, metadataWriteAccess, paths);
         this.indexFileName = Objects.requireNonNullElse(indexFileName, "index.html");
         this.cache = cache;
@@ -81,6 +91,7 @@ public class Repository extends PathComponent {
         this.onErrorExpression = onErrorExpression;
         this.posixAccessControl = posixAccessControl;
         this.rewrites = rewrites;
+        this.metadataSchema = convertMetadataSchema(metadataSchema);
     }
 
     public void setCache(List<CacheRule> cache) {
@@ -162,6 +173,19 @@ public class Repository extends PathComponent {
 
     public CranePath getPathFromStoragePath(Path fullStoragePath) {
         return new CranePath(this, storagePath.relativize(fullStoragePath).toString(), fullStoragePath);
+    }
+
+    private byte[] convertMetadataSchema(Map<String, Object> metadataSchema) {
+        if (metadataSchema != null) {
+            Object convertedMetadataSchema = EnvironmentUtils.convertedNestedLists(metadataSchema);
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return objectMapper.writeValueAsBytes(convertedMetadataSchema);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
     }
 
 }

@@ -126,6 +126,71 @@ Crane.api = {
             return null;
         }
         return json;
+    },
+
+    /**
+     * Get contents of fileName (relative to current directory)
+     * @param fileName
+     * @returns {Promise<Response|null>}
+     */
+    async getFile(fileName) {
+        try {
+            const response = await fetch(window.location + fileName);
+            if (response.status !== 200) {
+                console.log("Received invalid response (not 200 OK) ", response);
+                return null;
+            }
+            return response;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    },
+
+    /**
+     * Get metadata file for a file (relative to the current directory).
+     * @param fileName
+     * @returns {Promise<any|null>}
+     */
+    async getMetadataFile(fileName) {
+        try {
+            const response = await fetch(window.location + ".crane/" + fileName + ".yaml");
+            if (response.status !== 200) {
+                console.log("Received invalid response (not 200 OK) ", response);
+                return null;
+            }
+            return await response.json();
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    },
+
+    /**
+     * Upload a string as a file, replaces existing files.
+     * @param fileName
+     * @param data
+     * @returns {Promise<boolean>} whether the upload was successful
+     */
+    async uploadStringAsFile(fileName, data) {
+        try {
+            const url = window.location + fileName + "?replace=true"
+            const file = new File([data], fileName, {
+                type: "text/plain",
+            });
+            const formData = new FormData();
+            formData.append("file", file);
+            const resp = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {[Crane.api.csrfHeader]: Crane.api.csrfToken}
+            });
+            const json = await Crane.api._getResponseJson(resp);
+            return json !== null;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
     }
 
 }

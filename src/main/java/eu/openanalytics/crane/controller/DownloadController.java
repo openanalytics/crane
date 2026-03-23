@@ -36,9 +36,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -95,6 +97,11 @@ public class DownloadController {
             return;
         }
 
+        if (cranePath.isMetadataSchemaFile()) {
+            handleMetadataSchemaFile(repository, request, response);
+            return;
+        }
+
         if (cranePath.isDirectory()) {
             cranePath = cranePath.getIndexFilePath();
         }
@@ -125,7 +132,7 @@ public class DownloadController {
         }
 
         auditingService.createRepositoryHandlerAuditEvent(request);
-        InputStreamResource resource = new InputStreamResource(cranePath.asInputStremam());
+        InputStreamResource resource = new InputStreamResource(cranePath.asInputStream());
 
         addCachingHeaders(request, response, repository);
 
@@ -167,6 +174,20 @@ public class DownloadController {
             }
         }
         return Optional.empty();
+    }
+
+    private void handleMetadataSchemaFile(Repository repository, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        byte[] metadataSchema = repository.getMetadataSchema();
+        if (metadataSchema == null) {
+            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.NOT_FOUND);
+            request.getRequestDispatcher("/error").forward(request, response);
+            return;
+        }
+        auditingService.createRepositoryHandlerAuditEvent(request);
+        ByteArrayResource resource = new ByteArrayResource(metadataSchema);
+        ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
+        resourceHttpMessageConverter.write(resource, MediaType.APPLICATION_JSON, outputMessage);
     }
 
 }

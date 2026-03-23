@@ -25,6 +25,7 @@ Crane.ui = {
         uppyDialog: document.getElementById("uppy-dialog"),
         createDirectoryForm: document.getElementById("create-directory-form"),
         createDirectoryButton: document.getElementById("create-directory"),
+        editMetadataDialog: document.getElementById("edit-metadata-dialog"),
         table: $("table"),
         datatable: null,
         uppy: null,
@@ -129,10 +130,19 @@ Crane.ui = {
                 return false;
             }
         });
+        document.querySelector(".files-table").addEventListener("click", function (event) {
+            const button = event.target.closest("button");
+            if (button && this.contains(button) && button.classList.contains("metadata-button")) {
+                const filename = button.dataset?.filename;
+                Crane.ui.showEditMetadataDialog(filename);
+            }
+        });
+        document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.closeEditMetadataDialog);
+        document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
     },
 
     initTable() {
-        if (Crane.ui.elements.table.length === 0 ) {
+        if (Crane.ui.elements.table.length === 0) {
             return;
         }
         const dataTableLanguageUrl = document.querySelector("meta[name='_dataTableLanguageUrl']")?.content;
@@ -142,7 +152,7 @@ Crane.ui = {
             language: {
                 url: dataTableLanguageUrl
             },
-            initComplete: function() {
+            initComplete: function () {
                 Crane.ui.elements.datatable = this.api();
                 if (Crane.ui.elements.table.data("has-write-access")) {
                     Crane.ui.initUppy();
@@ -328,6 +338,46 @@ Crane.ui = {
                 document.querySelector('#language-selector').classList.remove("open");
             });
         });
+    },
+
+    async showEditMetadataDialog(fileName) {
+        const response = await Crane.api.getFile(".crane/metadata-schema.json")
+        if (response === null) {
+            alert("Failed to get metadata schema");
+            return
+        }
+        const schema = await response.json();
+        const formData = await Crane.api.getMetadataFile(fileName);
+        rjsfForm({
+                schema,
+                onSubmit: function (result) {
+                    Crane.ui.submitMetadataDialog(fileName, result);
+                },
+                formData: formData
+            },
+            document.getElementById("edit-metadata-form")
+        );
+        Crane.ui.elements.editMetadataDialog.showModal()
+    },
+
+    closeEditMetadataDialog() {
+        Crane.ui.elements.editMetadataDialog.close();
+    },
+
+    async submitMetadataDialog(filename, result) {
+        const success = await Crane.api.uploadStringAsFile(
+            ".crane/" + filename  + ".yaml",
+            JSON.stringify(result.formData)
+        );
+        if (!success) {
+            alert("Failed to update metadata");
+        } else {
+            Crane.ui.closeEditMetadataDialog();
+        }
+    },
+
+    saveEditMetadataDialog() {
+        document.querySelector("button[type=submit]").click();
     }
 
 }

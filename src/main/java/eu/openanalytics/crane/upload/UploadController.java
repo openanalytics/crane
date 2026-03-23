@@ -87,6 +87,11 @@ public class UploadController {
             return ApiResponse.fail(Map.of("message", "File %s already exists".formatted(cranePath.getWebUri())));
         }
 
+        if (cranePath.isMetadataSchemaFile()) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "Cannot override metadata schema"));
+        }
+
         try {
             FileItemInput fileItemInput = getFileItemInput(upload.getItemIterator(request));
             if (fileItemInput == null) {

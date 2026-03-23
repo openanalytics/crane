@@ -47,6 +47,7 @@ public class CranePathTest {
             null,
             null,
             null,
+            null,
             null);
         repository.setName("test_repository");
         repository.validate(false);
@@ -95,7 +96,7 @@ public class CranePathTest {
         Assertions.assertNotNull(testPath.getSize());
         Assertions.assertNotNull(testPath.getFormattedSize());
 
-        exception = Assertions.assertThrows(IllegalStateException.class, testPath::asInputStremam);
+        exception = Assertions.assertThrows(IllegalStateException.class, testPath::asInputStream);
         Assertions.assertEquals("CranePath is a directory and cannot be opened as InputStream", exception.getMessage());
 
         Assertions.assertFalse(testPath.getPath("test.index.html").isIndexFile());
@@ -124,7 +125,8 @@ public class CranePathTest {
             Map.of(
                 "other_path", createUnrelatedPathComponent(),
                 "test_path", pathComponent1
-            )
+            ),
+            null
         );
         repository.setName("test_repository");
         repository.validate(false);
@@ -184,6 +186,7 @@ public class CranePathTest {
             null,
             null,
             null,
+            null,
             null
         );
         repository.setName("test_repository");
@@ -215,6 +218,7 @@ public class CranePathTest {
             new AccessControl(null, null, true, null, null, null),
             null,
             new AccessControl(null, null, true, null, null, null),
+            null,
             null,
             null
         );
@@ -258,6 +262,7 @@ public class CranePathTest {
             new AccessControl(null, null, true, null, null, null),
             null,
             new AccessControl(null, null, true, null, null, null),
+            null,
             null,
             null
         );

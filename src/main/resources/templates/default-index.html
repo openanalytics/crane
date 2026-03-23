@@ -26,7 +26,8 @@
         <title th:text="${title}"></title>
     </th:block>
     <th:block th:fragment="content">
-        <h1><span th:text="#{index.directory}"></span> <code><span class="slash">/</span><a th:href="@{'/' + ${repository}}" th:text="${repository}"></a><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a th:href="@{${part.webUri}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
+        <h1><span th:text="#{index.directory}"></span> <code><span class="slash">/</span><a th:href="@{'/' + ${repository}}" th:text="${repository}"></a><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a
+                th:href="@{${part.webUri}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
         </code></h1>
         <dialog id="uppy-dialog">
             <div id="uppy" th:action="@{${resource}}"></div>
@@ -47,7 +48,7 @@
                 <div><h1 th:text="#{index.create-directory}"></h1></div>
                 <div class="input-field">
                     <label th:text="#{index.directory-name}"></label>
-                    <input id="directory-name" type="text" />
+                    <input id="directory-name" type="text"/>
                 </div>
                 <div class="flex flex-space-between">
                     <button id="cancel-create-directory" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
@@ -56,7 +57,17 @@
             </form>
         </dialog>
 
-        <table th:attr="data-has-write-access=${hasWriteAccess},data-has-create-directory-access=${hasCreateDirectoryAccess}">
+        <dialog id="edit-metadata-dialog">
+            <div><h1 th:text="#{index.update-metadata}"></h1></div>
+            <div id="edit-metadata-form">
+            </div>
+            <div class="flex flex-space-between">
+                <button id="cancel-edit-metadata" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
+                <button id="save-edit-metadata" type="button" class="button create" th:text="#{index.update.button}"></button>
+            </div>
+        </dialog>
+
+        <table th:attr="data-has-write-access=${hasWriteAccess},data-has-create-directory-access=${hasCreateDirectoryAccess}" class="files-table">
             <thead>
                 <tr>
                     <th th:text="#{index.filename}"></th>
@@ -71,13 +82,13 @@
                     <td></td>
                     <td></td>
                     <td>
-                        <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button" class="delete-button danger button"
+                        <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button"
+                                class="delete-button button icon icon-delete"
                                 th:title="#{index.delete_directory}">
-                            <img th:src="@{${@thymeleafService.icon('delete')}}">
                         </button>
-                        <button th:if="${@uploadAccessControlService.canAccess(directory) && directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button" class="delete-button danger button"
+                        <button th:if="${@uploadAccessControlService.canAccess(directory) && directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button"
+                                class="delete-button button icon icon-broom"
                                 th:title="#{index.empty_directory}">
-                            <img th:src="@{${@thymeleafService.icon('broom')}}">
                         </button>
                         <span class="delete-info" th:id="${'progress-' + directory.name}"></span>
                     </td>
@@ -88,14 +99,14 @@
                     <td th:text="${file.lastModifiedTime}"></td>
                     <td th:text="${file.formattedSize}"></td>
                     <td>
-                        <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button danger button" th:title="#{index.delete_file}">
-                            <img th:src="@{${@thymeleafService.icon('delete')}}">
+                        <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button button icon icon-delete" th:title="#{index.delete_file}">
+                        </button>
+                        <button th:if="${hasMetadataWriteAccess}" th:data-filename="${file.name}" type="button" class="metadata-button button icon icon-table-edit" th:title="#{index.update-metadata}">
                         </button>
                         <span class="delete-info" th:id="${'progress-' + file.name}"></span>
                     </td>
                 </tr>
             </tbody>
-
         </table>
     </th:block>
 

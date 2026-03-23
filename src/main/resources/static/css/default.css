@@ -18,6 +18,22 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+:root {
+    --color-light-red: #e523235c;
+    --color-red: #e52323;
+    --color-red-hover: #af1616;
+    --color-light-blue: #9dd4ea;
+    --color-light-blue-hover: #32a6d3;
+    --color-dark-blue: #337ab7;
+    --color-light-gray-hover: #e6e6e6;
+    --color-light-gray-border: #D3D3D3FF;
+    --color-light-black: #333;
+}
+
 a.logo {
     display: flex;
     width: 250px;
@@ -50,21 +66,6 @@ header {
     color: black;
 }
 
-.header-button {
-    background: transparent;
-    text-decoration: none;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    margin: 0 10px 0 10px;
-    cursor: pointer;
-}
-
-.header-button:hover {
-    border: 1px solid lightgray;
-    background: #e6e6e6;
-}
-
 .logout-form {
     display: flex;
 }
@@ -91,12 +92,12 @@ body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.42857143;
-    color: #333;
+    color: var(--color-light-black);
     background-color: #fff;
 }
 
 a {
-    color: #337ab7;
+    color: var(--color-dark-blue);
     text-decoration: none;
 }
 
@@ -121,7 +122,7 @@ table {
 }
 
 .slash {
-    color: #333;
+    color: var(--color-light-black);
 }
 
 dialog {
@@ -132,10 +133,10 @@ dialog {
     position: absolute;
     background: white;
     border-radius: 20px;
-    border: solid lightgray 1px;
+    border: solid var(--color-light-gray-border) 1px;
 }
 
-dialog#create-directory-dialog {
+dialog#create-directory-dialog, dialog#edit-metadata-dialog {
     bottom: 30%;
     width: 500px;
     padding-top: 1.25rem;
@@ -145,9 +146,14 @@ dialog::backdrop {
     backdrop-filter: blur(10px);
 }
 
-input#file-name, input#upload-input-file, input#directory-name {
+input[type="text"], input[type="file"], input[type="date"] {
     border-radius: .5rem;
-    border: solid lightgray 1px;
+    border: 1px solid var(--color-light-gray-border);
+    background-color: transparent;
+    height: 32px;
+}
+
+input#directory-name {
     width: 100%;
 }
 
@@ -163,18 +169,21 @@ input[type="file"]::file-selector-button {
 }
 
 dialog form div h1 {
-    color: rgb(51, 51, 51);
+    color: var(--color-light-black);
     text-align: center;
     font-weight: bolder;
     font-size: 150%;
     margin: 0;
-    border-bottom: solid #d3d3d3 1px;
+    border-bottom: solid var(--color-light-gray-border) 1px;
     padding-bottom: .5rem;
 }
 
-dialog form div label {
+label {
     font-weight: bold;
     font-size: .875rem;
+}
+
+.input-field label {
     line-height: 1.25rem;
     margin-bottom: .5rem;
     display: block;
@@ -183,6 +192,7 @@ dialog form div label {
 .input-field, .upload-input-field, .flex {
     margin: .5rem 1rem 1rem 1rem
 }
+
 .flex {
     display: flex;
     flex-wrap: wrap;
@@ -199,67 +209,37 @@ dialog form div label {
     gap: 1rem;
 }
 
-.button, button.dt-button[tabindex='0'], button.uppy-DashboardContent-back, .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload, button.uppy-DashboardContent-addMore {
-    text-decoration: none;
-    padding: .5rem 1.5rem;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    font-weight: bold;
-    font-size: 14px;
-    color: rgb(0, 0, 0);
-}
-
-button .danger {
-    font-size: 0;
-}
-
-button.danger img {
-    width: 18px;
-    height: 18px;
-    filter: invert(1);
-}
-
-.danger {
-   background-color: #e52323;
-   padding: 3px;
-}
-
-button.dt-button[tabindex='0'] {
-    padding: .3rem 1.5rem !important;
-}
-
 @-webkit-keyframes loading-animation {
-  0% {
-    background-color: #32a6d3;
-  }
+    0% {
+        background-color: var(--color-light-blue-hover);
+    }
 
-  50% {
-    background-color: rgb(233, 233, 237);
-  }
+    50% {
+        background-color: rgb(233, 233, 237);
+    }
 
-  100% {
-    background-color: #32a6d3;
-  }
+    100% {
+        background-color: var(--color-light-blue-hover);
+    }
 }
 
 .uploading {
-    color: black;
+    color: var(--color-light-black);
     -webkit-animation: loading-animation 2s infinite;
 }
 
-
 @-webkit-keyframes delete-loading-animation {
-  0% {
-    background-color: #b7b7b7;
-  }
+    0% {
+        background-color: #b7b7b7;
+    }
 
-  50% {
-    background-color: #f7f7f7;
-  }
+    50% {
+        background-color: #f7f7f7;
+    }
 
-  100% {
-    background-color: #b7b7b7;
-  }
+    100% {
+        background-color: #b7b7b7;
+    }
 }
 
 .delete-info {
@@ -271,45 +251,91 @@ button.dt-button[tabindex='0'] {
     -webkit-animation: delete-loading-animation 2s infinite;
 }
 
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 10px;
+    border: 1px solid var(--color-light-blue);
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--color-light-black);
+    padding: .5rem 1.5rem;
+}
+
+.checkbox {
+    accent-color: var(--color-light-blue);
+    cursor: pointer;
+}
+
+/* ==== BUTTONS ==== */
+
+.btn, .button, button.dt-button[tabindex='0'], button.uppy-DashboardContent-back, .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload, button.uppy-DashboardContent-addMore {
+    text-decoration: none;
+    padding: .5rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--color-light-black);
+}
+
+button {
+    font-size: 0;
+}
+
+button.dt-button[tabindex='0'] {
+    padding: .3rem 1.5rem !important;
+}
+
+.header-button {
+    background: transparent;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    margin: 0 10px 0 10px;
+    cursor: pointer;
+}
+
+.header-button:hover {
+    border: 1px solid var(--color-light-gray-border);
+    background: var(--color-light-gray-hover);
+}
 
 button:not([disabled]) {
     cursor: pointer;
 }
 
-button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
-    background-color: #32a6d37a;
+.metadata-button, button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
+    color: var(--color-light-black);
+    background-color: var(--color-light-blue);
 }
 
-button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
-    color: rgb(0, 0, 0);
-    background-color: #32a6d3;
+.metadata-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
+    color: var(--color-light-black);
+    background-color: var(--color-light-blue-hover);
 }
 
-button.cancel, button.retry{
-    background-color: #e523235c;
+.delete-button, button.cancel, button.retry {
+    color: var(--color-light-black);
+    background-color: var(--color-light-red);
 }
 
-button.cancel:not([disabled]):hover, button.retry:not([disabled]):hover {
-    color: rgb(0, 0, 0);
-    background-color: #e52323;
+.delete-button:hover, button.cancel:not([disabled]):hover, button.retry:not([disabled]):hover {
+    color: var(--color-light-black);
+    background-color: var(--color-red);
 }
 
 button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardContent-addMore:disabled {
     background-color: #b7b7b7;
-    color: rgb(0, 0, 0);
+    color: var(--color-light-black);
     cursor: not-allowed;
 }
 
-button.danger:hover {
-    background: #af1616;
-}
-
-dialog form div input[type="text"] {
-    border: 1px solid #d3d3d3;
-    padding: 5px;
-    background-color: transparent;
-    height: 27px;
-}
+/* ==== DROPDOWN ==== */
 
 .caret {
     display: inline-block;
@@ -341,7 +367,7 @@ dialog form div input[type="text"] {
     list-style: none;
     background-color: #fff;
     background-clip: padding-box;
-    border: 1px solid lightgray;
+    border: 1px solid var(--color-light-gray-border);
     border-radius: 10px;
     width: 170px;
 }
@@ -352,18 +378,17 @@ dialog form div input[type="text"] {
     clear: both;
     font-weight: 400;
     line-height: 1.42857143;
-    color: #333;
     white-space: nowrap;
     cursor: pointer;
 }
 
 .dropdown-menu > li:hover {
     text-decoration: none;
-    background: #e6e6e6;
+    background: var(--color-light-gray-hover);
 }
 
 .dropdown-menu > li.language-active {
-    color: #337ab7;
+    color: var(--color-dark-blue);
     font-weight: bold;
 }
 
@@ -388,21 +413,184 @@ dialog form div input[type="text"] {
     width: 150px;
 }
 
-.checkbox-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.2rem;
-    cursor: pointer;
-    text-decoration: none;
-    border-radius: 10px;
-    border: 1px solid #32a6d3;
-    font-weight: bold;
-    font-size: 14px;
-    color: rgb(0, 0, 0);
-    padding: .5rem 1.5rem;
+/* ==== RJSF ==== */
+
+.rjsf button[type=submit] {
+    display: none;
 }
 
-.checkbox {
-    accent-color: #32a6d3;
-    cursor: pointer;
+#root {
+    border: none;
+}
+
+#root > legend {
+    display: none;
+}
+
+#root > .rjsf-field {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+}
+
+#root > .rjsf-field > label {
+    grid-column: 1;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+#root > .rjsf-field > input,
+#root > .rjsf-field > select,
+#root > .rjsf-field > textarea {
+    grid-column: 2;
+}
+
+.form-group .checkbox {
+    display: contents;
+}
+
+.form-group .checkbox label {
+    display: contents;
+}
+
+.form-group .checkbox span {
+    grid-column: 1;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    margin-top: -40px;
+}
+
+.form-group .checkbox input {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 10px;
+}
+
+.rjsf-array-item label {
+    display: none;
+}
+
+.rjsf-array-item button {
+    display: block;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+}
+
+#root .rjsf-field-array {
+    grid-template-columns: 1fr;
+}
+
+.rjsf-array-item-move-up {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/arrow-up-bold.svg");
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.rjsf-array-item-move-down {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/arrow-down-bold.svg");
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.rjsf-array-item-remove {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/delete.svg");
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.rjsf-field-array .btn-add {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/plus.svg");
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+}
+
+.rjsf-array-item {
+    height: 40px;
+}
+
+.rjsf-array-item .btn-group {
+    margin-top: 0 !important;
+}
+
+.rjsf-array-item input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.rjsf-array-item .btn {
+    border-radius: 0;
+}
+
+.rjsf-field-array .btn {
+    background-color: var(--color-light-blue);
+}
+
+.rjsf-field-array .btn:hover {
+    background-color: var(--color-light-blue-hover);
+}
+
+.rjsf-field-array .btn:disabled {
+    background-color: #b7b7b7;
+    color: var(--color-light-black);
+    cursor: not-allowed;
+}
+
+.rjsf-field-array fieldset {
+    border: 1px solid var(--color-light-gray-border);
+    border-radius: .5rem;
+}
+
+.rjsf-field-array legend {
+    font-weight: bold;
+    font-size: .875rem;
+}
+
+.rjsf-array-item button:last-child {
+    border-top-right-radius: .5rem;
+    border-bottom-right-radius: .5rem;
+}
+
+.rjsf-array-item div:first-child {
+    flex: 1;
+}
+
+.rjsf-array-item div:first-child input {
+    width: 100%;
+}
+
+/* ==== ICONS ==== */
+
+button.icon {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+}
+
+.icon {
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.icon-delete {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/delete.svg");
+}
+
+.icon-table-edit {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/table-edit.svg");
+}
+
+.icon-broom {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/broom.svg");
 }

@@ -24,6 +24,8 @@ import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class EnvironmentUtils {
 
@@ -86,6 +88,55 @@ public class EnvironmentUtils {
             return result;
         }
         return environment.getProperty(fallbackPropertyName, targetType, defaultValue);
+    }
+
+    /**
+     * Converts the nested lists (in maps) to the proper lists instead of list-like maps.
+     *
+     * When reading a nested YAML object from the configuration file, Spring can convert it to a
+     * {@code Map<String, Object>}. The value is always a Map, never a List. If an array is used in the nested
+     * YAML, this is converted to map with (string) index "0", "1" etc. This function converts these maps
+     * to proper lists (at any depth of the object).
+     * @param value the value to convert
+     * @return converted value
+     */
+    public static Object convertedNestedLists(Object value) {
+        if (value instanceof List<?> list) {
+            return list.stream()
+                .map(EnvironmentUtils::convertedNestedLists)
+                .toList();
+        }
+        if (value instanceof Map<?, ?> map) {
+            if (mapIsAlist(map)) {
+                // convert to list, Spring uses LinkedHashMap so order should be correct
+                return map.values().stream()
+                    .map(EnvironmentUtils::convertedNestedLists)
+                    .toList();
+            } else {
+                return map.entrySet().stream()
+                    .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> EnvironmentUtils.convertedNestedLists(e.getValue()))
+                    );
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Checks whether this map is actually representing a list.
+     * This is a map with (string) index "0", "1" etc.
+     *
+     * @param map the map to check
+     * @return whether this map is a list
+     */
+    private static boolean mapIsAlist(Map<?,?> map) {
+        for (int i = 0; i < map.size(); i++) {
+            if (!map.containsKey(Integer.toString(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
