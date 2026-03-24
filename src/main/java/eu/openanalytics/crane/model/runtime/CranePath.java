@@ -250,6 +250,13 @@ public class CranePath {
     @Getter(lazy = true)
     private final String formattedSize = CranePathBuilder.getFormattedSize(this);
 
+    /**
+     * Get a unique id for this file.
+     * This is the SHA-256 hash of the {@link webUri} property.
+     */
+    @Getter(lazy = true)
+    private final String id = CranePathBuilder.getId(this);
+
     public CranePath(Repository repository, String pathRelativeToRepository) {
         this.repository = repository;
         this.pathRelativeToRepository = Strings.CS.removeStart(Strings.CS.removeEnd(pathRelativeToRepository, "/"), "/");
