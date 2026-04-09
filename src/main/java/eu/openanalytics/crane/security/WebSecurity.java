@@ -87,6 +87,7 @@ public class WebSecurity {
                                 "/__language",
                                 "/__language/messages/**",
                                 "/__csrf",
+                                "/__search/**",
                                 "/actuator/health",
                                 "/actuator/health/liveness",
                                 "/actuator/health/readiness",

@@ -158,6 +158,7 @@ public class MainController extends BaseUIController {
         "index.create_directory.button",
         "index.retry.button",
         "index.upload.button",
+        "index.search.button",
         "index.uploading",
         "index.delete_file.confirmation",
         "index.delete_directory.confirmation",

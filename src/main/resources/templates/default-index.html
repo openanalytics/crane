@@ -108,6 +108,40 @@
                 </tr>
             </tbody>
         </table>
+
+        <dialog id="search-dialog">
+            <div id="search-dialog-flex">
+                <div><h1>Search</h1></div>
+                <div id="search-wrapper">
+                    <div class="search-bar">
+                    </div>
+
+                    <div class="search-body">
+                        <div class="facets">
+                            <div class="facet-group">
+                                <p class="facet-title">Content-Type</p>
+                                <div class="facet-content-type">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="search-results">
+                            <div class="result-list">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-space-between">
+                    <button id="cancel-search" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
+                </div>
+            </div>
+        </dialog>
+
+<!--         TODO -->
+        <script src="https://cdn.jsdelivr.net/npm/@meilisearch/instant-meilisearch/dist/instant-meilisearch.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4"></script>
+
+
     </th:block>
 
 </html>

@@ -31,7 +31,9 @@
     --color-dark-blue: #337ab7;
     --color-light-gray-hover: #e6e6e6;
     --color-light-gray-border: #D3D3D3FF;
+    --color-dark-gray: #999;
     --color-light-black: #333;
+    --border-radius: 10px;
 }
 
 a.logo {
@@ -146,14 +148,15 @@ dialog::backdrop {
     backdrop-filter: blur(10px);
 }
 
-input[type="text"], input[type="file"], input[type="date"] {
-    border-radius: .5rem;
+input[type="text"], input[type="search"], input[type="file"], input[type="date"] {
+    border-radius: var(--border-radius);
     border: 1px solid var(--color-light-gray-border);
     background-color: transparent;
-    height: 32px;
+    height: 39px;
+    padding: 5px;
 }
 
-input#directory-name {
+input#directory-name, .ais-SearchBox-input {
     width: 100%;
 }
 
@@ -168,7 +171,7 @@ input[type="file"]::file-selector-button {
     transition: background-color 200ms;
 }
 
-dialog form div h1 {
+dialog div h1 {
     color: var(--color-light-black);
     text-align: center;
     font-weight: bolder;
@@ -257,7 +260,7 @@ label {
     gap: 0.2rem;
     cursor: pointer;
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: var(--border-radius);
     border: 1px solid var(--color-light-blue);
     font-weight: bold;
     font-size: 14px;
@@ -275,7 +278,7 @@ label {
 .btn, .button, button.dt-button[tabindex='0'], button.uppy-DashboardContent-back, .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload, button.uppy-DashboardContent-addMore {
     text-decoration: none;
     padding: .5rem 1.5rem;
-    border-radius: 10px;
+    border-radius: var(--border-radius);
     border: 1px solid transparent;
     font-weight: bold;
     font-size: 14px;
@@ -294,7 +297,7 @@ button.dt-button[tabindex='0'] {
     background: transparent;
     text-decoration: none;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: var(--border-radius);
     border: 1px solid transparent;
     margin: 0 10px 0 10px;
     cursor: pointer;
@@ -548,7 +551,7 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
 
 .rjsf-field-array fieldset {
     border: 1px solid var(--color-light-gray-border);
-    border-radius: .5rem;
+    border-radius: var(--border-radius);
 }
 
 .rjsf-field-array legend {
@@ -593,4 +596,182 @@ button.icon {
 
 .icon-broom {
     background-image: url("../webjars/mdi__svg/7.4.47/svg/broom.svg");
+}
+
+/* ==== SEARCH ==== */
+/* TODO move to separate file */
+
+.wrapper {
+    margin-top: 100px;
+    top: unset;
+    width: unset;
+    left: unset !important;;
+    transform: unset !important;
+    position: unset !important;
+    margin-left: unset !important;
+    margin-right: unset !important;
+    padding: unset !important;
+}
+
+#search-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#search-dialog-flex {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    overflow: hidden;
+}
+
+#search-dialog-flex > div:first-child, #search-dialog-flex > div:last-child {
+    flex-shrink: 0;
+}
+
+.search-bar {
+    padding: 16px 16px 12px;
+    margin-bottom: 16px;
+}
+
+.search-body {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.facets {
+    width: 160px;
+    flex-shrink: 0;
+    padding: 0 14px 12px;
+}
+
+.facet-group {
+    margin-bottom: 16px;
+}
+
+.facet-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-dark-gray);
+    margin-bottom: 10px;
+}
+
+.ais-RefinementList-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-light-black);
+    margin-bottom: 7px;
+    cursor: pointer;
+}
+
+.ais-RefinementList-checkbox {
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--color-light-blue);
+}
+
+.search-results {
+    flex: 1;
+    min-width: 0;
+    padding: 0 14px 12px;
+}
+
+.ais-InfiniteHits-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: solid var(--color-light-gray-border) 1px;
+    padding-left: 16px;
+}
+
+.result-item {
+    padding: 10px 12px;
+    border-radius: var(--border-radius);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    text-decoration: none;
+    display: block;
+}
+
+.result-item:hover {
+    background: var(--color-light-gray-hover);
+    border-color: var(--color-light-gray-border);
+}
+
+.result-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-light-black);
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.result-snippet {
+    font-size: 12px;
+    color: var(--color-dark-gray);
+    line-height: 1.5;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+.more-wrap {
+    padding: 12px 0 4px;
+    display: flex;
+    justify-content: center;
+}
+
+/* TODO add button */
+.ais-SearchBox-submit {
+    display: none;
+}
+
+.ais-SearchBox-reset {
+    display: none;
+}
+
+.ais-RefinementList-count {
+    display: none;
+}
+
+.ais-RefinementList-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ais-InfiniteHits-loadMore {
+    color: var(--color-light-black);
+    background-color: var(--color-light-blue);
+    text-decoration: none;
+    padding: .5rem 1.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid transparent;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.ais-InfiniteHits-loadMore:not([disabled]):hover {
+    color: var(--color-light-black);
+    background-color: var(--color-light-blue-hover);
+}
+
+#search-wrapper {
+    max-width: 1000px;
+    width: 90vw;
 }

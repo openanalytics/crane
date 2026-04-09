@@ -23,16 +23,18 @@ package eu.openanalytics.crane.indexer.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
-import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.model.TaskInfo;
+import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.indexer.IIndexStore;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnBean(Client.class)
 public class MeilisearchIndexStore implements IIndexStore {
 
     private final Client client;
@@ -40,11 +42,9 @@ public class MeilisearchIndexStore implements IIndexStore {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public MeilisearchIndexStore() {
-        client = new Client(new Config(
-            "http://172.17.0.2:7700" // TODO
-        ));
-        index = client.index("files");
+    public MeilisearchIndexStore(SearchConfig searchConfig, Client client) {
+        this.client = client;
+        index = client.index(searchConfig.getIndexUid());
         index.updateFilterableAttributesSettings(new String[]{"extractedMetadata"});
     }
 

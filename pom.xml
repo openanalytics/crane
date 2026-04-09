@@ -43,6 +43,7 @@
         <uppy.version>5.1.1</uppy.version>
         <matomo.version>3.4.0</matomo.version>
         <mdi-svg.version>7.4.47</mdi-svg.version>
+        <meilisearch-instant-search.version>0.30.0</meilisearch-instant-search.version>
         <!-- Test dependency versions -->
         <testcontainers-keycloak.version>3.9.1</testcontainers-keycloak.version>
         <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
@@ -224,6 +225,12 @@
             <artifactId>mdi__svg</artifactId>
             <version>${mdi-svg.version}</version>
         </dependency>
+<!--         TODO -->
+<!--        <dependency>-->
+<!--            <groupId>org.webjars.npm</groupId>-->
+<!--            <artifactId>meilisearch__instant-meilisearch</artifactId>-->
+<!--            <version>${meilisearch-instant-search.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>

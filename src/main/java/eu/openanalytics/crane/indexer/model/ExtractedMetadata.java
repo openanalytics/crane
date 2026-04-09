@@ -25,4 +25,5 @@ public record ExtractedMetadata(
     String mediaType,
     String humanReadableMediaType) {
     // TODO add more fields
+    // TODO specify which can be returned
 }

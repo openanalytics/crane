@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane.indexer.impl;
 
+import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.indexer.ITextExtractor;
 import eu.openanalytics.crane.indexer.model.Chunk;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
@@ -38,6 +39,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.xml.sax.ContentHandler;
@@ -49,6 +51,7 @@ import java.util.List;
 
 
 @Service
+@ConditionalOnBean(Client.class)
 public class TikaTextExtractor implements ITextExtractor {
 
     private static final List<MediaType> SUPPORTED_MEDIA_TYPES = List.of(MediaType.APPLICATION_PDF, MediaType.TEXT_HTML);
@@ -69,7 +72,7 @@ public class TikaTextExtractor implements ITextExtractor {
         if (!SUPPORTED_MEDIA_TYPES.contains(cranePath.getMediaType())) {
             return null;
         }
-        logger.debug("Extracting text and metadata from webUri: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
+        logger.debug("Extracting text and metadata from pathRelativeToRepository: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
 
         Pair<String, Metadata> parseResult = parseUsingTika(cranePath);
         String xhtml = parseResult.getLeft();
@@ -80,11 +83,11 @@ public class TikaTextExtractor implements ITextExtractor {
         ExtractedDocument extractedDocument = new ExtractedDocument(
             cranePath.getId(),
             cranePath.getRepository().getName(),
-            cranePath.getWebUri(),
+            cranePath.getPathRelativeToRepository(),
             chunks,
             extractedMetadata
         );
-        logger.debug("Extracted text and metadata from webUri: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
+        logger.debug("Extracted text and metadata from pathRelativeToRepository: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
         return extractedDocument;
     }
 

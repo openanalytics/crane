@@ -26,6 +26,7 @@ Crane.ui = {
         createDirectoryForm: document.getElementById("create-directory-form"),
         createDirectoryButton: document.getElementById("create-directory"),
         editMetadataDialog: document.getElementById("edit-metadata-dialog"),
+        searchDialog: document.getElementById("search-dialog"),
         table: $("table"),
         datatable: null,
         uppy: null,
@@ -139,6 +140,7 @@ Crane.ui = {
         });
         document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.closeEditMetadataDialog);
         document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
+        document.getElementById("cancel-search").addEventListener("click", Crane.ui.closeSearchDialog);
     },
 
     initTable() {
@@ -180,6 +182,12 @@ Crane.ui = {
                     },
                 );
             }
+            buttons.push(
+                {
+                    action: () => Crane.ui.showSearchDialog(),
+                    text: Crane.internationalization.t("index.search.button")
+                },
+            );
             dataTableOptions["layout"] = {topStart: {buttons: buttons}}
         }
         Crane.ui.elements.table.DataTable(dataTableOptions);
@@ -378,7 +386,16 @@ Crane.ui = {
 
     saveEditMetadataDialog() {
         document.querySelector("button[type=submit]").click();
-    }
+    },
+
+    async showSearchDialog() {
+        Crane.ui.elements.searchDialog.showModal()
+        await Crane.search.init();
+    },
+
+    closeSearchDialog() {
+        Crane.ui.elements.searchDialog.close();
+    },
 
 }
 

@@ -20,14 +20,15 @@
  */
 package eu.openanalytics.crane.indexer;
 
+import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
-import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -36,9 +37,8 @@ import java.nio.file.FileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 @Service
+@ConditionalOnBean(Client.class)
 public class IndexerService {
-
-    // TODO use executor (limit number of threads)
 
     private final ITextExtractor textExtractor;
     private final IIndexStore indexStore;
@@ -48,9 +48,9 @@ public class IndexerService {
         this.textExtractor = textExtractor;
         this.indexStore = indexStore;
 
-        for (Repository repository : craneConfig.getRepositories()) {
-            indexDirectory(repository.getPath(""));
-        }
+//        for (Repository repository : craneConfig.getRepositories()) {
+//            indexDirectory(repository.getPath(""));
+//        }
     }
 
     public void indexSingleFile(CranePath cranePath) throws Exception {

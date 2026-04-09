@@ -386,7 +386,7 @@ public class CranePath {
     public String toString() {
         return "CranePath{" +
             "storagePath=" + getStoragePath() +
-            ", webUri='" + getWebUri() + '\'' +
+            ", pathRelativeToRepository='" + getWebUri() + '\'' +
             '}';
     }
 
