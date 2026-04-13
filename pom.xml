@@ -176,8 +176,8 @@
             <version>${uppy.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.webjars.npm</groupId>
-                    <artifactId>uppy__tus</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
