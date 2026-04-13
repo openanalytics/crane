@@ -23,6 +23,8 @@ package eu.openanalytics.crane.search.service;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.model.SearchResult;
 import com.meilisearch.sdk.model.Searchable;
+import eu.openanalytics.crane.config.SearchConfig;
+import eu.openanalytics.crane.search.exception.InternalSearchException;
 import eu.openanalytics.crane.search.model.dto.SearchChunk;
 import eu.openanalytics.crane.search.model.dto.SearchHit;
 import eu.openanalytics.crane.search.model.dto.SearchResultDto;
@@ -38,20 +40,26 @@ import java.util.Map;
 @ConditionalOnBean(Client.class)
 public class SearchResultConvertorService {
 
+    private final SearchConfig searchConfig;
+
+    public SearchResultConvertorService(SearchConfig searchConfig) {
+        this.searchConfig = searchConfig;
+    }
+
     @SuppressWarnings("unchecked")
     public SearchResultDto convert(Searchable result) {
         if (!(result instanceof SearchResult searchResult)) {
-            throw new IllegalStateException("TODO"); // todo proper exception
+            throw new InternalSearchException("MeiliSearch result is not of type SearchResult");
         }
         SearchResultDto.SearchResultDtoBuilder builder = SearchResultDto.builder();
 
         if (!(searchResult.getFacetDistribution() instanceof Map)) {
-            throw new IllegalStateException("TODO"); // todo proper exception
+            throw new InternalSearchException("No FacetDistribution in search result");
         }
         builder.facetDistribution(convertFacetDistribution((Map<String, Map<String, Object>>) searchResult.getFacetDistribution()));
         builder.hits(convertHits(searchResult.getHits()));
 
-        builder.indexUid("files"); // TODO
+        builder.indexUid(searchConfig.getIndexUid());
         builder.query(searchResult.getQuery());
         builder.processingTimeMs(searchResult.getProcessingTimeMs());
         builder.limit(searchResult.getLimit());
@@ -72,35 +80,21 @@ public class SearchResultConvertorService {
     @SuppressWarnings("unchecked")
     private SearchHit convertHit(Map<String, Object> hit) {
         SearchHit.SearchHitBuilder builder = SearchHit.builder();
-        // TODO error + cleanup
-        if (hit.containsKey("id")) {
-            builder.id(hit.get("id").toString());
+        builder.id(getRequiredKeyAsString("id", hit));
+        builder.pathRelativeToRepository(getRequiredKeyAsString("pathRelativeToRepository", hit));
+        builder.repositoryName(getRequiredKeyAsString("repositoryName", hit));
+        builder.chunks(convertChunks(getRequiredKey("chunks", hit, List.class)));
+        Map<String, Object> formatted = getOptionalKey("_formatted", hit, Map.class);
+        if (formatted != null) {
+            builder._formatted(convertHit(formatted));
         }
-        if (hit.containsKey("pathRelativeToRepository")) {
-            builder.pathRelativeToRepository(hit.get("pathRelativeToRepository").toString());
-        }
-        if (hit.containsKey("repositoryName")) {
-            builder.repositoryName(hit.get("repositoryName").toString());
-        }
-        if (hit.containsKey("chunks") && hit.get("chunks") instanceof List<?> chunks) {
-            builder.chunks(convertChunks(chunks));
-        }
-        if (hit.containsKey("_formatted")) {
-            if (hit.get("_formatted") instanceof Map<?, ?>) {
-                builder._formatted(convertHit((Map<String, Object>) hit.get("_formatted")));
-            }
-        }
-        if (hit.containsKey("extractedMetadata") && hit.get("extractedMetadata") instanceof Map<?,?> extractedMetadata) {
-            // TODO filter
-            builder.extractedMetadata((Map<String, String>) extractedMetadata);
-        }
-
+        builder.extractedMetadata(getRequiredKey("extractedMetadata", hit, Map.class));
         return builder.build();
     }
 
     private List<SearchChunk> convertChunks(List<?> chunks) {
         List<SearchChunk> result = new ArrayList<>();
-        for (Object chunk: chunks) {
+        for (Object chunk : chunks) {
             if (chunk instanceof Map<?, ?> map) {
                 if (map.containsKey("type") && map.containsKey("text")) {
                     result.add(new SearchChunk(map.get("type").toString(), map.get("text").toString()));
@@ -118,6 +112,37 @@ public class SearchResultConvertorService {
             }
         }
         return result;
+    }
+
+    private String getRequiredKeyAsString(String key, Map<String, Object> hit) {
+        if (!hit.containsKey(key)) {
+            throw new InternalSearchException(String.format("Missing key %s from hit", key));
+        }
+        Object value = hit.get(key);
+        if (!(value instanceof String str)) {
+            throw new InternalSearchException(String.format("Key %s from hit is not a string", key));
+        }
+        return str;
+    }
+
+    private <T> T getRequiredKey(String key, Map<String, Object> hit, Class<T> clazz) {
+        if (!hit.containsKey(key)) {
+            throw new InternalSearchException(String.format("Missing key %s from hit", key));
+        }
+        if (!clazz.isInstance(hit.get(key))) {
+            throw new InternalSearchException(String.format("Key %s from hit isn't the expected type", key));
+        }
+        return clazz.cast(hit.get(key));
+    }
+
+    private <T> T getOptionalKey(String key, Map<String, Object> hit, Class<T> clazz) {
+        if (!hit.containsKey(key)) {
+            return null;
+        }
+        if (!clazz.isInstance(hit.get(key))) {
+            throw new InternalSearchException(String.format("Key %s from hit isn't the expected type", key));
+        }
+        return clazz.cast(hit.get(key));
     }
 
 }
