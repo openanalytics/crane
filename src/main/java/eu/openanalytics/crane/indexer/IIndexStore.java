@@ -20,13 +20,19 @@
  */
 package eu.openanalytics.crane.indexer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import eu.openanalytics.crane.indexer.model.DocumentId;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
+import eu.openanalytics.crane.model.runtime.CranePath;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 public interface IIndexStore {
 
-    public void addOrUpdateSingleDocument(ExtractedDocument extractedDocument) throws JsonProcessingException;
+    public void addOrUpdateSingleDocument(ExtractedDocument extractedDocument) ;
 
-    // TODO batch addOrUpdate
+    public Stream<DocumentId> listAllSubPaths(CranePath path);
+
+    public void deleteByid(List<String> toDelete);
 
 }

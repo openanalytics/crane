@@ -59,7 +59,7 @@ public class TikaTextExtractor implements ITextExtractor {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public ExtractedDocument extract(CranePath cranePath) throws TikaException, IOException, SAXException {
+    public ExtractedDocument extract(CranePath cranePath) {
         if (cranePath.isDirectory()) {
             throw new IllegalArgumentException("Path is a directory, can only extract text from files!");
         }
@@ -74,21 +74,25 @@ public class TikaTextExtractor implements ITextExtractor {
         }
         logger.debug("Extracting text and metadata from pathRelativeToRepository: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
 
-        Pair<String, Metadata> parseResult = parseUsingTika(cranePath);
-        String xhtml = parseResult.getLeft();
-        Metadata metadata = parseResult.getRight();
-        ExtractedMetadata extractedMetadata = extractMetadata(metadata, cranePath);
-        List<Chunk> chunks = extractUsingJsoup(xhtml);
+        try {
+            Pair<String, Metadata> parseResult = parseUsingTika(cranePath);
+            String xhtml = parseResult.getLeft();
+            Metadata metadata = parseResult.getRight();
+            ExtractedMetadata extractedMetadata = extractMetadata(metadata, cranePath);
+            List<Chunk> chunks = extractUsingJsoup(xhtml);
 
-        ExtractedDocument extractedDocument = new ExtractedDocument(
-            cranePath.getId(),
-            cranePath.getRepository().getName(),
-            cranePath.getPathRelativeToRepository(),
-            chunks,
-            extractedMetadata
-        );
-        logger.debug("Extracted text and metadata from pathRelativeToRepository: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
-        return extractedDocument;
+            ExtractedDocument extractedDocument = new ExtractedDocument(
+                cranePath.getId(),
+                cranePath.getRepository().getName(),
+                cranePath.getPathRelativeToRepository(),
+                chunks,
+                extractedMetadata
+            );
+            logger.debug("Extracted text and metadata from pathRelativeToRepository: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
+            return extractedDocument;
+        } catch (IOException | TikaException | SAXException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Pair<String, Metadata> parseUsingTika(CranePath cranePath) throws IOException, TikaException, SAXException {

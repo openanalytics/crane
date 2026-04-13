@@ -22,8 +22,12 @@ package eu.openanalytics.crane.indexer;
 
 import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.config.IndexerConfig;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
+import eu.openanalytics.crane.util.ExecutorServiceFactory;
+import jakarta.annotation.PostConstruct;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -35,6 +39,12 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @Service
 @ConditionalOnBean(Client.class)
@@ -43,17 +53,34 @@ public class IndexerService {
     private final ITextExtractor textExtractor;
     private final IIndexStore indexStore;
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ExecutorService repoExecutorService;
+    private final ExecutorService fileExecutorService;
+    private final IndexerConfig indexerConfig;
+    private final CraneConfig craneConfig;
 
-    public IndexerService(ITextExtractor textExtractor, IIndexStore indexStore, CraneConfig craneConfig) throws Exception {
+    public IndexerService(ITextExtractor textExtractor,
+                          IIndexStore indexStore,
+                          CraneConfig craneConfig,
+                          IndexerConfig indexerConfig) {
         this.textExtractor = textExtractor;
         this.indexStore = indexStore;
-
-//        for (Repository repository : craneConfig.getRepositories()) {
-//            indexDirectory(repository.getPath(""));
-//        }
+        this.indexerConfig = indexerConfig;
+        this.craneConfig = craneConfig;
+        this.repoExecutorService = ExecutorServiceFactory.createWithLinkedBlockingQueue("indexer-repo", indexerConfig.getWorkers(), indexerConfig.getWorkers());
+        this.fileExecutorService = ExecutorServiceFactory.createWithLinkedBlockingQueue("indexer-file", indexerConfig.getWorkers(), indexerConfig.getWorkers());
     }
 
-    public void indexSingleFile(CranePath cranePath) throws Exception {
+    @PostConstruct
+    public void init() {
+        if (indexerConfig.getIndexOnStartup()) {
+            Instant start = Instant.now();
+            indexAllRepositories().join();
+            Instant finish = Instant.now();
+            logger.info("All repositories indexed in {} ", Duration.between(start, finish));
+        }
+    }
+
+    public void indexSingleFile(CranePath cranePath) {
         ExtractedDocument extract = textExtractor.extract(cranePath);
         if (extract == null) {
             logger.debug("Skipping file {} for indexing", cranePath.getWebUri());
@@ -66,38 +93,81 @@ public class IndexerService {
 
     }
 
-    public void indexDirectory(CranePath cranePath) throws IOException {
-        // TODO remove index documents for deleted files
-        cranePath.walkFileTree(new FileVisitor<>() {
-            @Override
-            public @NotNull FileVisitResult preVisitDirectory(CranePath dir, @NotNull BasicFileAttributes attrs) throws IOException {
-                if (dir.isMetadataDirectory()) {
-                    return FileVisitResult.SKIP_SUBTREE;
-                }
-                return FileVisitResult.CONTINUE;
-            }
+    public CompletableFuture<Void> indexAllRepositories() {
+        return CompletableFuture.allOf(
+            craneConfig.getRepositories()
+                .stream()
+                .map (this::indexRepository)
+                .toArray(CompletableFuture[]::new)
+        );
+    }
 
-            @Override
-            public @NotNull FileVisitResult visitFile(CranePath file, @NotNull BasicFileAttributes attrs) throws IOException {
-                try {
-                    indexSingleFile(file);
-                } catch (Exception e) {
-                    // TODO
-                    throw new RuntimeException(e);
-                }
-                return FileVisitResult.CONTINUE;
-            }
+    public CompletableFuture<Void> indexRepository(Repository repository) {
+        return indexDirectory(repository.getPath(""));
+    }
 
-            @Override
-            public @NotNull FileVisitResult visitFileFailed(CranePath file, @NotNull IOException exc) throws IOException {
-                return FileVisitResult.CONTINUE;
-            }
+    public CompletableFuture<Void> indexDirectory(CranePath cranePath)  {
+        // perform walk-tree in separate executor from file handling, otherwise they could lock each other
+        return CompletableFuture.runAsync(() -> {
+            try {
+                logger.info("Indexing Path '{}' indexed", cranePath.getWebUri());
+                List<CompletableFuture<Void>> futures = new ArrayList<>();
+                cranePath.walkFileTree(new FileVisitor<>() {
+                    @Override
+                    public @NotNull FileVisitResult preVisitDirectory(CranePath dir, @NotNull BasicFileAttributes attrs) {
+                        if (dir.isMetadataDirectory()) {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
 
-            @Override
-            public @NotNull FileVisitResult postVisitDirectory(CranePath dir, @Nullable IOException exc) throws IOException {
-                return FileVisitResult.CONTINUE;
+                    @Override
+                    public @NotNull FileVisitResult visitFile(CranePath file, @NotNull BasicFileAttributes attrs) {
+                        try {
+                            futures.add(CompletableFuture.runAsync(() -> indexSingleFile(file), fileExecutorService));
+                        } catch (Exception e) {
+                            logger.warn("Exception during indexing of file '{}'", file.getWebUri(), e);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public @NotNull FileVisitResult visitFileFailed(CranePath file, @NotNull IOException e) {
+                        logger.warn("Visit failed during indexing of file '{}'", file.getWebUri(), e);
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public @NotNull FileVisitResult postVisitDirectory(CranePath dir, @Nullable IOException exc) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+                logger.info("Path '{}' indexed, starting to delete missing files from index", cranePath.getWebUri());
+                deleteMissingFilesForDirectory(cranePath);
+                logger.info("Deleted missing files from '{}' (if any)", cranePath.getWebUri());
+            } catch (IOException e) {
+                logger.warn("Exception during indexing of directory '{}'", cranePath.getWebUri(), e);
+                throw new RuntimeException(e);
+            }
+        }, repoExecutorService);
+    }
+
+    public void deleteMissingFilesForDirectory(CranePath cranePath) {
+        List<String> toDelete = new ArrayList<>();
+
+        indexStore.listAllSubPaths(cranePath).forEach((documentId) -> {
+            CranePath path = new CranePath(cranePath.getRepository(), documentId.pathRelativeToRepository());
+            if (!path.isExists()) {
+                toDelete.add(documentId.id());
             }
         });
+
+        if (!toDelete.isEmpty()) {
+            logger.info("Found {} missing documents in '{}', deleting from index", toDelete.size(), cranePath.getWebUri());
+            indexStore.deleteByid(toDelete);
+        }
     }
 
 }

@@ -25,6 +25,6 @@ import eu.openanalytics.crane.model.runtime.CranePath;
 
 public interface ITextExtractor {
 
-    public ExtractedDocument extract(CranePath cranePath) throws Exception;
+    public ExtractedDocument extract(CranePath cranePath) ;
 
 }
