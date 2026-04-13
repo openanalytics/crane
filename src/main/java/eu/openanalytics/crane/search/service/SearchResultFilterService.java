@@ -24,6 +24,7 @@ import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
+import eu.openanalytics.crane.search.exception.InternalSearchException;
 import eu.openanalytics.crane.search.model.dto.SearchHit;
 import eu.openanalytics.crane.search.model.dto.SearchResultDto;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
@@ -38,30 +39,27 @@ import java.util.Map;
 public class SearchResultFilterService {
 
     private final PathReadAccessControlService pathReadAccessControlService;
-    private final CraneConfig craneConfig;
 
     public SearchResultFilterService(PathReadAccessControlService pathReadAccessControlService, CraneConfig craneConfig) {
         this.pathReadAccessControlService = pathReadAccessControlService;
-        this.craneConfig = craneConfig;
     }
 
-    public SearchResultDto filter(SearchResultDto searchResult) {
+    public SearchResultDto filter(Repository repository, SearchResultDto searchResult) {
         return searchResult.toBuilder()
-            .hits(searchResult.hits().stream().map(this::filterHit).toList())
+            .hits(searchResult.hits().stream().map(hit -> filterHit(repository, hit)).toList())
             .build();
     }
 
-    private SearchHit filterHit(SearchHit hit) {
-        Repository repository = craneConfig.getRepository(hit.repositoryName());
-        if (repository == null) {
-            // todo log warning
-            return  new SearchHit("dummy", "", List.of(), "", Map.of(), null);
+    private SearchHit filterHit(Repository repository, SearchHit hit) {
+        if (!hit.repositoryName().equals(repository.getName())) {
+            throw new InternalSearchException("Invalid repositoryName in response");
         }
+
         CranePath cranePath = new CranePath(repository, hit.pathRelativeToRepository());
         if (pathReadAccessControlService.canAccess(cranePath)) {
             return hit;
         }
-        return  new SearchHit("dummy", "", List.of(), "", Map.of(), null);
+        return new SearchHit("dummy", "", List.of(), "", Map.of(), null);
     }
 
 }

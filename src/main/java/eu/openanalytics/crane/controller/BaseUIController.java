@@ -73,6 +73,7 @@ public abstract class BaseUIController {
         map.put("contextPath", contextPathHelper.withEndingSlash());
         map.put("resourcePrefix", "/__assets/" + identifierService.instanceId);
         map.put("instanceId", identifierService.instanceId);
+        map.put("repository", "");
         if (authenticated) {
             map.put("username", userService.getUser().getName());
         }

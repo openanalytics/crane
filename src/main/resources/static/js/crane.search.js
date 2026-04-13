@@ -23,7 +23,7 @@ Crane.search = {
 
     async init() {
         const apiInfo = await Crane.api._getResponseJson(await fetch(Crane.api.buildURL('__search/api-info')));
-        const searchEndpoint = Crane.api.buildURL("__search");
+        const searchEndpoint = Crane.api.buildURL("__search/" + Crane.api.repository);
         const {searchClient} = instantMeiliSearch(
             searchEndpoint.toString(),
             "",

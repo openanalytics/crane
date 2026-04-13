@@ -46,16 +46,16 @@ public class SearchQueryValidatorService {
             validateAttributesToHighlight(searchQuery.attributesToHighlight());
         }
         if (searchQuery.highlightPreTag() != null && !searchQuery.highlightPreTag().equals("__ais-highlight__")) {
-            throw new InvalidSearchQueryException();
+            throw new InvalidSearchQueryException("Invalid highlightPreTag");
         }
         if (searchQuery.highlightPostTag() != null && !searchQuery.highlightPostTag().equals("__/ais-highlight__")) {
-            throw new InvalidSearchQueryException();
+            throw new InvalidSearchQueryException("Invalid highlightPostTag");
         }
         if (searchQuery.limit() != null && (searchQuery.limit() < 0 || searchQuery.limit() > 100)) {
-            throw new InvalidSearchQueryException();
+            throw new InvalidSearchQueryException("Invalid limit ");
         }
         if (searchQuery.offset() != null && searchQuery.offset() < 0) {
-            throw new InvalidSearchQueryException();
+            throw new InvalidSearchQueryException("Invalid offset");
         }
         return searchQuery;
     }
@@ -63,7 +63,7 @@ public class SearchQueryValidatorService {
     private void validateFacets(List<String> facets) {
         for (String facet : facets) {
             if (!ALLOWED_FACETS.contains(facet)) {
-                throw new InvalidSearchQueryException();
+                throw new InvalidSearchQueryException(String.format("Invalid facet '%s'", facet));
             }
         }
     }
@@ -71,16 +71,19 @@ public class SearchQueryValidatorService {
     private void validateFilter(List<List<String>> filters) {
         for (List<String> filter : filters) {
             for (String field : filter) {
+                if (field.contains("repositoryName")) {
+                    throw new InvalidSearchQueryException("Invalid filter");
+                }
                 if (StringUtils.countMatches(field, '=') != 1) {
-                    throw new InvalidSearchQueryException();
+                    throw new InvalidSearchQueryException("Invalid filter");
                 }
                 String[] split = field.split("=");
                 if (!split[0].startsWith("\"") || !split[0].endsWith("\"")) {
-                    throw new InvalidSearchQueryException();
+                    throw new InvalidSearchQueryException("Invalid filter");
                 }
                 String fieldName = split[0].substring(1, split[0].length() - 1);
                 if (!ALLOWED_FACETS.contains(fieldName)) {
-                    throw new InvalidSearchQueryException();
+                    throw new InvalidSearchQueryException("Invalid filter");
                 }
             }
         }
@@ -88,7 +91,7 @@ public class SearchQueryValidatorService {
 
     private void validateAttributesToHighlight(List<String> attributesToHighlight) {
         if (!attributesToHighlight.equals(List.of("*"))) {
-            throw new InvalidSearchQueryException();
+            throw new InvalidSearchQueryException("Invalid attributesToHighlight");
         }
     }
 

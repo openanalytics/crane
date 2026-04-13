@@ -22,8 +22,12 @@ package eu.openanalytics.crane.search.controller;
 
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
+import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.config.SearchConfig;
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
+import eu.openanalytics.crane.search.exception.InternalSearchException;
+import eu.openanalytics.crane.search.exception.InvalidSearchQueryException;
 import eu.openanalytics.crane.search.model.dto.SearchApiInfoDTo;
 import eu.openanalytics.crane.search.model.dto.SearchQueriesDto;
 import eu.openanalytics.crane.search.model.dto.SearchResultDto;
@@ -34,7 +38,10 @@ import eu.openanalytics.crane.search.service.SearchResultFilterService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -53,13 +60,16 @@ public class SearchController {
     private final SearchResultConvertorService searchResultConvertorService;
     private final SearchResultFilterService searchResultFilterService;
     private final SearchConfig searchConfig;
+    private final CraneConfig craneConfig;
 
     public SearchController(Client client,
                             SearchConfig searchConfig,
+                            CraneConfig craneConfig,
                             SearchQueryValidatorService searchQueryValidatorService,
                             SearchQueryConvertorService searchQueryConvertorService,
                             SearchResultConvertorService searchResultConvertorService,
                             SearchResultFilterService searchResultFilterService) {
+        this.craneConfig = craneConfig;
         this.searchQueryValidatorService = searchQueryValidatorService;
         this.searchQueryConvertorService = searchQueryConvertorService;
         this.searchResultConvertorService = searchResultConvertorService;
@@ -68,20 +78,34 @@ public class SearchController {
         index = client.index(searchConfig.getIndexUid());
     }
 
-    // TODO auth
     @ResponseBody
-    @PostMapping(value = "/__search/multi-search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, List<SearchResultDto>>> search(@RequestBody SearchQueriesDto queries) {
-        List<SearchResultDto> results = queries.queries()
-            .stream()
-            .map(searchQueryValidatorService::validate)
-            .map(searchQueryConvertorService::convert)
-            .map(index::search)
-            .map(searchResultConvertorService::convert)
-            .map(searchResultFilterService::filter)
-            .toList();
+    @PreAuthorize("@readAccessControlService.canAccess(#r, '')")
+    @PostMapping(value = "/__search/{repository}/multi-search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> search(
+        @RequestBody SearchQueriesDto queries,
+        @P("r") @PathVariable(name = "repository") String stringRepository) {
 
-        return ResponseEntity.ok(Map.of("results", results));
+        try {
+            Repository repository = craneConfig.getRepository(stringRepository);
+            if (repository == null) {
+                throw new InternalSearchException("Invalid repository");
+            }
+
+            List<SearchResultDto> results = queries.queries()
+                .stream()
+                .map(searchQueryValidatorService::validate)
+                .map(searchQuery -> searchQueryConvertorService.convert(repository, searchQuery))
+                .map(index::search)
+                .map(searchResultConvertorService::convert)
+                .map(searchResult -> searchResultFilterService.filter(repository, searchResult))
+                .toList();
+
+            return ResponseEntity.ok(Map.of("results", results));
+        } catch (InvalidSearchQueryException e) {
+            return ApiResponse.fail("Invalid search query: " + e.getMessage());
+        } catch (InternalSearchException e) {
+            return ApiResponse.fail("Internal search error: " + e.getMessage());
+        }
     }
 
     @GetMapping(value = "/__search/api-info")

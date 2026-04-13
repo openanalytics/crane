@@ -24,6 +24,7 @@ Crane.api = {
     csrfHeader: document.querySelector("meta[name='_csrf_header']")?.content,
     contextPath: document.querySelector("meta[name='_contextPath']")?.content,
     instanceId: document.querySelector("meta[name='_instanceId']")?.content,
+    repository: document.querySelector("meta[name='_repository']")?.content,
 
     buildURL(location) {
         const baseURL = new URL(Crane.api.contextPath, window.location.origin);

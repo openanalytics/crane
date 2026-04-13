@@ -22,6 +22,8 @@ package eu.openanalytics.crane.search.service;
 
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.SearchRequest;
+import eu.openanalytics.crane.config.SearchConfig;
+import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.search.model.dto.SearchQueryDto;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
@@ -32,7 +34,13 @@ import java.util.List;
 @ConditionalOnBean(Client.class)
 public class SearchQueryConvertorService {
 
-    public SearchRequest convert(SearchQueryDto searchQuery) {
+    private final SearchConfig searchConfig;
+
+    public SearchQueryConvertorService(SearchConfig searchConfig) {
+        this.searchConfig = searchConfig;
+    }
+
+    public SearchRequest convert(Repository repository, SearchQueryDto searchQuery) {
         SearchRequest.SearchRequestBuilder searchRequestBuilder = SearchRequest.builder();
         if (searchQuery.q() != null) {
             searchRequestBuilder.q(searchQuery.q());
@@ -43,9 +51,8 @@ public class SearchQueryConvertorService {
         if (searchQuery.facets() != null) {
             searchRequestBuilder.facets(toArray(searchQuery.facets()));
         }
-        if (searchQuery.filter() != null) {
-            searchRequestBuilder.filterArray(toNestedArray(searchQuery.filter()));
-        }
+        List<List<String>> filter = addRepositoryFilter(repository, searchQuery.filter());
+        searchRequestBuilder.filterArray(toNestedArray(filter));
         searchRequestBuilder.limit(searchQuery.limit());
         searchRequestBuilder.offset(searchQuery.offset());
         if (searchQuery.highlightPostTag() != null) {
@@ -55,6 +62,15 @@ public class SearchQueryConvertorService {
             searchRequestBuilder.highlightPreTag(searchQuery.highlightPreTag());
         }
         return searchRequestBuilder.build();
+    }
+
+    private List<List<String>> addRepositoryFilter(Repository repository, List<List<String>> filter) {
+        List<String> repositoryFilter = List.of("repositoryName=" + repository.getName());
+        if (filter != null) {
+            filter.add(repositoryFilter);
+            return filter;
+        }
+        return List.of(repositoryFilter);
     }
 
     private String[][] toNestedArray(List<List<String>> list) {

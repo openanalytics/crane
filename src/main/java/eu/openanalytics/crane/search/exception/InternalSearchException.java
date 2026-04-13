@@ -20,6 +20,11 @@
  */
 package eu.openanalytics.crane.search.exception;
 
+/**
+ * Exception for when an internal error happens.
+ * Might be caused by strict validation of Meilisearch responses.
+ * Message is sent to client, should not contain too much or sensitive details.
+ */
 public class InternalSearchException extends RuntimeException{
 
     public InternalSearchException(String message) {

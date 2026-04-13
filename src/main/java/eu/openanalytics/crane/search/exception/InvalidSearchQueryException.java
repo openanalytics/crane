@@ -20,5 +20,14 @@
  */
 package eu.openanalytics.crane.search.exception;
 
+/**
+ * Exception for when the query is invalid.
+ * Message is sent to client, should not contain too much or sensitive details.
+ */
 public class InvalidSearchQueryException extends RuntimeException{
+
+    public InvalidSearchQueryException(String message) {
+        super(message);
+    }
+
 }
