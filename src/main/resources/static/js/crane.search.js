@@ -28,7 +28,7 @@ Crane.search = {
             searchEndpoint.toString(),
             "",
             {
-                requestConfig: {
+                requestInit: {
                     headers: {
                         [Crane.api.csrfHeader]: Crane.api.csrfToken,
                     },

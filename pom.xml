@@ -225,12 +225,22 @@
             <artifactId>mdi__svg</artifactId>
             <version>${mdi-svg.version}</version>
         </dependency>
-<!--         TODO -->
-<!--        <dependency>-->
-<!--            <groupId>org.webjars.npm</groupId>-->
-<!--            <artifactId>meilisearch__instant-meilisearch</artifactId>-->
-<!--            <version>${meilisearch-instant-search.version}</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>meilisearch__instant-meilisearch</artifactId>
+            <version>${meilisearch-instant-search.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>instantsearch.js</artifactId>
+            <version>4.93.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
