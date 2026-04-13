@@ -28,6 +28,8 @@ import eu.openanalytics.crane.search.exception.InternalSearchException;
 import eu.openanalytics.crane.search.model.dto.SearchHit;
 import eu.openanalytics.crane.search.model.dto.SearchResultDto;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,7 @@ import java.util.Map;
 public class SearchResultFilterService {
 
     private final PathReadAccessControlService pathReadAccessControlService;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public SearchResultFilterService(PathReadAccessControlService pathReadAccessControlService, CraneConfig craneConfig) {
         this.pathReadAccessControlService = pathReadAccessControlService;
@@ -56,10 +59,14 @@ public class SearchResultFilterService {
         }
 
         CranePath cranePath = new CranePath(repository, hit.pathRelativeToRepository());
-        if (pathReadAccessControlService.canAccess(cranePath)) {
-            return hit;
+        if (!pathReadAccessControlService.canAccess(cranePath)) {
+            return new SearchHit("dummy", "", List.of(), "", Map.of(), null);
         }
-        return new SearchHit("dummy", "", List.of(), "", Map.of(), null);
+        if (!cranePath.isExists()) {
+            logger.warn("Search returned a hit for a file that doesn't exist: {}", cranePath.getWebUri());
+            return new SearchHit("dummy", "", List.of(), "", Map.of(), null);
+        }
+        return hit;
     }
 
 }
