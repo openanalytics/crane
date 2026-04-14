@@ -27,12 +27,12 @@ import eu.openanalytics.crane.util.ExecutorServiceFactory;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -49,10 +49,12 @@ public class DeletionService {
     private final UploadAccessControlService uploadAccessControlService;
     private final UserService userService;
     private final ConcurrentMap<CranePath, StateEntry> state;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public DeletionService(UploadAccessControlService uploadAccessControlService, UserService userService) {
+    public DeletionService(UploadAccessControlService uploadAccessControlService, UserService userService, ApplicationEventPublisher applicationEventPublisher) {
         this.uploadAccessControlService = uploadAccessControlService;
         this.userService = userService;
+        this.applicationEventPublisher = applicationEventPublisher;
         this.state = new ConcurrentHashMap<>();
     }
 
@@ -70,7 +72,7 @@ public class DeletionService {
                 countFiles.getFiles(),
                 countFiles.getDirectories());
 
-            DeleteTask deleteTask = new DeleteTask(this, cranePath, stateEntry);
+            DeleteTask deleteTask = new DeleteTask(this, cranePath, stateEntry, applicationEventPublisher);
             executor.execute(deleteTask::startDeletion);
 
             state.put(cranePath, stateEntry);
@@ -98,10 +100,10 @@ public class DeletionService {
         private final UploadAccessControlService uploadAccessControlService;
 
         @Getter
-        private final List<Path> directories;
+        private final List<CranePath> directories;
 
         @Getter
-        private final List<Path> files;
+        private final List<CranePath> files;
 
         public CountFiles(UploadAccessControlService uploadAccessControlService) {
             this.uploadAccessControlService = uploadAccessControlService;
@@ -120,7 +122,7 @@ public class DeletionService {
         @Override
         public @NotNull FileVisitResult postVisitDirectory(@NotNull CranePath dir, @Nullable IOException exc) {
             if (!dir.isExistsInConfig()) {
-                directories.add(dir.getStoragePath());
+                directories.add(dir);
             }
             return FileVisitResult.CONTINUE;
         }
@@ -130,7 +132,7 @@ public class DeletionService {
             if (!uploadAccessControlService.canAccess(file)) {
                 return FileVisitResult.CONTINUE;
             }
-            files.add(file.getStoragePath());
+            files.add(file);
             return FileVisitResult.CONTINUE;
         }
 
@@ -141,7 +143,7 @@ public class DeletionService {
 
     }
 
-    public record StateEntry(String initiator, long totalFiles, AtomicLong deleted, List<Path> files, List<Path> directories) {
+    public record StateEntry(String initiator, long totalFiles, AtomicLong deleted, List<CranePath> files, List<CranePath> directories) {
     }
 
     public record Progress(long total, long deleted) {

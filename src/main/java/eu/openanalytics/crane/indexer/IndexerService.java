@@ -23,6 +23,9 @@ package eu.openanalytics.crane.indexer;
 import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.config.CraneConfig;
 import eu.openanalytics.crane.config.IndexerConfig;
+import eu.openanalytics.crane.event.FileDeletedEvent;
+import eu.openanalytics.crane.event.FileUploadedEvent;
+import eu.openanalytics.crane.event.FilesDeletedEvent;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.runtime.CranePath;
@@ -33,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -89,15 +93,19 @@ public class IndexerService {
         indexStore.addOrUpdateSingleDocument(extract);
     }
 
-    public void removeSingleFile(CranePath cranePath) {
+    public void deleteSingleFile(CranePath cranePath) {
+        indexStore.deleteByid(List.of(cranePath.getId()));
+    }
 
+    public void deleteMultipleFiles(List<CranePath> cranePaths) {
+        indexStore.deleteByid(cranePaths.stream().map(CranePath::getId).toList());
     }
 
     public CompletableFuture<Void> indexAllRepositories() {
         return CompletableFuture.allOf(
             craneConfig.getRepositories()
                 .stream()
-                .map (this::indexRepository)
+                .map(this::indexRepository)
                 .toArray(CompletableFuture[]::new)
         );
     }
@@ -106,7 +114,7 @@ public class IndexerService {
         return indexDirectory(repository.getPath(""));
     }
 
-    public CompletableFuture<Void> indexDirectory(CranePath cranePath)  {
+    public CompletableFuture<Void> indexDirectory(CranePath cranePath) {
         // perform walk-tree in separate executor from file handling, otherwise they could lock each other
         return CompletableFuture.runAsync(() -> {
             try {
@@ -167,6 +175,36 @@ public class IndexerService {
         if (!toDelete.isEmpty()) {
             logger.info("Found {} missing documents in '{}', deleting from index", toDelete.size(), cranePath.getWebUri());
             indexStore.deleteByid(toDelete);
+        }
+    }
+
+    @EventListener(FileUploadedEvent.class)
+    public void onFileUploadedEvent(FileUploadedEvent event) {
+        try {
+            logger.debug("Indexing '{}' after upload", event.getCranePath().getWebUri());
+            CompletableFuture.runAsync(() -> indexSingleFile(event.getCranePath()), fileExecutorService);
+        } catch (Exception e) {
+            logger.warn("Failed to handle FileUploadedEvent", e);
+        }
+    }
+
+    @EventListener(FileDeletedEvent.class)
+    public void onFileDeletedEvent(FileDeletedEvent event) {
+        try {
+            logger.debug("Removing '{}' from index after delete", event.getCranePath().getWebUri());
+            CompletableFuture.runAsync(() -> deleteSingleFile(event.getCranePath()), fileExecutorService);
+        } catch (Exception e) {
+            logger.warn("Failed to handle FileUploadedEvent", e);
+        }
+    }
+
+    @EventListener(FilesDeletedEvent.class)
+    public void onFilesDeletedEvent(FilesDeletedEvent event) {
+        try {
+            logger.debug("Removing {} files from index after delete", event.getCranePaths().size());
+            CompletableFuture.runAsync(() -> deleteMultipleFiles(event.getCranePaths()), fileExecutorService);
+        } catch (Exception e) {
+            logger.warn("Failed to handle FileUploadedEvent", e);
         }
     }
 

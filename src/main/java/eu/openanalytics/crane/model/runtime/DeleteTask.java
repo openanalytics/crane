@@ -20,9 +20,11 @@
  */
 package eu.openanalytics.crane.model.runtime;
 
+import eu.openanalytics.crane.event.FilesDeletedEvent;
 import eu.openanalytics.crane.service.DeletionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -35,11 +37,13 @@ public class DeleteTask {
     private final CranePath cranePath;
     private final DeletionService.StateEntry state;
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public DeleteTask(DeletionService deletionService, CranePath cranePath, DeletionService.StateEntry state) {
+    public DeleteTask(DeletionService deletionService, CranePath cranePath, DeletionService.StateEntry state, ApplicationEventPublisher applicationEventPublisher) {
         this.deletionService = deletionService;
         this.cranePath = cranePath;
         this.state = state;
+        this.applicationEventPublisher =applicationEventPublisher;
     }
 
     public void startDeletion() {
@@ -47,17 +51,17 @@ public class DeleteTask {
             // delete files in parallel
             state.files().parallelStream().forEach((file) -> {
                 try {
-                    Files.deleteIfExists(file);
+                    Files.deleteIfExists(file.getStoragePath());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
                 state.deleted().incrementAndGet();
             });
 
-            // delete directories sequentially, otherwise directories might no be empty
+            // delete directories sequentially, otherwise directories might not be empty
             state.directories().forEach((file) -> {
                 try {
-                    try (final DirectoryStream<Path> stream = Files.newDirectoryStream(file)) {
+                    try (final DirectoryStream<Path> stream = Files.newDirectoryStream(file.getStoragePath())) {
                         if (stream.iterator().hasNext()) {
                             // ignore non-empty directories
                             // new files could have been written or it contains a directory the user has no access to
@@ -65,12 +69,13 @@ public class DeleteTask {
                             return;
                         }
                     }
-                    Files.deleteIfExists(file);
+                    Files.deleteIfExists(file.getStoragePath());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
                 state.deleted().incrementAndGet();
             });
+            applicationEventPublisher.publishEvent(new FilesDeletedEvent(this, state.files()));
         } catch (Exception e) {
             logger.warn("Deletion of {} failed", cranePath, e);
         } finally {

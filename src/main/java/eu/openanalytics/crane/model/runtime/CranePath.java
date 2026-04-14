@@ -278,6 +278,10 @@ public class CranePath {
         this.preLoadedBasicFileAttributes = basicFileAttributes;
     }
 
+    public CranePath(CranePath cranePath) {
+        this(cranePath.getRepository(), cranePath.getPathRelativeToRepository());
+    }
+
     /**
      * Gets a sub-path for this path.
      *

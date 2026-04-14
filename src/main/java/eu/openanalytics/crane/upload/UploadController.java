@@ -21,6 +21,8 @@
 package eu.openanalytics.crane.upload;
 
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.event.FileDeletedEvent;
+import eu.openanalytics.crane.event.FileUploadedEvent;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.model.runtime.CranePath;
@@ -32,6 +34,7 @@ import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -57,11 +60,13 @@ public class UploadController {
     private final CraneConfig config;
     private final UploadAuditing auditingService;
     private final DeletionService deletionService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public UploadController(CraneConfig config, UploadAuditing auditingService, DeletionService deletionService) {
+    public UploadController(CraneConfig config, UploadAuditing auditingService, DeletionService deletionService, ApplicationEventPublisher applicationEventPublisher) {
         this.config = config;
         this.auditingService = auditingService;
         this.deletionService = deletionService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @PreAuthorize("@uploadAccessControlService.canAccess(#r, #p)")
@@ -105,12 +110,13 @@ public class UploadController {
             if (!replace) {
                 Files.copy(fileItemInput.getInputStream(), cranePath.getStoragePath());
             } else {
-                Files.copy(fileItemInput.getInputStream(), cranePath.getStoragePath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(fileItemInput.getInputStream()   , cranePath.getStoragePath(), StandardCopyOption.REPLACE_EXISTING);
             }
             if (repository.isPosixAccessControl()) {
                 setPathAttribute(cranePath);
             }
             auditingService.createUploadAuditEvent(request);
+            applicationEventPublisher.publishEvent(new FileUploadedEvent(this, new CranePath(cranePath)));
             return ApiResponse.success(Map.of("message", "File upload succeeded"));
         } catch (IOException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
@@ -139,6 +145,7 @@ public class UploadController {
                 return ApiResponse.accepted(progress);
             } else {
                 Files.deleteIfExists(cranePath.getStoragePath());
+                applicationEventPublisher.publishEvent(new FileDeletedEvent(this, new CranePath(cranePath)));
                 return ApiResponse.success();
             }
         } catch (NoSuchFileException e) {
