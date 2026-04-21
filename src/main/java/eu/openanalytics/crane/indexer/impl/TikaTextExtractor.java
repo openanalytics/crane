@@ -22,6 +22,7 @@ package eu.openanalytics.crane.indexer.impl;
 
 import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.indexer.ITextExtractor;
+import eu.openanalytics.crane.indexer.model.Chunk;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
 import eu.openanalytics.crane.indexer.model.ExtractedMetadata;
 import eu.openanalytics.crane.model.runtime.CranePath;
@@ -57,6 +58,7 @@ public class TikaTextExtractor implements ITextExtractor {
     private static final List<MediaType> SUPPORTED_MEDIA_TYPES = List.of(MediaType.APPLICATION_PDF, MediaType.TEXT_HTML);
     private final MimeTypes mimeTypes = MimeTypes.getDefaultMimeTypes();
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ChunkMerger chunkMerger = new ChunkMerger();
 
     @Override
     public List<ExtractedDocument> extract(CranePath cranePath) {
@@ -79,16 +81,17 @@ public class TikaTextExtractor implements ITextExtractor {
             String xhtml = parseResult.getLeft();
             Metadata metadata = parseResult.getRight();
             ExtractedMetadata extractedMetadata = extractMetadata(metadata, cranePath);
-            List<Element> chunks = extractUsingJsoup(xhtml);
+            List<Chunk> chunks = extractUsingJsoup(xhtml);
+            chunks = chunkMerger.merge(chunks);
 
             List<ExtractedDocument> result = new ArrayList<>();
-            for (Element chunk: chunks) {
+            for (Chunk chunk: chunks) {
                 result.add(new ExtractedDocument(
                     UUID.randomUUID().toString(),
                     cranePath.getRepository().getName(),
                     cranePath.getWebUri(),
                     chunk.text(),
-                    chunk.tagName(),
+                    chunk.type(),
                     extractedMetadata
                 ));
             }
@@ -115,10 +118,10 @@ public class TikaTextExtractor implements ITextExtractor {
         );
     }
 
-    private List<Element> extractUsingJsoup(String body) {
+    private List<Chunk> extractUsingJsoup(String body) {
         Document doc = Jsoup.parse(body);
         Elements elements = doc.select("h1, h2, h3, h4, h5, h6, p, ul, ol, table");
-        List<Element> chunks = new ArrayList<>();
+        List<Chunk> chunks = new ArrayList<>();
 
         boolean sawHeader = elements.stream().noneMatch(e -> e.tagName().equals("h1"));
         for (Element element : elements) {
@@ -128,7 +131,7 @@ public class TikaTextExtractor implements ITextExtractor {
             if (sawHeader) {
                 String text = element.text();
                 if (!text.isBlank()) {
-                    chunks.add(element);
+                    chunks.add(new Chunk(text, element.tagName()));
                 }
             }
         }
