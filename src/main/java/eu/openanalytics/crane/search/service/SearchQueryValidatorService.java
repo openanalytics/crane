@@ -57,6 +57,9 @@ public class SearchQueryValidatorService {
         if (searchQuery.offset() != null && searchQuery.offset() < 0) {
             throw new InvalidSearchQueryException("Invalid offset");
         }
+        if (searchQuery.distinct() != null && !searchQuery.distinct().equals("webUri")) {
+            throw new InvalidSearchQueryException("Invalid distinct");
+        }
         return searchQuery;
     }
 

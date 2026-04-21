@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -58,13 +57,13 @@ public class SearchResultFilterService {
             throw new InternalSearchException("Invalid repositoryName in response");
         }
 
-        CranePath cranePath = new CranePath(repository, hit.pathRelativeToRepository());
+        CranePath cranePath = new CranePath(repository, hit.webUri(), true); // TODO
         if (!pathReadAccessControlService.canAccess(cranePath)) {
-            return new SearchHit("dummy", "", List.of(), "", Map.of(), null);
+            return new SearchHit("dummy", "", "", "", "", Map.of(), null);
         }
         if (!cranePath.isExists()) {
             logger.warn("Search returned a hit for a file that doesn't exist: {}", cranePath.getWebUri());
-            return new SearchHit("dummy", "", List.of(), "", Map.of(), null);
+            return new SearchHit("dummy", "", "", "", "", Map.of(), null);
         }
         return hit;
     }

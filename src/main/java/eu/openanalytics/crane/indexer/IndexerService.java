@@ -85,20 +85,25 @@ public class IndexerService {
     }
 
     public void indexSingleFile(CranePath cranePath) {
-        ExtractedDocument extract = textExtractor.extract(cranePath);
-        if (extract == null) {
-            logger.debug("Skipping file {} for indexing", cranePath.getWebUri());
-            return;
+        try {
+            List<ExtractedDocument> documents = textExtractor.extract(cranePath);
+            if (documents == null || documents.isEmpty()) {
+                logger.debug("Skipping file {} for indexing", cranePath.getWebUri());
+                return;
+            }
+            indexStore.deleteByWebUri(List.of(cranePath.getWebUri()));
+            indexStore.addOrUpdateDocuments(documents);
+        } catch (Exception e) {
+            logger.warn("Exception", e);
         }
-        indexStore.addOrUpdateSingleDocument(extract);
     }
 
     public void deleteSingleFile(CranePath cranePath) {
-        indexStore.deleteByid(List.of(cranePath.getId()));
+        indexStore.deleteByWebUri(List.of(cranePath.getWebUri()));
     }
 
     public void deleteMultipleFiles(List<CranePath> cranePaths) {
-        indexStore.deleteByid(cranePaths.stream().map(CranePath::getId).toList());
+        indexStore.deleteByWebUri(cranePaths.stream().map(CranePath::getWebUri).toList());
     }
 
     public CompletableFuture<Void> indexAllRepositories() {
@@ -165,16 +170,16 @@ public class IndexerService {
     public void deleteMissingFilesForDirectory(CranePath cranePath) {
         List<String> toDelete = new ArrayList<>();
 
-        indexStore.listAllSubPaths(cranePath).forEach((documentId) -> {
-            CranePath path = new CranePath(cranePath.getRepository(), documentId.pathRelativeToRepository());
+        indexStore.listAllSubPaths(cranePath).forEach((webUri) -> {
+            CranePath path = new CranePath(cranePath.getRepository(), webUri, true);
             if (!path.isExists()) {
-                toDelete.add(documentId.id());
+                toDelete.add(webUri);
             }
         });
 
         if (!toDelete.isEmpty()) {
             logger.info("Found {} missing documents in '{}', deleting from index", toDelete.size(), cranePath.getWebUri());
-            indexStore.deleteByid(toDelete);
+            indexStore.deleteByWebUri(toDelete);
         }
     }
 

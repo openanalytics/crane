@@ -23,7 +23,6 @@ package eu.openanalytics.crane.model.runtime;
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.util.FileSize;
-import eu.openanalytics.crane.util.Sha256;
 import org.apache.tika.Tika;
 import org.springframework.http.MediaType;
 
@@ -221,10 +220,6 @@ public class CranePathBuilder {
             parent = parent.getParent();
         }
         return false;
-    }
-
-    public static String getId(CranePath cranePath) {
-        return Sha256.hash(cranePath.getWebUri());
     }
 
 }

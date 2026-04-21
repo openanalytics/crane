@@ -250,30 +250,30 @@ public class CranePath {
     @Getter(lazy = true)
     private final String formattedSize = CranePathBuilder.getFormattedSize(this);
 
-    /**
-     * Get a unique id for this file.
-     * This is the SHA-256 hash of the {@link webUri} property.
-     */
-    @Getter(lazy = true)
-    private final String id = CranePathBuilder.getId(this);
-
     public CranePath(Repository repository, String pathRelativeToRepository) {
         this.repository = repository;
-        this.pathRelativeToRepository = Strings.CS.removeStart(Strings.CS.removeEnd(pathRelativeToRepository, "/"), "/");
+        this.pathRelativeToRepository = parsePathRelativeToRepositoryOrWebUri(repository, pathRelativeToRepository, false);
+        this.storagePath = repository.getStoragePath().resolve(this.pathRelativeToRepository);
+        this.preLoadedBasicFileAttributes = null;
+    }
+
+    public CranePath(Repository repository, String pathRelativeToRepository, boolean isWebUri) {
+        this.repository = repository;
+        this.pathRelativeToRepository = parsePathRelativeToRepositoryOrWebUri(repository, pathRelativeToRepository, isWebUri);
         this.storagePath = repository.getStoragePath().resolve(this.pathRelativeToRepository);
         this.preLoadedBasicFileAttributes = null;
     }
 
     public CranePath(Repository repository, String pathRelativeToRepository, Path path) {
         this.repository = repository;
-        this.pathRelativeToRepository = Strings.CS.removeStart(Strings.CS.removeEnd(pathRelativeToRepository, "/"), "/");
+        this.pathRelativeToRepository = parsePathRelativeToRepositoryOrWebUri(repository, pathRelativeToRepository, false);
         this.storagePath = path;
         this.preLoadedBasicFileAttributes = null;
     }
 
     public CranePath(Repository repository, String pathRelativeToRepository, Path path, BasicFileAttributes basicFileAttributes) {
         this.repository = repository;
-        this.pathRelativeToRepository = Strings.CS.removeStart(Strings.CS.removeEnd(pathRelativeToRepository, "/"), "/");
+        this.pathRelativeToRepository = parsePathRelativeToRepositoryOrWebUri(repository, pathRelativeToRepository, false);
         this.storagePath = path;
         this.preLoadedBasicFileAttributes = basicFileAttributes;
     }
@@ -384,6 +384,18 @@ public class CranePath {
      */
     public <V extends FileAttributeView> V getFileAttributeView(Class<V> posixFileAttributeViewClass) {
         return Files.getFileAttributeView(storagePath, posixFileAttributeViewClass);
+    }
+
+    private String parsePathRelativeToRepositoryOrWebUri(Repository repository, String path, boolean isWebUri) {
+        if (isWebUri) {
+            // if it's a web uri -> remove name of repository
+            if (path.startsWith("/")) {
+                path = Strings.CS.removeStart(path, "/" + repository.getName());
+            } else {
+                path = Strings.CS.removeStart(path, repository.getName());
+            }
+        }
+        return Strings.CS.removeStart(Strings.CS.removeEnd(path, "/"), "/");
     }
 
     @Override

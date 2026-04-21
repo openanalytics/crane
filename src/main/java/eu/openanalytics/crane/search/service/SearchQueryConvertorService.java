@@ -22,7 +22,6 @@ package eu.openanalytics.crane.search.service;
 
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.SearchRequest;
-import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.search.model.dto.SearchQueryDto;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -33,12 +32,6 @@ import java.util.List;
 @Service
 @ConditionalOnBean(Client.class)
 public class SearchQueryConvertorService {
-
-    private final SearchConfig searchConfig;
-
-    public SearchQueryConvertorService(SearchConfig searchConfig) {
-        this.searchConfig = searchConfig;
-    }
 
     public SearchRequest convert(Repository repository, SearchQueryDto searchQuery) {
         SearchRequest.SearchRequestBuilder searchRequestBuilder = SearchRequest.builder();
@@ -55,6 +48,7 @@ public class SearchQueryConvertorService {
         searchRequestBuilder.filterArray(toNestedArray(filter));
         searchRequestBuilder.limit(searchQuery.limit());
         searchRequestBuilder.offset(searchQuery.offset());
+        searchRequestBuilder.distinct(searchQuery.distinct());
         if (searchQuery.highlightPostTag() != null) {
             searchRequestBuilder.highlightPostTag(searchQuery.highlightPostTag());
         }

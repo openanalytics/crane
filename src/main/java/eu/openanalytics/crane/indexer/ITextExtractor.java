@@ -23,8 +23,10 @@ package eu.openanalytics.crane.indexer;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
 import eu.openanalytics.crane.model.runtime.CranePath;
 
+import java.util.List;
+
 public interface ITextExtractor {
 
-    public ExtractedDocument extract(CranePath cranePath) ;
+    public List<ExtractedDocument> extract(CranePath cranePath) ;
 
 }

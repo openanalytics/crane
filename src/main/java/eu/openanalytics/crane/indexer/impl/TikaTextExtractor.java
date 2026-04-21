@@ -22,7 +22,6 @@ package eu.openanalytics.crane.indexer.impl;
 
 import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.indexer.ITextExtractor;
-import eu.openanalytics.crane.indexer.model.Chunk;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
 import eu.openanalytics.crane.indexer.model.ExtractedMetadata;
 import eu.openanalytics.crane.model.runtime.CranePath;
@@ -48,6 +47,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -59,7 +59,7 @@ public class TikaTextExtractor implements ITextExtractor {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public ExtractedDocument extract(CranePath cranePath) {
+    public List<ExtractedDocument> extract(CranePath cranePath) {
         if (cranePath.isDirectory()) {
             throw new IllegalArgumentException("Path is a directory, can only extract text from files!");
         }
@@ -72,24 +72,28 @@ public class TikaTextExtractor implements ITextExtractor {
         if (!SUPPORTED_MEDIA_TYPES.contains(cranePath.getMediaType())) {
             return null;
         }
-        logger.debug("Extracting text and metadata from pathRelativeToRepository: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
+        logger.debug("Extracting text and metadata from {}", cranePath.getWebUri());
 
         try {
             Pair<String, Metadata> parseResult = parseUsingTika(cranePath);
             String xhtml = parseResult.getLeft();
             Metadata metadata = parseResult.getRight();
             ExtractedMetadata extractedMetadata = extractMetadata(metadata, cranePath);
-            List<Chunk> chunks = extractUsingJsoup(xhtml);
+            List<Element> chunks = extractUsingJsoup(xhtml);
 
-            ExtractedDocument extractedDocument = new ExtractedDocument(
-                cranePath.getId(),
-                cranePath.getRepository().getName(),
-                cranePath.getPathRelativeToRepository(),
-                chunks,
-                extractedMetadata
-            );
-            logger.debug("Extracted text and metadata from pathRelativeToRepository: {}, id: {}", cranePath.getWebUri(), cranePath.getId());
-            return extractedDocument;
+            List<ExtractedDocument> result = new ArrayList<>();
+            for (Element chunk: chunks) {
+                result.add(new ExtractedDocument(
+                    UUID.randomUUID().toString(),
+                    cranePath.getRepository().getName(),
+                    cranePath.getWebUri(),
+                    chunk.text(),
+                    chunk.tagName(),
+                    extractedMetadata
+                ));
+            }
+            logger.debug("Extracted text and metadata from {}", cranePath.getWebUri());
+            return result;
         } catch (IOException | TikaException | SAXException e) {
             throw new RuntimeException(e);
         }
@@ -111,10 +115,10 @@ public class TikaTextExtractor implements ITextExtractor {
         );
     }
 
-    private List<Chunk> extractUsingJsoup(String body) {
+    private List<Element> extractUsingJsoup(String body) {
         Document doc = Jsoup.parse(body);
         Elements elements = doc.select("h1, h2, h3, h4, h5, h6, p, ul, ol, table");
-        List<Chunk> chunks = new ArrayList<>();
+        List<Element> chunks = new ArrayList<>();
 
         boolean sawHeader = elements.stream().noneMatch(e -> e.tagName().equals("h1"));
         for (Element element : elements) {
@@ -124,7 +128,7 @@ public class TikaTextExtractor implements ITextExtractor {
             if (sawHeader) {
                 String text = element.text();
                 if (!text.isBlank()) {
-                    chunks.add(new Chunk(element.tagName(), text));
+                    chunks.add(element);
                 }
             }
         }

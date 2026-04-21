@@ -20,7 +20,5 @@
  */
 package eu.openanalytics.crane.indexer.model;
 
-import java.util.List;
-
-public record ExtractedDocument(String id, String repositoryName, String pathRelativeToRepository, List<Chunk> chunks, ExtractedMetadata extractedMetadata) {
+public record ExtractedDocument(String id, String repositoryName, String webUri, String chunk, String chunkType, ExtractedMetadata extractedMetadata) {
 }

@@ -25,20 +25,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Streams;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
-import com.meilisearch.sdk.model.DocumentsQuery;
-import com.meilisearch.sdk.model.Results;
+import com.meilisearch.sdk.SearchRequest;
+import com.meilisearch.sdk.model.Searchable;
 import com.meilisearch.sdk.model.TaskInfo;
+import com.meilisearch.sdk.model.TaskStatus;
 import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.indexer.IIndexStore;
-import eu.openanalytics.crane.indexer.model.DocumentId;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
 import eu.openanalytics.crane.model.runtime.CranePath;
+import eu.openanalytics.crane.util.Retrying;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -48,36 +49,32 @@ import java.util.stream.Stream;
 @ConditionalOnBean(Client.class)
 public class MeilisearchIndexStore implements IIndexStore {
 
-    private final Client client;
     private final Index index;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final MeiliAddDocumentQueue meiliAddDocumentQueue;
+    private final MeiliDeleteDocumentQueue meiliDeleteDocumentQueue;
 
     public MeilisearchIndexStore(SearchConfig searchConfig, Client client) {
-        this.client = client;
         index = client.index(searchConfig.getIndexUid());
-        index.updateFilterableAttributesSettings(new String[]{"extractedMetadata", "repositoryName", "pathRelativeToRepository" });
+        index.updateFilterableAttributesSettings(new String[]{"extractedMetadata", "repositoryName", "webUri"});
+        meiliAddDocumentQueue = new MeiliAddDocumentQueue(index);
+        meiliDeleteDocumentQueue = new MeiliDeleteDocumentQueue(index);
     }
 
     @Override
-    public void addOrUpdateSingleDocument(ExtractedDocument extractedDocument) {
-        try {
-            logger.debug("Storing extracted document with id {}", extractedDocument.id());
-            TaskInfo task = index.addDocuments(objectMapper.writeValueAsString(extractedDocument));
-            client.waitForTask(task.getTaskUid());
-            logger.debug("Stored extracted document with id {}", extractedDocument.id());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    public void addOrUpdateDocuments(List<ExtractedDocument> documents) {
+        logger.debug("Queueing {} extracted documents for path {}", documents.size(), documents.get(0).webUri());
+        meiliAddDocumentQueue.add(documents);
     }
 
     @Override
-    public Stream<DocumentId> listAllSubPaths(CranePath path) {
-        Iterator<DocumentId> iterator = new Iterator<>() {
+    public Stream<String> listAllSubPaths(CranePath path) {
+        Iterator<String> iterator = new Iterator<>() {
 
             private static final Integer BATCH_SIZE = 100;
             private int offset = 0;
-            private Iterator<DocumentId> currentBatch = Collections.emptyIterator();
+            private Iterator<String> currentBatch = Collections.emptyIterator();
             private boolean finished = false;
 
             @Override
@@ -87,7 +84,7 @@ public class MeilisearchIndexStore implements IIndexStore {
             }
 
             @Override
-            public DocumentId next() {
+            public String next() {
                 fetchIfNeeded();
                 return currentBatch.next();
             }
@@ -98,18 +95,20 @@ public class MeilisearchIndexStore implements IIndexStore {
                 }
 
                 try {
-                    DocumentsQuery query = new DocumentsQuery();
-                    query.setOffset(offset);
-                    query.setLimit(BATCH_SIZE);
-                    query.setFields(new String[]{"id", "pathRelativeToRepository"});
-                    query.setFilter(createFilters(path));
+                    SearchRequest query = SearchRequest.builder()
+                        .offset(offset)
+                        .limit(BATCH_SIZE)
+                        .distinct("webUri")
+                        .attributesToRetrieve(new String[]{"id", "webUri"})
+                        .filter(createFilters(path))
+                        .build();
 
-                    Results<DocumentId> results = index.getDocuments(query, DocumentId.class);
-                    int numResults = results.getResults().length;
-                    if (offset + numResults >= results.getTotal()) {
+                    Searchable results = index.search(query);
+                    int numResults = results.getHits().size();
+                    if (numResults == 0) {
                         finished = true;
                     }
-                    currentBatch = Arrays.stream(results.getResults()).iterator();
+                    currentBatch = results.getHits().stream().map(d -> d.get("webUri").toString()).iterator();
                     offset += numResults;
                 } catch (Exception e) {
                     logger.warn("Error while fetching documents", e);
@@ -117,10 +116,7 @@ public class MeilisearchIndexStore implements IIndexStore {
             }
 
             private String[] createFilters(CranePath path) {
-                if (path.getPathRelativeToRepository().isBlank()) {
-                    return List.of("repositoryName=" + path.getRepository().getName()).toArray(new String[0]);
-                }
-                return List.of("repositoryName=" + path.getRepository().getName(), "pathRelativeToRepository STARTS WITH" + path.getPathRelativeToRepository()).toArray(new String[0]);
+                return List.of("repositoryName=" + path.getRepository().getName(), "webUri STARTS WITH \"" + path.getWebUri() + "\"").toArray(new String[0]);
             }
 
         };
@@ -129,10 +125,51 @@ public class MeilisearchIndexStore implements IIndexStore {
     }
 
     @Override
-    public void deleteByid(List<String> toDelete) {
-        TaskInfo task = index.deleteDocuments(toDelete);
-        client.waitForTask(task.getTaskUid());
-        logger.debug("Deleted {} documents", toDelete.size());
+    public void deleteByWebUri(List<String> webUris) {
+        try {
+            // find ids to delete synchronously, this is fast
+            List<String> ids = findIdsToDelete(webUris);
+            // delete documents asynchronously, this is slower
+            // from this point new documents might be added using the given webUris
+            // only the original documents will be removed, even if new documents are added
+            if (!ids.isEmpty()) {
+                meiliDeleteDocumentQueue.add(ids);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean waitForTask(Index index, TaskInfo task) {
+        return Retrying.retry((c, m) -> {
+            TaskStatus status = index.getTask(task.getTaskUid()).getStatus();
+            if (status.equals(TaskStatus.ENQUEUED) || status.equals(TaskStatus.PROCESSING)) {
+                return Retrying.FAILURE;
+            }
+            return Retrying.SUCCESS;
+        }, 60000_000);
+    }
+
+    private List<String> findIdsToDelete(List<String> toDelete) throws JsonProcessingException {
+        int offset = 0;
+        List<String> ids = new ArrayList<>();
+
+        while (true) {
+            Searchable result = index.search(SearchRequest.builder()
+                .filter(new String[]{"webUri IN " + objectMapper.writeValueAsString(toDelete)})
+                .limit(100)
+                .offset(offset)
+                .attributesToRetrieve(new String[]{"id"})
+                .build());
+
+            int numResults = result.getHits().size();
+            if (numResults == 0) {
+                break;
+            }
+            result.getHits().forEach(h -> ids.add(h.get("id").toString()));
+            offset += numResults;
+        }
+        return ids;
     }
 
 }

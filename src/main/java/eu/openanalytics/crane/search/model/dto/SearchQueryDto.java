@@ -28,6 +28,7 @@ public record SearchQueryDto(String q,
                              List<String> attributesToHighlight,
                              String highlightPostTag,
                              String highlightPreTag,
+                             String distinct,
                              Integer limit,
                              Integer offset
 ) {

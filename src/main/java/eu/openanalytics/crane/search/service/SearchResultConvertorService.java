@@ -25,7 +25,6 @@ import com.meilisearch.sdk.model.SearchResult;
 import com.meilisearch.sdk.model.Searchable;
 import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.search.exception.InternalSearchException;
-import eu.openanalytics.crane.search.model.dto.SearchChunk;
 import eu.openanalytics.crane.search.model.dto.SearchHit;
 import eu.openanalytics.crane.search.model.dto.SearchResultDto;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -81,27 +80,16 @@ public class SearchResultConvertorService {
     private SearchHit convertHit(Map<String, Object> hit) {
         SearchHit.SearchHitBuilder builder = SearchHit.builder();
         builder.id(getRequiredKeyAsString("id", hit));
-        builder.pathRelativeToRepository(getRequiredKeyAsString("pathRelativeToRepository", hit));
+        builder.webUri(getRequiredKeyAsString("webUri", hit));
         builder.repositoryName(getRequiredKeyAsString("repositoryName", hit));
-        builder.chunks(convertChunks(getRequiredKey("chunks", hit, List.class)));
+        builder.chunk(getRequiredKeyAsString("chunk", hit));
+        builder.chunkType(getRequiredKeyAsString("chunkType", hit));
         Map<String, Object> formatted = getOptionalKey("_formatted", hit, Map.class);
         if (formatted != null) {
             builder._formatted(convertHit(formatted));
         }
         builder.extractedMetadata(getRequiredKey("extractedMetadata", hit, Map.class));
         return builder.build();
-    }
-
-    private List<SearchChunk> convertChunks(List<?> chunks) {
-        List<SearchChunk> result = new ArrayList<>();
-        for (Object chunk : chunks) {
-            if (chunk instanceof Map<?, ?> map) {
-                if (map.containsKey("type") && map.containsKey("text")) {
-                    result.add(new SearchChunk(map.get("type").toString(), map.get("text").toString()));
-                }
-            }
-        }
-        return result;
     }
 
     private Map<String, Map<String, Object>> convertFacetDistribution(Map<String, Map<String, Object>> facetDistribution) {

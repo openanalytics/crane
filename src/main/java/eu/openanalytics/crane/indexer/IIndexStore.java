@@ -20,7 +20,6 @@
  */
 package eu.openanalytics.crane.indexer;
 
-import eu.openanalytics.crane.indexer.model.DocumentId;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
 import eu.openanalytics.crane.model.runtime.CranePath;
 
@@ -29,10 +28,10 @@ import java.util.stream.Stream;
 
 public interface IIndexStore {
 
-    public void addOrUpdateSingleDocument(ExtractedDocument extractedDocument) ;
+    public void addOrUpdateDocuments(List<ExtractedDocument> documents);
 
-    public Stream<DocumentId> listAllSubPaths(CranePath path);
+    public Stream<String> listAllSubPaths(CranePath path);
 
-    public void deleteByid(List<String> toDelete);
+    public void deleteByWebUri(List<String> toDelete);
 
 }

@@ -22,14 +22,14 @@ package eu.openanalytics.crane.search.model.dto;
 
 import lombok.Builder;
 
-import java.util.List;
 import java.util.Map;
 
 @Builder
 public record SearchHit(
     String id,
-    String pathRelativeToRepository,
-    List<SearchChunk> chunks,
+    String webUri,
+    String chunk,
+    String chunkType,
     String repositoryName,
     Map<String, String> extractedMetadata,
     SearchHit _formatted

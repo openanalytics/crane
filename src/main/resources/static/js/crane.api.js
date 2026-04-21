@@ -27,6 +27,9 @@ Crane.api = {
     repository: document.querySelector("meta[name='_repository']")?.content,
 
     buildURL(location) {
+        if (location.startsWith("/")) {
+            location = location.slice(1);
+        }
         const baseURL = new URL(Crane.api.contextPath, window.location.origin);
         return new URL(location, baseURL);
     },

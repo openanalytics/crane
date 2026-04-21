@@ -24,7 +24,7 @@ Crane.search = {
     async init() {
         const apiInfo = await Crane.api._getResponseJson(await fetch(Crane.api.buildURL('__search/api-info')));
         const searchEndpoint = Crane.api.buildURL("__search/" + Crane.api.repository);
-        const urlPrefix = Crane.api.buildURL(Crane.api.repository) + "/";
+        const urlPrefix = Crane.api.buildURL("");
         const {searchClient} = instantMeiliSearch(
             searchEndpoint.toString(),
             "",
@@ -34,6 +34,9 @@ Crane.search = {
                         [Crane.api.csrfHeader]: Crane.api.csrfToken,
                     },
                 },
+                meiliSearchParams: {
+                    "distinct": "webUri"
+                }
             }
         );
 
@@ -51,9 +54,9 @@ Crane.search = {
                 templates: {
                     item: (hit, {html, components}) => {
                         return html`
-                                        <a href="${urlPrefix + hit.pathRelativeToRepository}" class="result-item hit">
+                                        <a href="${Crane.api.buildURL(hit.webUri)}" class="result-item hit">
                                             <p class="result-title">${components.Highlight({hit, attribute: 'extractedMetadata.title'})}</p>
-                                            <p class="result-snippet">${hit.chunks[0]?.text}</p>
+                                            <p class="result-snippet">${components.Highlight({hit, attribute: 'chunk'})}</p>
                                         </a>
                                 `
                     }

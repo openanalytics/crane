@@ -110,7 +110,7 @@ public class UploadController {
             if (!replace) {
                 Files.copy(fileItemInput.getInputStream(), cranePath.getStoragePath());
             } else {
-                Files.copy(fileItemInput.getInputStream()   , cranePath.getStoragePath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(fileItemInput.getInputStream(), cranePath.getStoragePath(), StandardCopyOption.REPLACE_EXISTING);
             }
             if (repository.isPosixAccessControl()) {
                 setPathAttribute(cranePath);
