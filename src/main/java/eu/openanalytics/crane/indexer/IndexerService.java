@@ -77,10 +77,7 @@ public class IndexerService {
     @PostConstruct
     public void init() {
         if (indexerConfig.getIndexOnStartup()) {
-            Instant start = Instant.now();
-            indexAllRepositories().join();
-            Instant finish = Instant.now();
-            logger.info("All repositories indexed in {} ", Duration.between(start, finish));
+            indexAllRepositories();
         }
     }
 
@@ -107,12 +104,14 @@ public class IndexerService {
     }
 
     public CompletableFuture<Void> indexAllRepositories() {
-        return CompletableFuture.allOf(
-            craneConfig.getRepositories()
-                .stream()
-                .map(this::indexRepository)
-                .toArray(CompletableFuture[]::new)
-        );
+        return CompletableFuture.runAsync(() -> {
+            for (Repository repository : craneConfig.getRepositories()) {
+                Instant start = Instant.now();
+                indexRepository(repository).join();
+                Instant finish = Instant.now();
+                logger.info("Indexed repository {} (after startup) in {} ", repository.getName(), Duration.between(start, finish));
+            }
+        }, repoExecutorService);
     }
 
     public CompletableFuture<Void> indexRepository(Repository repository) {
