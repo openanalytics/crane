@@ -42,9 +42,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MeiliDeleteDocumentQueue {
 
-    private final static Integer MAX_BATCH_SIZE = 1_000;
-    private final static Integer MINIMUM_BATCH_SIZE = 100;
-    private final static Integer MAX_TIME_BETWEEN_SYNC = 1;
+    private final static Integer MAX_BATCH_SIZE = 20_000;
+    private final static Integer MINIMUM_BATCH_SIZE = 1000;
+    private final static Integer MAX_TIME_BETWEEN_SYNC = 3  ;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>();
