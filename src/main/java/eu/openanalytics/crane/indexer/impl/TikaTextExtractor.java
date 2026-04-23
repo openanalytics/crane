@@ -28,6 +28,9 @@ import eu.openanalytics.crane.indexer.model.ExtractedMetadata;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
+import org.apache.tika.language.detect.LanguageDetector;
+import org.apache.tika.language.detect.LanguageResult;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
@@ -49,6 +52,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -59,6 +63,7 @@ public class TikaTextExtractor implements ITextExtractor {
     private final MimeTypes mimeTypes = MimeTypes.getDefaultMimeTypes();
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ChunkMerger chunkMerger = new ChunkMerger();
+    private final LanguageDetector languageDetector = new OptimaizeLangDetector().loadModels();
 
     @Override
     public List<ExtractedDocument> extract(CranePath cranePath) {
@@ -80,8 +85,8 @@ public class TikaTextExtractor implements ITextExtractor {
             Pair<String, Metadata> parseResult = parseUsingTika(cranePath);
             String xhtml = parseResult.getLeft();
             Metadata metadata = parseResult.getRight();
-            ExtractedMetadata extractedMetadata = extractMetadata(metadata, cranePath);
             List<Chunk> chunks = extractUsingJsoup(xhtml);
+            ExtractedMetadata extractedMetadata = extractMetadata(metadata, cranePath, chunks);
             chunks = chunkMerger.merge(chunks);
 
             List<ExtractedDocument> result = new ArrayList<>();
@@ -110,11 +115,12 @@ public class TikaTextExtractor implements ITextExtractor {
         return Pair.of(handler.toString(), metadata);
     }
 
-    private ExtractedMetadata extractMetadata(Metadata metadata, CranePath cranePath) throws MimeTypeException {
+    private ExtractedMetadata extractMetadata(Metadata metadata, CranePath cranePath, List<Chunk> chunks) throws MimeTypeException {
         return new ExtractedMetadata(
             getTitle(metadata, cranePath),
             cranePath.getMediaType().toString(),
-            mimeTypes.forName(cranePath.getMediaType().toString()).getAcronym()
+            mimeTypes.forName(cranePath.getMediaType().toString()).getAcronym(),
+            getLanguage(metadata, chunks)
         );
     }
 
@@ -146,6 +152,20 @@ public class TikaTextExtractor implements ITextExtractor {
         }
         // TODO do we want to remove the extension?
         return cranePath.getName();
+    }
+
+    private String getLanguage(Metadata metadata, List<Chunk> chunks) {
+        // collect first 100 chunks for detecting language
+        String text = chunks.stream()
+            .limit(100)
+            .map(Chunk::text)
+            .collect(Collectors.joining("\n" ));
+
+        LanguageResult result = languageDetector.detect(text);
+        if (result.isReasonablyCertain()) {
+            return result.getLanguage();
+        }
+        return null;
     }
 
     private String getMetadataField(Metadata metadata, List<String> candidates) {

@@ -23,7 +23,9 @@ package eu.openanalytics.crane.indexer.model;
 public record ExtractedMetadata(
     String title,
     String mediaType,
-    String humanReadableMediaType) {
+    String humanReadableMediaType,
+    String language
+) {
     // TODO add more fields
     // TODO specify which can be returned
 }

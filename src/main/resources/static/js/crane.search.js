@@ -74,6 +74,11 @@ Crane.search = {
                 container: ".facet-content-type",
                 attribute: "extractedMetadata.humanReadableMediaType",
                 sortBy: ["name"]
+            }),
+            instantsearch.widgets.refinementList({
+                container: ".facet-language",
+                attribute: "extractedMetadata.language",
+                sortBy: ["name"]
             })
         ]);
 
