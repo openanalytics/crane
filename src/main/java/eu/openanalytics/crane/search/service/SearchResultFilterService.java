@@ -59,11 +59,11 @@ public class SearchResultFilterService {
 
         CranePath cranePath = new CranePath(repository, hit.webUri(), true); // TODO
         if (!pathReadAccessControlService.canAccess(cranePath)) {
-            return new SearchHit("dummy", "", "", "", "", Map.of(), null);
+            return new SearchHit("dummy", "", "", "", "", Map.of(), null, null);
         }
         if (!cranePath.isExists()) {
             logger.warn("Search returned a hit for a file that doesn't exist: {}", cranePath.getWebUri());
-            return new SearchHit("dummy", "", "", "", "", Map.of(), null);
+            return new SearchHit("dummy", "", "", "", "", Map.of(), null, null) ;
         }
         return hit;
     }

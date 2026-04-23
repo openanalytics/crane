@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -62,6 +63,7 @@ import java.util.stream.Collectors;
 public class TikaTextExtractor implements ITextExtractor {
 
     private static final List<MediaType> SUPPORTED_MEDIA_TYPES = List.of(MediaType.APPLICATION_PDF, MediaType.TEXT_HTML);
+    private static final String AUTHORS_SPLIT_REGEX = "[;,]";
     private final MimeTypes mimeTypes = MimeTypes.getDefaultMimeTypes();
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ChunkMerger chunkMerger = new ChunkMerger();
@@ -127,7 +129,8 @@ public class TikaTextExtractor implements ITextExtractor {
             date.toString(),
             date.getYear(),
             date.getMonthValue(),
-            date.getDayOfMonth()
+            date.getDayOfMonth(),
+            getAuthors(metadata)
         );
     }
 
@@ -182,6 +185,16 @@ public class TikaTextExtractor implements ITextExtractor {
         }
         // last modified is already in UTC
         return ZonedDateTime.ofInstant(cranePath.getLastModifiedTime(), ZoneOffset.UTC);
+    }
+
+    private List<String> getAuthors(Metadata metadata) {
+        String[] authors = metadata.getValues("dc:creator");
+        if (authors != null) {
+            return Arrays.stream(authors).flatMap(a ->
+                Arrays.stream(a.split(AUTHORS_SPLIT_REGEX)).map(String::trim)
+            ).toList();
+        }
+        return List.of();
     }
 
     private String getMetadataField(Metadata metadata, List<String> candidates) {

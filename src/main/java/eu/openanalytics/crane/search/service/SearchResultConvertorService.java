@@ -102,8 +102,14 @@ public class SearchResultConvertorService {
         for (Map.Entry<String, Object> item : extractedMetadata.entrySet()) {
             if (item.getValue() == null || item.getValue() instanceof String || item.getValue() instanceof Double) {
                 result.put(item.getKey(), item.getValue());
+            } else if (item.getValue() instanceof List<?> list) {
+                if (list.stream().allMatch(i -> i instanceof String)) {
+                    result.put(item.getKey(), item.getValue());
+                } else {
+                    logger.warn("Invalid metadata type in list with key {}", item.getKey());
+                }
             } else {
-                logger.warn("Invalid metadata type {}", item.getValue().getClass());
+                logger.warn("Invalid metadata type with key {}, invalid type: {}", item.getKey(), item.getValue().getClass());
             }
         }
         return result;
@@ -141,7 +147,7 @@ public class SearchResultConvertorService {
     }
 
     private <T> T getOptionalKey(String key, Map<String, Object> hit, Class<T> clazz) {
-        if (!hit.containsKey(key)) {
+        if (!hit.containsKey(key) || hit.get(key) == null) {
             return null;
         }
         if (!clazz.isInstance(hit.get(key))) {

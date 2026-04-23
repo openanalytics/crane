@@ -20,6 +20,8 @@
  */
 package eu.openanalytics.crane.indexer.model;
 
+import java.util.List;
+
 public record ExtractedMetadata(
     String title,
     String mediaType,
@@ -28,7 +30,8 @@ public record ExtractedMetadata(
     String creationDate,
     Integer year,
     Integer month,
-    Integer day
+    Integer day,
+    List<String> authors
 ) {
     // TODO add more fields
     // TODO specify which can be returned

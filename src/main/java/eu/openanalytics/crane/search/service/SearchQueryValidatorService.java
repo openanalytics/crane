@@ -33,7 +33,7 @@ import java.util.List;
 @ConditionalOnBean(Client.class)
 public class SearchQueryValidatorService {
 
-    public static final List<String> ALLOWED_FACETS = List.of("extractedMetadata.humanReadableMediaType", "extractedMetadata.language", "extractedMetadata.year", "extractedMetadata.month", "extractedMetadata.day" );
+    public static final List<String> ALLOWED_FACETS = List.of("extractedMetadata.humanReadableMediaType", "extractedMetadata.language", "extractedMetadata.year", "extractedMetadata.month", "extractedMetadata.day", "extractedMetadata.authors");
 
     public SearchQueryDto validate(SearchQueryDto searchQuery) {
         if (searchQuery.facets() != null) {

@@ -89,6 +89,11 @@ Crane.search = {
                 container: ".facet-month",
                 attribute: "extractedMetadata.month",
                 sortBy: ["name"]
+            }),
+            instantsearch.widgets.refinementList({
+                container: ".facet-authors",
+                attribute: "extractedMetadata.authors",
+                sortBy: ["name"]
             })
         ]);
 
