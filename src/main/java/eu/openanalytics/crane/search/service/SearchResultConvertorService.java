@@ -27,6 +27,8 @@ import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.search.exception.InternalSearchException;
 import eu.openanalytics.crane.search.model.dto.SearchHit;
 import eu.openanalytics.crane.search.model.dto.SearchResultDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,7 @@ import java.util.Map;
 public class SearchResultConvertorService {
 
     private final SearchConfig searchConfig;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public SearchResultConvertorService(SearchConfig searchConfig) {
         this.searchConfig = searchConfig;
@@ -88,8 +91,22 @@ public class SearchResultConvertorService {
         if (formatted != null) {
             builder._formatted(convertHit(formatted));
         }
-        builder.extractedMetadata(getRequiredKey("extractedMetadata", hit, Map.class));
+        builder.extractedMetadata(convertMetadata(hit));
         return builder.build();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> convertMetadata(Map<String, Object> hit) {
+        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> extractedMetadata  = getRequiredKey("extractedMetadata", hit, Map.class);
+        for (Map.Entry<String, Object> item : extractedMetadata.entrySet()) {
+            if (item.getValue() == null || item.getValue() instanceof String || item.getValue() instanceof Double) {
+                result.put(item.getKey(), item.getValue());
+            } else {
+                logger.warn("Invalid metadata type {}", item.getValue().getClass());
+            }
+        }
+        return result;
     }
 
     private Map<String, Map<String, Object>> convertFacetDistribution(Map<String, Map<String, Object>> facetDistribution) {

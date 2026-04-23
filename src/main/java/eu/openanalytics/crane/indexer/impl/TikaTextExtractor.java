@@ -49,6 +49,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -116,11 +118,16 @@ public class TikaTextExtractor implements ITextExtractor {
     }
 
     private ExtractedMetadata extractMetadata(Metadata metadata, CranePath cranePath, List<Chunk> chunks) throws MimeTypeException {
+        ZonedDateTime date = getDate(metadata, cranePath);
         return new ExtractedMetadata(
             getTitle(metadata, cranePath),
             cranePath.getMediaType().toString(),
             mimeTypes.forName(cranePath.getMediaType().toString()).getAcronym(),
-            getLanguage(metadata, chunks)
+            getLanguage(metadata, chunks),
+            date.toString(),
+            date.getYear(),
+            date.getMonthValue(),
+            date.getDayOfMonth()
         );
     }
 
@@ -166,6 +173,15 @@ public class TikaTextExtractor implements ITextExtractor {
             return result.getLanguage();
         }
         return null;
+    }
+
+    private ZonedDateTime getDate(Metadata metadata, CranePath cranePath) {
+        String creationDate = getMetadataField(metadata, List.of("dcterms:modified", "pdf:docinfo:modified", "dcterms:created", "pdf:docinfo:created "));
+        if (creationDate != null) {
+            return ZonedDateTime.parse(creationDate).withZoneSameInstant(ZoneOffset.UTC);
+        }
+        // last modified is already in UTC
+        return ZonedDateTime.ofInstant(cranePath.getLastModifiedTime(), ZoneOffset.UTC);
     }
 
     private String getMetadataField(Metadata metadata, List<String> candidates) {

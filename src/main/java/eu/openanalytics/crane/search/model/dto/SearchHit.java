@@ -31,7 +31,7 @@ public record SearchHit(
     String chunk,
     String chunkType,
     String repositoryName,
-    Map<String, String> extractedMetadata,
+    Map<String, Object> extractedMetadata,
     SearchHit _formatted
 
 

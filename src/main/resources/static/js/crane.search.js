@@ -79,6 +79,16 @@ Crane.search = {
                 container: ".facet-language",
                 attribute: "extractedMetadata.language",
                 sortBy: ["name"]
+            }),
+            instantsearch.widgets.refinementList({
+                container: ".facet-year",
+                attribute: "extractedMetadata.year",
+                sortBy: ["name"]
+            }),
+            instantsearch.widgets.refinementList({
+                container: ".facet-month",
+                attribute: "extractedMetadata.month",
+                sortBy: ["name"]
             })
         ]);
 

@@ -24,7 +24,11 @@ public record ExtractedMetadata(
     String title,
     String mediaType,
     String humanReadableMediaType,
-    String language
+    String language,
+    String creationDate,
+    Integer year,
+    Integer month,
+    Integer day
 ) {
     // TODO add more fields
     // TODO specify which can be returned
