@@ -55,7 +55,7 @@ Crane.search = {
                     item: (hit, {html, components}) => {
                         return html`
                                         <a href="${Crane.api.buildURL(hit.webUri)}" class="result-item hit">
-                                            <p class="result-title">${components.Highlight({hit, attribute: 'extractedMetadata.title'})}</p>
+                                            <p class="result-title">${components.Highlight({hit, attribute: 'metadata.title'})}</p>
                                             <p class="result-snippet">${components.Highlight({hit, attribute: 'chunk'})}</p>
                                         </a>
                                 `
@@ -72,27 +72,27 @@ Crane.search = {
             }),
             instantsearch.widgets.refinementList({
                 container: ".facet-content-type",
-                attribute: "extractedMetadata.humanReadableMediaType",
+                attribute: "metadata.humanReadableMediaType",
                 sortBy: ["name"]
             }),
             instantsearch.widgets.refinementList({
                 container: ".facet-language",
-                attribute: "extractedMetadata.language",
+                attribute: "metadata.language",
                 sortBy: ["name"]
             }),
             instantsearch.widgets.refinementList({
                 container: ".facet-year",
-                attribute: "extractedMetadata.year",
+                attribute: "metadata.year",
                 sortBy: ["name"]
             }),
             instantsearch.widgets.refinementList({
                 container: ".facet-month",
-                attribute: "extractedMetadata.month",
+                attribute: "metadata.month",
                 sortBy: ["name"]
             }),
             instantsearch.widgets.refinementList({
                 container: ".facet-authors",
-                attribute: "extractedMetadata.authors",
+                attribute: "metadata.authors",
                 sortBy: ["name"]
             })
         ]);

@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
 @Service
 @ConditionalOnBean(Client.class)
 public class SearchResultFilterService {
@@ -54,16 +52,16 @@ public class SearchResultFilterService {
 
     private SearchHit filterHit(Repository repository, SearchHit hit) {
         if (!hit.repositoryName().equals(repository.getName())) {
-            throw new InternalSearchException("Invalid repositoryName in response");
+            throw new InternalSearchException("Invalid repositoryName in response" );
         }
 
         CranePath cranePath = new CranePath(repository, hit.webUri(), true); // TODO
         if (!pathReadAccessControlService.canAccess(cranePath)) {
-            return new SearchHit("dummy", "", "", "", "", Map.of(), null, null);
+            return new SearchHit("dummy", "", "", "", "", null, null);
         }
         if (!cranePath.isExists()) {
             logger.warn("Search returned a hit for a file that doesn't exist: {}", cranePath.getWebUri());
-            return new SearchHit("dummy", "", "", "", "", Map.of(), null, null) ;
+            return new SearchHit("dummy", "", "", "", "", null, null);
         }
         return hit;
     }

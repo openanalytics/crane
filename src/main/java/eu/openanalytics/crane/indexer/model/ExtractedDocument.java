@@ -20,5 +20,15 @@
  */
 package eu.openanalytics.crane.indexer.model;
 
-public record ExtractedDocument(String id, String repositoryName, String webUri, String chunk, String chunkType, ExtractedMetadata extractedMetadata) {
+import java.util.Map;
+
+public record ExtractedDocument(
+    String id,
+    String repositoryName,
+    String webUri,
+    String chunk,
+    String chunkType,
+    ExtractedMetadata extractedMetadata,
+    Map<String, Object> metadata
+) {
 }

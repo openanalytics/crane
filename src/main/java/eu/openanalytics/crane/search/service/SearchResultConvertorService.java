@@ -24,11 +24,10 @@ import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.model.SearchResult;
 import com.meilisearch.sdk.model.Searchable;
 import eu.openanalytics.crane.config.SearchConfig;
+import eu.openanalytics.crane.indexer.impl.MetadataConvertorService;
 import eu.openanalytics.crane.search.exception.InternalSearchException;
 import eu.openanalytics.crane.search.model.dto.SearchHit;
 import eu.openanalytics.crane.search.model.dto.SearchResultDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
@@ -42,10 +41,11 @@ import java.util.Map;
 public class SearchResultConvertorService {
 
     private final SearchConfig searchConfig;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final MetadataConvertorService metadataConvertorService;
 
-    public SearchResultConvertorService(SearchConfig searchConfig) {
+    public SearchResultConvertorService(SearchConfig searchConfig, MetadataConvertorService metadataConvertorService) {
         this.searchConfig = searchConfig;
+        this.metadataConvertorService = metadataConvertorService;
     }
 
     @SuppressWarnings("unchecked")
@@ -91,28 +91,8 @@ public class SearchResultConvertorService {
         if (formatted != null) {
             builder._formatted(convertHit(formatted));
         }
-        builder.extractedMetadata(convertMetadata(hit));
+        builder.metadata(metadataConvertorService.convertMetadata(getOptionalKey("metadata", hit, Map.class)));
         return builder.build();
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> convertMetadata(Map<String, Object> hit) {
-        Map<String, Object> result = new HashMap<>();
-        Map<String, Object> extractedMetadata  = getRequiredKey("extractedMetadata", hit, Map.class);
-        for (Map.Entry<String, Object> item : extractedMetadata.entrySet()) {
-            if (item.getValue() == null || item.getValue() instanceof String || item.getValue() instanceof Double) {
-                result.put(item.getKey(), item.getValue());
-            } else if (item.getValue() instanceof List<?> list) {
-                if (list.stream().allMatch(i -> i instanceof String)) {
-                    result.put(item.getKey(), item.getValue());
-                } else {
-                    logger.warn("Invalid metadata type in list with key {}", item.getKey());
-                }
-            } else {
-                logger.warn("Invalid metadata type with key {}, invalid type: {}", item.getKey(), item.getValue().getClass());
-            }
-        }
-        return result;
     }
 
     private Map<String, Map<String, Object>> convertFacetDistribution(Map<String, Map<String, Object>> facetDistribution) {

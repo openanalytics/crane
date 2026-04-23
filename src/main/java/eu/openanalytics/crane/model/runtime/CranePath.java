@@ -104,6 +104,12 @@ public class CranePath {
     private final boolean indexFile = getName().equals(repository.getIndexFileName());
 
     /**
+     * Gets the metadata file belonging to this file.
+     */
+    @Getter(lazy = true)
+    private final CranePath metadataFilePath = CranePathBuilder.getMetadataFilePath(this);
+
+    /**
      * Whether this path is a metadata file.
      */
     @Getter(lazy = true)

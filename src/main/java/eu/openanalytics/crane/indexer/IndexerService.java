@@ -83,7 +83,8 @@ public class IndexerService {
 
     public void indexSingleFile(CranePath cranePath) {
         try {
-            List<ExtractedDocument> documents = textExtractor.extract(cranePath);
+            CranePath metadataCranePath = cranePath.getMetadataFilePath();
+            List<ExtractedDocument> documents = textExtractor.extract(cranePath, metadataCranePath);
             if (documents == null || documents.isEmpty()) {
                 logger.debug("Skipping file {} for indexing", cranePath.getWebUri());
                 return;

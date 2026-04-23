@@ -27,6 +27,6 @@ import java.util.List;
 
 public interface ITextExtractor {
 
-    public List<ExtractedDocument> extract(CranePath cranePath) ;
+    public List<ExtractedDocument> extract(CranePath cranePath, CranePath metadataCranePath);
 
 }

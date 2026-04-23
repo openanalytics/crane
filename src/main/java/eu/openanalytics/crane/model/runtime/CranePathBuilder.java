@@ -222,4 +222,14 @@ public class CranePathBuilder {
         return false;
     }
 
+    public static CranePath getMetadataFilePath(CranePath cranePath) {
+        if (cranePath.isDirectory()) {
+            return null;
+        }
+        if (cranePath.isMetadataDirectoryOrFile()) {
+            return null;
+        }
+        return cranePath.getParent().getPath(".crane").getPath(cranePath.getName() + ".yaml");
+    }
+
 }

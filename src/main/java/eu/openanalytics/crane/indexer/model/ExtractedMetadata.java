@@ -33,6 +33,4 @@ public record ExtractedMetadata(
     Integer day,
     List<String> authors
 ) {
-    // TODO add more fields
-    // TODO specify which can be returned
 }

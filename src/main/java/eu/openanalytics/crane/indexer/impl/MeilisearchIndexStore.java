@@ -57,7 +57,7 @@ public class MeilisearchIndexStore implements IIndexStore {
 
     public MeilisearchIndexStore(SearchConfig searchConfig, Client client) {
         index = client.index(searchConfig.getIndexUid());
-        index.updateFilterableAttributesSettings(new String[]{"extractedMetadata", "repositoryName", "webUri"});
+        index.updateFilterableAttributesSettings(new String[]{"extractedMetadata", "repositoryName", "webUri", "metadata"});
         meiliAddDocumentQueue = new MeiliAddDocumentQueue(index);
         meiliDeleteDocumentQueue = new MeiliDeleteDocumentQueue(index);
     }

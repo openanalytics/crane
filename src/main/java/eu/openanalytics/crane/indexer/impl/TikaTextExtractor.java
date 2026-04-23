@@ -20,6 +20,8 @@
  */
 package eu.openanalytics.crane.indexer.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.indexer.ITextExtractor;
 import eu.openanalytics.crane.indexer.model.Chunk;
@@ -54,6 +56,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -68,9 +71,15 @@ public class TikaTextExtractor implements ITextExtractor {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ChunkMerger chunkMerger = new ChunkMerger();
     private final LanguageDetector languageDetector = new OptimaizeLangDetector().loadModels();
+    private final ObjectMapper metadataObjectMapper = new ObjectMapper(new YAMLFactory());
+    private final MetadataConvertorService metadataConvertorService;
+
+    public TikaTextExtractor(MetadataConvertorService metadataConvertorService) {
+        this.metadataConvertorService = metadataConvertorService;
+    }
 
     @Override
-    public List<ExtractedDocument> extract(CranePath cranePath) {
+    public List<ExtractedDocument> extract(CranePath cranePath, CranePath metadataCranePath) {
         if (cranePath.isDirectory()) {
             throw new IllegalArgumentException("Path is a directory, can only extract text from files!");
         }
@@ -91,6 +100,8 @@ public class TikaTextExtractor implements ITextExtractor {
             Metadata metadata = parseResult.getRight();
             List<Chunk> chunks = extractUsingJsoup(xhtml);
             ExtractedMetadata extractedMetadata = extractMetadata(metadata, cranePath, chunks);
+            Map<String, Object> userMetadata = parseMetadata(metadataCranePath);
+            Map<String, Object> mergedMetadata = metadataConvertorService.mergeMedata(extractedMetadata, userMetadata);
             chunks = chunkMerger.merge(chunks);
 
             List<ExtractedDocument> result = new ArrayList<>();
@@ -101,7 +112,8 @@ public class TikaTextExtractor implements ITextExtractor {
                     cranePath.getWebUri(),
                     chunk.text(),
                     chunk.type(),
-                    extractedMetadata
+                    extractedMetadata,
+                    mergedMetadata
                 ));
             }
             logger.debug("Extracted text and metadata from {}", cranePath.getWebUri());
@@ -205,6 +217,18 @@ public class TikaTextExtractor implements ITextExtractor {
             }
         }
         return null;
+    }
+
+    private Map<String, Object> parseMetadata(CranePath cranePath) {
+        if (!cranePath.isExists()) {
+            return null;
+        }
+        try {
+            return metadataConvertorService.convertMetadata(metadataObjectMapper.readValue(cranePath.asInputStream(), Map.class));
+        } catch (IOException e) {
+            logger.warn("Unable to parse metadata", e);
+            return null;
+        }
     }
 
 }
