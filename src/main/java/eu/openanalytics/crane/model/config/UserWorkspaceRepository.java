@@ -75,4 +75,9 @@ public class UserWorkspaceRepository extends Repository {
         }
     }
 
+    @Override
+    public String getName() {
+        return "Workspace";
+    }
+
 }

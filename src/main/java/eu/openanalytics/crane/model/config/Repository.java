@@ -168,11 +168,11 @@ public class Repository extends PathComponent {
     }
 
     public CranePath getPathFromStoragePath(Path fullStoragePath, BasicFileAttributes basicFileAttributes) {
-        return new CranePath(this, storagePath.relativize(fullStoragePath).toString(), fullStoragePath, basicFileAttributes);
+        return new CranePath(this, getStoragePath().relativize(fullStoragePath).toString(), fullStoragePath, basicFileAttributes);
     }
 
     public CranePath getPathFromStoragePath(Path fullStoragePath) {
-        return new CranePath(this, storagePath.relativize(fullStoragePath).toString(), fullStoragePath);
+        return new CranePath(this, getStoragePath().relativize(fullStoragePath).toString(), fullStoragePath);
     }
 
     private byte[] convertMetadataSchema(Map<String, Object> metadataSchema) {
