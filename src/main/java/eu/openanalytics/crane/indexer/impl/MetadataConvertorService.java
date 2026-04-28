@@ -51,7 +51,7 @@ public class MetadataConvertorService {
                 logger.warn("Invalid metadata key type {}", item.getKey());
                 continue;
             }
-            if (item.getValue() == null || item.getValue() instanceof String || item.getValue() instanceof Double) {
+            if (item.getValue() == null || item.getValue() instanceof String || item.getValue() instanceof Number) {
                 result.put(key, item.getValue());
             } else if (item.getValue() instanceof List<?> list) {
                 result.put(key, convertList(list));
@@ -96,14 +96,26 @@ public class MetadataConvertorService {
 
         if (!result.containsKey("creationDate")) {
             result.put("creationDate", extractedMetadata.creationDate());
-            result.put("year", extractedMetadata.year());
-            result.put("month", extractedMetadata.month());
-            result.put("day", extractedMetadata.day());
+            if (!result.containsKey("year")) {
+                result.put("year", extractedMetadata.year());
+            }
+            if (!result.containsKey("month")) {
+                result.put("month", extractedMetadata.month());
+            }
+            if (!result.containsKey("day")) {
+                result.put("day", extractedMetadata.day());
+            }
         } else {
             ZonedDateTime creationDate = ZonedDateTime.parse(extractedMetadata.creationDate()).withZoneSameInstant(ZoneOffset.UTC);
-            result.put("year", creationDate.getYear());
-            result.put("month", creationDate.getMonthValue());
-            result.put("day", creationDate.getDayOfMonth());
+            if (!result.containsKey("year")) {
+                result.put("year", creationDate.getYear());
+            }
+            if (!result.containsKey("month")) {
+                result.put("month", creationDate.getMonthValue());
+            }
+            if (!result.containsKey("day")) {
+                result.put("day", creationDate.getDayOfMonth());
+            }
         }
 
         if (!result.containsKey("authors")) {
