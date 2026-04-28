@@ -110,6 +110,12 @@ public class CranePath {
     private final CranePath metadataFilePath = CranePathBuilder.getMetadataFilePath(this);
 
     /**
+     * Gets the file for which this file is the metadata file.
+     */
+    @Getter(lazy = true)
+    private final CranePath metadataTargetPath = CranePathBuilder.getMetadataTargetPath(this);
+
+    /**
      * Whether this path is a metadata file.
      */
     @Getter(lazy = true)

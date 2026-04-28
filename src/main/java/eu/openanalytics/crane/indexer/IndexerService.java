@@ -83,25 +83,48 @@ public class IndexerService {
 
     public void indexSingleFile(CranePath cranePath) {
         try {
+            if (cranePath.isMetadataFile()) {
+                cranePath = cranePath.getMetadataTargetPath();
+            }
+            logger.info("Indexing file {}", cranePath.getWebUri());
             CranePath metadataCranePath = cranePath.getMetadataFilePath();
             List<ExtractedDocument> documents = textExtractor.extract(cranePath, metadataCranePath);
             if (documents == null || documents.isEmpty()) {
-                logger.debug("Skipping file {} for indexing", cranePath.getWebUri());
+                logger.info("Skipping file {} for indexing", cranePath.getWebUri());
                 return;
             }
             indexStore.deleteByWebUri(List.of(cranePath.getWebUri()));
             indexStore.addOrUpdateDocuments(documents);
+            logger.info("File {} indexed", cranePath.getWebUri());
         } catch (Exception e) {
             logger.warn("Exception", e);
         }
     }
 
     public void deleteSingleFile(CranePath cranePath) {
+        if (cranePath.isMetadataFile()) {
+            if (cranePath.getMetadataTargetPath().isExists()) {
+                // if the metadata file is deleted and the original file still exists, then re-index the target file
+                indexSingleFile(cranePath);
+            }
+            return;
+        }
         indexStore.deleteByWebUri(List.of(cranePath.getWebUri()));
     }
 
     public void deleteMultipleFiles(List<CranePath> cranePaths) {
-        indexStore.deleteByWebUri(cranePaths.stream().map(CranePath::getWebUri).toList());
+        List<String> toDelete = new ArrayList<>();
+        for (CranePath cranePath : cranePaths) {
+            if (cranePath.isMetadataFile()) {
+                if (cranePath.getMetadataTargetPath().isExists()) {
+                    // if the metadata file is deleted and the original file still exists, then re-index the target file
+                    indexSingleFile(cranePath);
+                }
+            } else {
+                toDelete.add(cranePath.getWebUri());
+            }
+        }
+        indexStore.deleteByWebUri(toDelete);
     }
 
     public CompletableFuture<Void> indexAllRepositories() {

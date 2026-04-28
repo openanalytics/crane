@@ -23,6 +23,7 @@ package eu.openanalytics.crane.model.runtime;
 import eu.openanalytics.crane.model.config.AccessControl;
 import eu.openanalytics.crane.model.config.PathComponent;
 import eu.openanalytics.crane.util.FileSize;
+import org.apache.commons.lang3.Strings;
 import org.apache.tika.Tika;
 import org.springframework.http.MediaType;
 
@@ -230,6 +231,13 @@ public class CranePathBuilder {
             return null;
         }
         return cranePath.getParent().getPath(".crane").getPath(cranePath.getName() + ".yaml");
+    }
+
+    public static CranePath getMetadataTargetPath(CranePath cranePath) {
+        if (!cranePath.isMetadataFile()) {
+            return null;
+        }
+        return cranePath.getParent().getParent().getPath(Strings.CS.removeEnd(cranePath.getName(), ".yaml"));
     }
 
 }
