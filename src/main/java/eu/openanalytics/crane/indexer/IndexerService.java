@@ -130,7 +130,7 @@ public class IndexerService {
         // perform walk-tree in separate executor from file handling, otherwise they could lock each other
         return CompletableFuture.runAsync(() -> {
             try {
-                logger.info("Indexing Path '{}' indexed", cranePath.getWebUri());
+                logger.info("Indexing Path '{}'", cranePath.getWebUri());
                 List<CompletableFuture<Void>> futures = new ArrayList<>();
                 cranePath.walkFileTree(new FileVisitor<>() {
                     @Override
