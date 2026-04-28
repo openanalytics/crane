@@ -106,6 +106,13 @@ public class IndexerService {
 
     public CompletableFuture<Void> indexAllRepositories() {
         return CompletableFuture.runAsync(() -> {
+            try {
+                // start indexing only after 2 minutes
+                Thread.sleep(120_000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
             for (Repository repository : craneConfig.getRepositories()) {
                 Instant start = Instant.now();
                 indexRepository(repository).join();
