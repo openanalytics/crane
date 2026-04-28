@@ -385,7 +385,7 @@ Crane.ui = {
     },
 
     saveEditMetadataDialog() {
-        document.querySelector("button[type=submit]").click();
+        document.querySelector("#edit-metadata-form button[type=submit]").click();
     },
 
     async showSearchDialog() {
