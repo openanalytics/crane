@@ -21,6 +21,7 @@
 package eu.openanalytics.crane.controller;
 
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.service.IdentifierService;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
@@ -45,18 +46,22 @@ public abstract class BaseUIController {
     protected final MessageSource messageSource;
     protected final ContextPathHelper contextPathHelper;
     protected final IdentifierService identifierService;
+    protected final SearchConfig searchConfig;
 
     public BaseUIController(UserService userService,
                             CraneConfig craneConfig,
                             LanguageService languageService,
                             MessageSource messageSource,
-                            ContextPathHelper contextPathHelper, IdentifierService identifierService) {
+                            ContextPathHelper contextPathHelper,
+                            IdentifierService identifierService,
+                            SearchConfig searchConfig) {
         this.userService = userService;
         this.config = craneConfig;
         this.languageService = languageService;
         this.messageSource = messageSource;
         this.contextPathHelper = contextPathHelper;
         this.identifierService = identifierService;
+        this.searchConfig = searchConfig;
     }
 
     protected void prepareMap(ModelMap map) {
@@ -78,6 +83,7 @@ public abstract class BaseUIController {
             map.put("username", userService.getUser().getName());
         }
         setLanguageConfig(map, httpServletRequest, httpServletResponse);
+        map.put("searchEnabled", searchConfig.isEnabled());
         map.put("request", httpServletRequest);
         map.put("response", httpServletResponse);
     }

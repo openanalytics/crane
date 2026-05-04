@@ -21,6 +21,7 @@
 package eu.openanalytics.crane.controller;
 
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.service.IdentifierService;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
@@ -60,8 +61,9 @@ public class ErrorController extends BaseUIController implements org.springframe
                            LanguageService languageService,
                            MessageSource messageSource,
                            ContextPathHelper contextPathHelper,
-                           IdentifierService identifierService) {
-        super(userService, craneConfig, languageService, messageSource, contextPathHelper, identifierService);
+                           IdentifierService identifierService,
+                           SearchConfig searchConfig) {
+        super(userService, craneConfig, languageService, messageSource, contextPathHelper, identifierService, searchConfig);
     }
 
     @RequestMapping(value = "/error", produces = "text/html", method = RequestMethod.GET)

@@ -56,4 +56,8 @@ public class SearchConfig {
         ));
     }
 
+    public boolean isEnabled() {
+        return meiliSearchUrl != null && !meiliSearchUrl.isBlank();
+    }
+
 }

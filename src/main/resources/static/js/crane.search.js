@@ -20,6 +20,7 @@
  */
 Crane = window.Crane || {};
 Crane.search = {
+    enabled: document.querySelector("meta[name='_searchEnabled']")?.content === "true",
 
     async init() {
         const apiInfo = await Crane.api._getResponseJson(await fetch(Crane.api.buildURL('__search/api-info')));

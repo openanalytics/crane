@@ -21,6 +21,7 @@
 package eu.openanalytics.crane.controller;
 
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.model.dto.LanguageDto;
@@ -70,8 +71,9 @@ public class MainController extends BaseUIController {
                           LanguageService languageService,
                           MessageSource messageSource,
                           ContextPathHelper contextPathHelper,
-                          IdentifierService identifierService) {
-        super(userService, config, languageService, messageSource, contextPathHelper, identifierService);
+                          IdentifierService identifierService,
+                          SearchConfig searchConfig) {
+        super(userService, config, languageService, messageSource, contextPathHelper, identifierService, searchConfig);
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
         this.auditingService = auditingService;
