@@ -80,6 +80,23 @@ public class TikaTextExtractor implements ITextExtractor {
 
     @Override
     public List<ExtractedDocument> extract(CranePath cranePath, CranePath metadataCranePath) {
+        Pair<ExtractedMetadata, List<Chunk>> result = extractMetadataAndChunks(cranePath);
+        if (result == null) {
+            return null;
+        }
+        return processMetadataAndChunks(cranePath, metadataCranePath, result.getKey(), result.getValue());
+    }
+
+    @Override
+    public ExtractedMetadata extractMetadata(CranePath cranePath) {
+        Pair<ExtractedMetadata, List<Chunk>> result = extractMetadataAndChunks(cranePath);
+        if (result == null) {
+            return null;
+        }
+        return result.getKey();
+    }
+
+    private Pair<ExtractedMetadata, List<Chunk>> extractMetadataAndChunks(CranePath cranePath) {
         if (cranePath.isDirectory()) {
             throw new IllegalArgumentException("Path is a directory, can only extract text from files!");
         }
@@ -100,27 +117,33 @@ public class TikaTextExtractor implements ITextExtractor {
             Metadata metadata = parseResult.getRight();
             List<Chunk> chunks = extractUsingJsoup(xhtml);
             ExtractedMetadata extractedMetadata = extractMetadata(metadata, cranePath, chunks);
-            Map<String, Object> userMetadata = parseMetadata(metadataCranePath);
-            Map<String, Object> mergedMetadata = metadataConvertorService.mergeMedata(extractedMetadata, userMetadata);
-            chunks = chunkMerger.merge(chunks);
 
-            List<ExtractedDocument> result = new ArrayList<>();
-            for (Chunk chunk: chunks) {
-                result.add(new ExtractedDocument(
-                    UUID.randomUUID().toString(),
-                    cranePath.getRepository().getName(),
-                    cranePath.getWebUri(),
-                    chunk.text(),
-                    chunk.type(),
-                    extractedMetadata,
-                    mergedMetadata
-                ));
-            }
             logger.debug("Extracted text and metadata from {}", cranePath.getWebUri());
-            return result;
+            return Pair.of(extractedMetadata, chunks);
         } catch (IOException | TikaException | SAXException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<ExtractedDocument> processMetadataAndChunks(CranePath cranePath, CranePath metadataCranePath, ExtractedMetadata extractedMetadata, List<Chunk> chunks) {
+        Map<String, Object> userMetadata = parseMetadata(metadataCranePath);
+        Map<String, Object> mergedMetadata = metadataConvertorService.mergeMedata(extractedMetadata, userMetadata);
+        chunks = chunkMerger.merge(chunks);
+
+        List<ExtractedDocument> result = new ArrayList<>();
+        for (Chunk chunk: chunks) {
+            result.add(new ExtractedDocument(
+                UUID.randomUUID().toString(),
+                cranePath.getRepository().getName(),
+                cranePath.getWebUri(),
+                chunk.text(),
+                chunk.type(),
+                extractedMetadata,
+                mergedMetadata
+            ));
+        }
+        logger.debug("Processed text and metadata from {}", cranePath.getWebUri());
+        return result;
     }
 
     private Pair<String, Metadata> parseUsingTika(CranePath cranePath) throws IOException, TikaException, SAXException {

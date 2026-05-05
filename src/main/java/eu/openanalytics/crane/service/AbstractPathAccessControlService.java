@@ -60,7 +60,7 @@ public abstract class AbstractPathAccessControlService {
             logger.debug("User {} cannot access path {} because they cannot access {}", auth.getName(), path.getWebUri(), path.getRepository().getName());
             return false;
         }
-        if (path.isInvalidMetadataPath()) {
+        if (path.isInvalidDotCranePath()) {
             logger.debug("User {} cannot access path {} because it's an invalid metadata path", auth.getName(), path.getWebUri());
             return false;
         }

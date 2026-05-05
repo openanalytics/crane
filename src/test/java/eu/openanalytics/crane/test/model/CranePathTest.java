@@ -230,25 +230,37 @@ public class CranePathTest {
         // repository is never a metadata file or directory
         Assertions.assertFalse(root.isMetadataFile());
         Assertions.assertFalse(root.isMetadataDirectory());
-        Assertions.assertFalse(root.isInvalidMetadataPath());
+        Assertions.assertFalse(root.isInvalidDotCranePath());
         Assertions.assertTrue(root.getMetadataReadAccess().isPublic());
         Assertions.assertFalse(root.getMetadataWriteAccess().isPublic());
 
-        CranePath metadataDirectory = new CranePath(repository, ".crane");
+        CranePath metadataDirectory = new CranePath(repository, ".crane/metadata/");
         Assertions.assertFalse(metadataDirectory.isMetadataFile());
         Assertions.assertTrue(metadataDirectory.isMetadataDirectory());
-        Assertions.assertFalse(metadataDirectory.isInvalidMetadataPath());
+        Assertions.assertFalse(metadataDirectory.isInvalidDotCranePath());
         Assertions.assertTrue(metadataDirectory.isExistsInConfig()); // metadata directory always exists in config
         Assertions.assertTrue(metadataDirectory.getMetadataReadAccess().isPublic());
         Assertions.assertFalse(metadataDirectory.getMetadataWriteAccess().isPublic());
 
-        CranePath metadataFile = new CranePath(repository, ".crane/somefile.txt.json");
+        CranePath metadataFile = new CranePath(repository, ".crane/metadata/somefile.txt.yaml");
         Assertions.assertTrue(metadataFile.isMetadataFile());
         Assertions.assertFalse(metadataFile.isMetadataDirectory());
-        Assertions.assertFalse(metadataFile.isInvalidMetadataPath());
+        Assertions.assertFalse(metadataFile.isInvalidDotCranePath());
         Assertions.assertFalse(metadataFile.isExistsInConfig());
         Assertions.assertNull(metadataFile.getMetadataReadAccess());
         Assertions.assertNull(metadataFile.getMetadataWriteAccess());
+        CranePath targetFile = new CranePath(repository, "somefile.txt");
+        Assertions.assertEquals(targetFile, metadataFile.getMetadataTargetPath());
+        Assertions.assertEquals(metadataFile, targetFile.getMetadataFilePath());
+
+        CranePath extractedMetadataFile = new CranePath(repository, ".crane/extracted-metadata/somefile.txt.yaml");
+        Assertions.assertTrue(extractedMetadataFile.isExtractedMetadataFile());
+        Assertions.assertFalse(extractedMetadataFile.isMetadataFile());
+        Assertions.assertFalse(extractedMetadataFile.isMetadataDirectory());
+        Assertions.assertFalse(extractedMetadataFile.isInvalidDotCranePath());
+        Assertions.assertFalse(extractedMetadataFile.isExistsInConfig());
+        Assertions.assertNull(extractedMetadataFile.getMetadataReadAccess());
+        Assertions.assertNull(extractedMetadataFile.getMetadataWriteAccess());
     }
 
     @Test
@@ -271,7 +283,13 @@ public class CranePathTest {
         repository.init(null, Path.of("/tmp/test_repository"));
 
         CranePath nested = new CranePath(repository, "my/test/dir/.crane/invalid/path");
-        Assertions.assertTrue(nested.isInvalidMetadataPath());
+        Assertions.assertTrue(nested.isInvalidDotCranePath());
+
+        nested = new CranePath(repository, "my/test/dir/.crane/metadata/invalid/path");
+        Assertions.assertTrue(nested.isInvalidDotCranePath());
+
+        nested = new CranePath(repository, "my/test/dir/.crane/extracted-metadata/invalid/path");
+        Assertions.assertTrue(nested.isInvalidDotCranePath());
     }
 
     /**

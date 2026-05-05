@@ -38,7 +38,7 @@ public class PathWriteAccessControlService extends AbstractPathAccessControlServ
 
     @Override
     protected AccessControl getAccessControl(CranePath fullPath, Repository repository) {
-        if (fullPath.isMetadataDirectoryOrFile()) {
+        if (fullPath.isDotCraneDirectory() || fullPath.isMetadataDirectoryOrFile() || fullPath.isExtractedMetadataDirectoryOrFile()) {
             return repository.getMetadataWriteAccess();
         }
         return repository.getWriteAccess();
@@ -46,7 +46,7 @@ public class PathWriteAccessControlService extends AbstractPathAccessControlServ
 
     @Override
     protected AccessControl getAccessControl(CranePath fullPath, CranePath pathComponent) {
-        if (fullPath.isMetadataDirectoryOrFile()) {
+        if (fullPath.isDotCraneDirectory() || fullPath.isMetadataDirectoryOrFile() || fullPath.isExtractedMetadataDirectoryOrFile()) {
             return pathComponent.getMetadataWriteAccess();
         }
         return pathComponent.getWriteAccess();

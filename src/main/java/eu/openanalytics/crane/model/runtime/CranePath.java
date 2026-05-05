@@ -104,13 +104,19 @@ public class CranePath {
     private final boolean indexFile = getName().equals(repository.getIndexFileName());
 
     /**
+     * Whether this path is the special `.crane.` directory.
+     */
+    @Getter(lazy = true)
+    private final boolean dotCraneDirectory = getName().equals(".crane");
+
+    /**
      * Gets the metadata file belonging to this file.
      */
     @Getter(lazy = true)
     private final CranePath metadataFilePath = CranePathBuilder.getMetadataFilePath(this);
 
     /**
-     * Gets the file for which this file is the metadata file.
+     * Gets the file for which this file is the (extracted) metadata file.
      */
     @Getter(lazy = true)
     private final CranePath metadataTargetPath = CranePathBuilder.getMetadataTargetPath(this);
@@ -119,13 +125,13 @@ public class CranePath {
      * Whether this path is a metadata file.
      */
     @Getter(lazy = true)
-    private final boolean metadataFile = getParent() != null && getParent().getName().equals(repository.getMetadataDirectoryName());
+    private final boolean metadataFile = CranePathBuilder.isMetadataFile(this);
 
     /**
      * Whether this path is a metadata directory.
      */
     @Getter(lazy = true)
-    private final boolean metadataDirectory = getName().equals(repository.getMetadataDirectoryName());
+    private final boolean metadataDirectory = CranePathBuilder.isMetadataDirectory(this);
 
     /**
      * Whether this path is a metadata directory or file.
@@ -134,16 +140,34 @@ public class CranePath {
     private final boolean metadataDirectoryOrFile = isMetadataFile() || isMetadataDirectory();
 
     /**
-     * Whether this path is a metadata file.
+     * Whether this path is a metadata schema file.
      */
     @Getter(lazy = true)
     private final boolean metadataSchemaFile = isMetadataFile() && getName().equals(repository.getMetadataSchemaFileName());
 
     /**
-     * Whether this path is an invalid metadata path, i.e. directories nested in a metadata directory.
+     * Whether this path is an extracted-metadata file.
      */
     @Getter(lazy = true)
-    private final boolean invalidMetadataPath = CranePathBuilder.isInvalidMetadataPath(this);
+    private final boolean extractedMetadataFile = CranePathBuilder.isExtractedMetadataFile(this);
+
+    /**
+     * Whether this path is an extracted-metadata directory.
+     */
+    @Getter(lazy = true)
+    private final boolean extractedMetadataDirectory = CranePathBuilder.isExtractedMetadataDirectory(this);
+
+    /**
+     * Whether this path is an extracted-metadata directory or file.
+     */
+    @Getter(lazy = true)
+    private final boolean extractedMetadataDirectoryOrFile = isExtractedMetadataFile() || isExtractedMetadataDirectory();
+
+    /**
+     * Whether this path is an invalid path in `.crane`, i.e. directories nested in a metadata directory.
+     */
+    @Getter(lazy = true)
+    private final boolean invalidDotCranePath = CranePathBuilder.isInvalidDotCranePath(this);
 
     /**
      * Whether this path exists (checked by querying the storage).
@@ -413,8 +437,8 @@ public class CranePath {
     @Override
     public String toString() {
         return "CranePath{" +
-            "storagePath=" + getStoragePath() +
-            ", pathRelativeToRepository='" + getWebUri() + '\'' +
+            "storagePath=" + storagePath +
+            ", pathRelativeToRepository='" + pathRelativeToRepository + '\'' +
             '}';
     }
 

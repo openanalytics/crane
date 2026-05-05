@@ -179,9 +179,11 @@ public class CranePathBuilder {
     }
 
     public static AccessControl getMetadataReadAccess(CranePath cranePath) {
-        if (cranePath.isMetadataDirectory()) {
-            // if this is the metadata directory or a specific metadata file, use the parent folder to check the permission
+        if (cranePath.isDotCraneDirectory()) {
             cranePath = cranePath.getParent();
+        } else if (cranePath.isMetadataDirectory() || cranePath.isExtractedMetadataDirectory()) {
+            // if this is the metadata directory use the parent folder to check the permission
+            cranePath = cranePath.getParent().getParent();
         }
         PathComponent res = cranePath.getPathComponent();
         if (res == null) {
@@ -191,9 +193,11 @@ public class CranePathBuilder {
     }
 
     public static AccessControl getMetadataWriteAccess(CranePath cranePath) {
-        if (cranePath.isMetadataDirectory()) {
-            // if this is the metadata directory or a specific metadata file, use the parent folder to check the permission
+        if (cranePath.isDotCraneDirectory()) {
             cranePath = cranePath.getParent();
+        } else if (cranePath.isMetadataDirectory() || cranePath.isExtractedMetadataDirectory()) {
+            // if this is the metadata directory use the parent folder to check the permission
+            cranePath = cranePath.getParent().getParent();
         }
         PathComponent res = cranePath.getPathComponent();
         if (res == null) {
@@ -203,19 +207,22 @@ public class CranePathBuilder {
     }
 
     public static boolean existsInConfig(CranePath cranePath) {
-        if (cranePath.isMetadataDirectory()) {
+        if (cranePath.isDotCraneDirectory()) {
             return cranePath.getParent().isExistsInConfig();
+        }
+        if (cranePath.isMetadataDirectory() || cranePath.isExtractedMetadataDirectory()) {
+            return cranePath.getParent().getParent().isExistsInConfig();
         }
         return cranePath.getPathComponent() != null;
     }
 
-    public static boolean isInvalidMetadataPath(CranePath cranePath) {
-        if (cranePath.isMetadataDirectoryOrFile()) {
+    public static boolean isInvalidDotCranePath(CranePath cranePath) {
+        if (cranePath.isMetadataDirectoryOrFile() || cranePath.isExtractedMetadataFile()) {
             return false;
         }
         CranePath parent = cranePath.getParent();
         while (parent != null) {
-            if (parent.isMetadataDirectory()) {
+            if (parent.isDotCraneDirectory()) {
                 return true;
             }
             parent = parent.getParent();
@@ -230,14 +237,46 @@ public class CranePathBuilder {
         if (cranePath.isMetadataDirectoryOrFile()) {
             return null;
         }
-        return cranePath.getParent().getPath(".crane").getPath(cranePath.getName() + ".yaml");
+        return cranePath.getParent().getPath(".crane").getPath(cranePath.getRepository().getMetadataDirectoryName()).getPath(cranePath.getName() + ".yaml");
     }
 
     public static CranePath getMetadataTargetPath(CranePath cranePath) {
         if (!cranePath.isMetadataFile()) {
             return null;
         }
-        return cranePath.getParent().getParent().getPath(Strings.CS.removeEnd(cranePath.getName(), ".yaml"));
+        return cranePath.getParent().getParent().getParent().getPath(Strings.CS.removeEnd(cranePath.getName(), ".yaml"));
+    }
+
+    public static boolean isMetadataFile(CranePath cranePath) {
+        if (cranePath.getParent() == null || cranePath.getParent().getParent() == null) {
+            return false;
+        }
+        return cranePath.getParent().getName().equals(cranePath.getRepository().getMetadataDirectoryName())
+            && cranePath.getParent().getParent().isDotCraneDirectory();
+    }
+
+    public static boolean isMetadataDirectory(CranePath cranePath) {
+        if (cranePath.getParent() == null) {
+            return false;
+        }
+        return cranePath.getName().equals(cranePath.getRepository().getMetadataDirectoryName())
+            && cranePath.getParent().isDotCraneDirectory();
+    }
+
+    public static boolean isExtractedMetadataDirectory(CranePath cranePath) {
+        if (cranePath.getParent() == null) {
+            return false;
+        }
+        return cranePath.getName().equals(cranePath.getRepository().getExtractedMetadataDirectoryName())
+            && cranePath.getParent().isDotCraneDirectory();
+    }
+
+    public static boolean isExtractedMetadataFile(CranePath cranePath) {
+        if (cranePath.getParent() == null || cranePath.getParent().getParent() == null) {
+            return false;
+        }
+        return cranePath.getParent().getName().equals(cranePath.getRepository().getExtractedMetadataDirectoryName())
+            && cranePath.getParent().getParent().isDotCraneDirectory();
     }
 
 }

@@ -151,4 +151,11 @@ public class PathComponent {
         }
     }
 
+    @Override
+    public String toString() {
+        return "PathComponent{" +
+            "name='" + name + '\'' +
+            '}';
+    }
+
 }

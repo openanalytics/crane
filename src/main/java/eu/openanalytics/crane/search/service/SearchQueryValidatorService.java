@@ -84,7 +84,7 @@ public class SearchQueryValidatorService {
                 if (field.contains("repositoryName")) {
                     throw new InvalidSearchQueryException("Invalid filter");
                 }
-                if (field.startsWith("webUri STARTS WITH \"")) {
+                if (field.startsWith("webUri STARTS WITH \"") || field.startsWith("webUri = \"")) {
                     // allowed
                     continue;
                 }

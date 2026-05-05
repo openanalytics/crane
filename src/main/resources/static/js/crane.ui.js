@@ -352,12 +352,15 @@ Crane.ui = {
     },
 
     async showEditMetadataDialog(fileName) {
-        const response = await Crane.api.getFile(".crane/metadata-schema.json")
+        const response = await Crane.api.getFile(".crane/metadata/schema.json")
         if (response === null) {
             alert("Failed to get metadata schema");
             return
         }
         const schema = await response.json();
+        const extractedMetadata = await Crane.api.getExtractedMetadataFile(fileName);
+        console.log(extractedMetadata);
+        Crane.ui.showExtractedMetadata(extractedMetadata);
         const formData = await Crane.api.getMetadataFile(fileName);
         rjsfForm({
                 schema,
@@ -371,13 +374,41 @@ Crane.ui = {
         Crane.ui.elements.editMetadataDialog.showModal()
     },
 
+    showExtractedMetadata(extractedMetadata) {
+        const container = document.getElementById("extracted-metadata");
+        if (!container) return;
+
+        for (const field of container.querySelectorAll("[data-field]")) {
+            const key = field.dataset.field;
+            const value = extractedMetadata[key];
+
+            if (value === undefined || value === null) {
+                field.textContent = "";
+                continue;
+            }
+
+            if (key === "authors") {
+                const ul = document.createElement("ul");
+                for (const author of value) {
+                    const li = document.createElement("li");
+                    li.textContent = author;
+                    ul.appendChild(li);
+                }
+                field.innerHTML = "";
+                field.appendChild(ul);
+            } else {
+                field.textContent = String(value);
+            }
+        }
+    },
+
     closeEditMetadataDialog() {
         Crane.ui.elements.editMetadataDialog.close();
     },
 
     async submitMetadataDialog(filename, result) {
         const success = await Crane.api.uploadStringAsFile(
-            ".crane/" + filename  + ".yaml",
+            ".crane/metadata/" + filename  + ".yaml",
             JSON.stringify(result.formData)
         );
         if (!success) {

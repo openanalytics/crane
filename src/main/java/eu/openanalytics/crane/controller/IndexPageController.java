@@ -96,12 +96,13 @@ public class IndexPageController extends BaseUIController {
         map.put("directories", filesAndDirectoriesInPath.getSecond());
         map.put("hasWriteAccess", uploadAccessControlService.canAccess(path));
         map.put("repository", repo.getName());
-        if (path.isMetadataDirectory()) {
+        if (path.isDotCraneDirectory() || path.isMetadataDirectory() || path.isExtractedMetadataDirectory()) {
             map.put("hasMetadataWriteAccess", false);
+            map.put("hasCreateDirectoryAccess", false);
         } else {
             map.put("hasMetadataWriteAccess", uploadAccessControlService.canAccess(path.getPath(path.getRepository().getMetadataDirectoryName())));
+            map.put("hasCreateDirectoryAccess", uploadAccessControlService.canAccess(path));
         }
-        map.put("hasCreateDirectoryAccess", uploadAccessControlService.canAccess(path) && !path.isMetadataDirectory());
         map.put("breadcrumbs", path.getComponents());
 
         return indexPageService.getTemplateName(repo);

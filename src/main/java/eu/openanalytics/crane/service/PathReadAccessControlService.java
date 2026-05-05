@@ -35,7 +35,7 @@ public class PathReadAccessControlService extends AbstractPathAccessControlServi
 
     @Override
     protected AccessControl getAccessControl(CranePath fullPath, Repository repository) {
-        if (fullPath.isMetadataDirectoryOrFile()) {
+        if (fullPath.isDotCraneDirectory() || fullPath.isMetadataDirectoryOrFile() || fullPath.isExtractedMetadataDirectoryOrFile()) {
             return repository.getMetadataReadAccess();
         }
         return repository.getReadAccess();
@@ -43,7 +43,7 @@ public class PathReadAccessControlService extends AbstractPathAccessControlServi
 
     @Override
     protected AccessControl getAccessControl(CranePath fullPath, CranePath pathComponent) {
-        if (fullPath.isMetadataDirectoryOrFile()) {
+        if (fullPath.isDotCraneDirectory() || fullPath.isMetadataDirectoryOrFile() || fullPath.isExtractedMetadataDirectoryOrFile()) {
             return pathComponent.getMetadataReadAccess();
         }
         return pathComponent.getReadAccess();

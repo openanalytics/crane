@@ -158,7 +158,7 @@ public class IndexerService {
                 cranePath.walkFileTree(new FileVisitor<>() {
                     @Override
                     public @NotNull FileVisitResult preVisitDirectory(CranePath dir, @NotNull BasicFileAttributes attrs) {
-                        if (dir.isMetadataDirectory()) {
+                        if (dir.isDotCraneDirectory() || dir.isMetadataDirectory() || dir.isExtractedMetadataDirectory()) {
                             return FileVisitResult.SKIP_SUBTREE;
                         }
                         return FileVisitResult.CONTINUE;

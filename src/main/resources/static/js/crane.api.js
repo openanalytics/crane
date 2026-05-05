@@ -158,7 +158,26 @@ Crane.api = {
      */
     async getMetadataFile(fileName) {
         try {
-            const response = await fetch(window.location + ".crane/" + fileName + ".yaml");
+            const response = await fetch(window.location + ".crane/metadata/" + fileName + ".yaml");
+            if (response.status !== 200) {
+                console.log("Received invalid response (not 200 OK) ", response);
+                return null;
+            }
+            return await response.json();
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    },
+
+    /**
+     * Get extracted-metadata file for a file (relative to the current directory).
+     * @param fileName
+     * @returns {Promise<any|null>}
+     */
+    async getExtractedMetadataFile(fileName) {
+        try {
+            const response = await fetch(window.location + ".crane/extracted-metadata/" + fileName + ".yaml");
             if (response.status !== 200) {
                 console.log("Received invalid response (not 200 OK) ", response);
                 return null;

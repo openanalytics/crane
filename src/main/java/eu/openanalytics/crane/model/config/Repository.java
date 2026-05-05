@@ -57,10 +57,13 @@ public class Repository extends PathComponent {
     private final String indexFileName;
 
     @Getter
-    private final String metadataDirectoryName = ".crane";
+    private final String metadataDirectoryName = "metadata";
 
     @Getter
-    private final String metadataSchemaFileName = "metadata-schema.json";
+    private final String metadataSchemaFileName = "schema.json";
+
+    @Getter
+    private final String extractedMetadataDirectoryName = "extracted-metadata";
 
     @Getter
     private final String onErrorExpression;
@@ -173,6 +176,13 @@ public class Repository extends PathComponent {
 
     public CranePath getPathFromStoragePath(Path fullStoragePath) {
         return new CranePath(this, getStoragePath().relativize(fullStoragePath).toString(), fullStoragePath);
+    }
+
+    @Override
+    public String toString() {
+        return "Repository{" +
+            "name='" + getName() + '\'' +
+            '}';
     }
 
     private byte[] convertMetadataSchema(Map<String, Object> metadataSchema) {

@@ -187,7 +187,7 @@ public class UploadController {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "Directory %s already exists".formatted(cranePath.getWebUri())));
         }
-        if (cranePath.getParent().isMetadataDirectory()) {
+        if (cranePath.getParent().isDotCraneDirectory() || cranePath.getParent().isMetadataDirectory() || cranePath.getParent().isExtractedMetadataDirectory()) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
             return ApiResponse.fail(Map.of("message", "Cannot create directories in a metadata directory"));
         }

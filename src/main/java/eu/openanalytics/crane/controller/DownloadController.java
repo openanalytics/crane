@@ -20,7 +20,9 @@
  */
 package eu.openanalytics.crane.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.openanalytics.crane.config.CraneConfig;
+import eu.openanalytics.crane.indexer.ITextExtractor;
 import eu.openanalytics.crane.model.config.CacheRule;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.config.RewriteRule;
@@ -34,6 +36,7 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
@@ -66,14 +69,22 @@ public class DownloadController {
     private final CraneConfig craneConfig;
     private final SpecExpressionResolver specExpressionResolver;
     private final UserService userService;
+    private final ITextExtractor textExtractor;
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public DownloadController(AuditingService auditingService, HandleSpecExpressionService handleSpecExpressionService, CraneConfig craneConfig, SpecExpressionResolver specExpressionResolver, UserService userService) {
+    public DownloadController(AuditingService auditingService,
+                              HandleSpecExpressionService handleSpecExpressionService,
+                              CraneConfig craneConfig,
+                              SpecExpressionResolver specExpressionResolver,
+                              UserService userService,
+                              ITextExtractor textExtractor) {
         this.auditingService = auditingService;
         this.handleSpecExpressionService = handleSpecExpressionService;
         this.craneConfig = craneConfig;
         this.specExpressionResolver = specExpressionResolver;
         this.userService = userService;
+        this.textExtractor = textExtractor;
     }
 
     @PreAuthorize("@readAccessControlService.canAccess(#r, #p)")
@@ -99,6 +110,11 @@ public class DownloadController {
 
         if (cranePath.isMetadataSchemaFile()) {
             handleMetadataSchemaFile(repository, request, response);
+            return;
+        }
+
+        if (cranePath.isExtractedMetadataFile()) {
+            handleExtractedMetadataFile(cranePath, request, response);
             return;
         }
 
@@ -186,6 +202,15 @@ public class DownloadController {
         }
         auditingService.createRepositoryHandlerAuditEvent(request);
         ByteArrayResource resource = new ByteArrayResource(metadataSchema);
+        ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
+        resourceHttpMessageConverter.write(resource, MediaType.APPLICATION_JSON, outputMessage);
+    }
+
+    private void handleExtractedMetadataFile(CranePath cranePath, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        CranePath targetFile = cranePath.getParent().getParent().getParent().getPath(Strings.CS.removeEnd(cranePath.getName(), ".yaml"));
+        byte[] result = objectMapper.writeValueAsBytes(textExtractor.extractMetadata(targetFile));
+
+        ByteArrayResource resource = new ByteArrayResource(result);
         ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
         resourceHttpMessageConverter.write(resource, MediaType.APPLICATION_JSON, outputMessage);
     }

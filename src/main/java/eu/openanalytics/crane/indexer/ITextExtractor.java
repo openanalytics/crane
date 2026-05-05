@@ -21,6 +21,7 @@
 package eu.openanalytics.crane.indexer;
 
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
+import eu.openanalytics.crane.indexer.model.ExtractedMetadata;
 import eu.openanalytics.crane.model.runtime.CranePath;
 
 import java.util.List;
@@ -28,5 +29,7 @@ import java.util.List;
 public interface ITextExtractor {
 
     public List<ExtractedDocument> extract(CranePath cranePath, CranePath metadataCranePath);
+
+    public ExtractedMetadata extractMetadata(CranePath cranePath);
 
 }

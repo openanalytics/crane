@@ -108,7 +108,6 @@ Crane.search = {
         });
 
         search.start();
-    }
-
+    },
 
 };
