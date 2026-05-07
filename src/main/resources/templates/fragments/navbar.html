@@ -48,7 +48,7 @@
                         <li th:each="lang: ${enabledLanguages}" th:data-language="${lang.key}" th:text="${lang.displayName}" th:class="${language == lang.key ? 'language-active' : ''}"></li>
                     </ul>
                 </div>
-                <a class="header-field header-button" th:href="@{${loginUrl}}" th:if="${!isOnlyPublic} and ${!authenticated}" th:text="#{navbar.login_all_repos}"></a>
+                <a class="header-field header-button" href="?login" th:if="${!isOnlyPublic} and ${!authenticated}" th:text="#{navbar.login_all_repos}"></a>
                 <div style="display:flex;" th:if="${!isOnlyPublic} and ${authenticated}">
                     <p class="header-field" th:text="${#messages.msgWithParams('navbar.logged_in_as', username)}">
                     </p>

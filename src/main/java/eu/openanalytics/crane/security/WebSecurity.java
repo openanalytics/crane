@@ -42,6 +42,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
@@ -109,6 +110,7 @@ public class WebSecurity {
                 .addFilterBefore(new PathTraversalFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new BlockInternalUrlFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(new CustomExceptionTranslationFilter(), ExceptionTranslationFilter.class)
+                .addFilterAfter(new TriggerLoginFilter(), CustomExceptionTranslationFilter.class)
                 .addFilterAfter(openIdReAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
                 .requestCache((cache) -> cache.requestCache(requestCache));
         return http.build();
@@ -145,6 +147,11 @@ public class WebSecurity {
                 if (redirectUrl.contains("/__index/")) {
                     redirectUrl = redirectUrl.replace("/__index/", "/");
                 }
+                // remove `login` query parameter from URL
+                redirectUrl = UriComponentsBuilder.fromUriString(redirectUrl)
+                    .replaceQueryParam("login")
+                    .build()
+                    .toUriString();
                 response.sendRedirect(redirectUrl);
             }
         });

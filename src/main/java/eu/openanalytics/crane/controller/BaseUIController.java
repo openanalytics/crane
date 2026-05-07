@@ -70,7 +70,6 @@ public abstract class BaseUIController {
         HttpServletResponse httpServletResponse = servletRequestAttributes.getResponse();
 
         boolean authenticated = userService.isAuthenticated();
-        map.put("loginUrl", userService.getLoginUrl());
         map.put("logo", config.getLogoUrl());
         map.put("authenticated", authenticated);
         map.put("isOnlyPublic", config.isOnlyPublic());
