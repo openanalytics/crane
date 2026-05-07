@@ -359,8 +359,9 @@ Crane.ui = {
         }
         const schema = await response.json();
         const extractedMetadata = await Crane.api.getExtractedMetadataFile(fileName);
-        console.log(extractedMetadata);
-        Crane.ui.showExtractedMetadata(extractedMetadata);
+        if (extractedMetadata) {
+            Crane.ui.showExtractedMetadata(extractedMetadata);
+        }
         const formData = await Crane.api.getMetadataFile(fileName);
         rjsfForm({
                 schema,
@@ -375,9 +376,10 @@ Crane.ui = {
     },
 
     showExtractedMetadata(extractedMetadata) {
-        const container = document.getElementById("extracted-metadata");
+        const container = document.getElementById("extracted-metadata-container");
         if (!container) return;
 
+        container.style.display = "block";
         for (const field of container.querySelectorAll("[data-field]")) {
             const key = field.dataset.field;
             const value = extractedMetadata[key];

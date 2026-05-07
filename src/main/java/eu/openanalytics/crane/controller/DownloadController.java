@@ -78,13 +78,13 @@ public class DownloadController {
                               CraneConfig craneConfig,
                               SpecExpressionResolver specExpressionResolver,
                               UserService userService,
-                              ITextExtractor textExtractor) {
+                              Optional<ITextExtractor> textExtractor) {
         this.auditingService = auditingService;
         this.handleSpecExpressionService = handleSpecExpressionService;
         this.craneConfig = craneConfig;
         this.specExpressionResolver = specExpressionResolver;
         this.userService = userService;
-        this.textExtractor = textExtractor;
+        this.textExtractor = textExtractor.orElse(null);
     }
 
     @PreAuthorize("@readAccessControlService.canAccess(#r, #p)")
@@ -206,12 +206,17 @@ public class DownloadController {
         resourceHttpMessageConverter.write(resource, MediaType.APPLICATION_JSON, outputMessage);
     }
 
-    private void handleExtractedMetadataFile(CranePath cranePath, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleExtractedMetadataFile(CranePath cranePath, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
+        if (textExtractor == null) {
+            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, HttpStatus.NOT_FOUND.value());
+            request.getRequestDispatcher("/error").forward(request, response);
+            return;
+        }
         CranePath targetFile = cranePath.getParent().getParent().getParent().getPath(Strings.CS.removeEnd(cranePath.getName(), ".yaml"));
         byte[] result = objectMapper.writeValueAsBytes(textExtractor.extractMetadata(targetFile));
 
         ByteArrayResource resource = new ByteArrayResource(result);
-        ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
         resourceHttpMessageConverter.write(resource, MediaType.APPLICATION_JSON, outputMessage);
     }
 

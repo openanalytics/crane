@@ -438,11 +438,14 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     min-height: 40px;
 }
 
+#extracted-metadata-container {
+    display: none;
+}
+
 #extracted-metadata {
     background: var(--color-light-gray-background);
     border-radius: var(--border-radius);
     padding: 0.25rem 0.75rem;
-    /*margin-bottom: 1.25rem;*/
     border: 0.5px solid var(--color-light-gray-border);
 }
 
