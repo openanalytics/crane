@@ -332,7 +332,7 @@ public class UploadControllerTest {
     @MethodSource("instances")
     public void testCreateMetadataDirectory(CraneInstance instance) {
         ApiTestHelper apiTestHelper = ApiTestHelper.from(instance);
-        String path = "/public_repo/some/long/directory/path/.crane/";
+        String path = "/public_repo/some/long/directory/path/.crane/metadata/";
 
         // path doesn't yet exist, anonymously -> no permission
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
@@ -343,10 +343,14 @@ public class UploadControllerTest {
         // create path, anonymously -> no permission
         apiTestHelper.callWithoutAuth(apiTestHelper.createPostRequest(path)).assertForbidden();
 
-        // create path as user
+        // create metadata directory
         Response response = apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createPostRequest(path));
-        response.assertSuccess();
-        Assertions.assertEquals("{\"status\":\"success\",\"data\":{\"message\":\"Directory creation succeeded\"}}", response.body());
+        response.assertBadRequest();
+        Assertions.assertEquals("{\"status\":\"fail\",\"data\":{\"message\":\"Cannot create directories in a metadata directory\"}}", response.body());
+
+        // upload metadata file
+        apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createMultiPartRequest(path + "myfile.txt.yaml", "some_metadata: true"))
+            .assertSuccess();
 
         // path exists now, but anonymous user has no access
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path)).assertUnauthorizedRedirectToLogIn();
