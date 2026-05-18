@@ -628,6 +628,64 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     width: 100%;
 }
 
+/* Description popover */
+
+#root .rjsf-field {
+    position: relative;
+}
+
+#root .rjsf-field:has(.field-description) .control-label {
+    cursor: pointer;
+}
+
+#root .rjsf-field:has(.field-description) .control-label::after,
+#root .rjsf-field:has(.field-description) legend::after {
+    content: '';
+    display: inline-block;
+    margin-left: 6px;
+    cursor: pointer;
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/information-slab-symbol.svg");
+    background-color: var(--color-light-blue);
+    vertical-align: middle;
+    background-size: 20px;
+    border: 1px solid transparent;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: var(--border-radius);
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+}
+
+.field-description {
+    display: none;
+    position: absolute;
+    top: 100%;
+    margin-top: -10px;
+    left: 0;
+    background: var(--color-light-black);
+    color: var(--color-light-gray-background);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    padding: 8px 12px;
+    max-width: 50%;
+    word-wrap: break-word;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#root fieldset .field-description {
+    top: 0;
+    margin-top: 10px;
+}
+
+#root .rjsf-field:has(.control-label:hover) .field-description,
+#root .rjsf-field:has(legend:hover) .field-description {
+    display: block;
+}
+
 /* ==== ICONS ==== */
 
 button.icon {
