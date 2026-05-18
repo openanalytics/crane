@@ -51,6 +51,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -150,8 +151,10 @@ public class TikaTextExtractor implements ITextExtractor {
         ContentHandler handler = new ToXMLContentHandler();
         AutoDetectParser parser = new AutoDetectParser();
         Metadata metadata = new Metadata();
-        parser.parse(cranePath.asInputStream(), handler, metadata);
-        return Pair.of(handler.toString(), metadata);
+        try (InputStream inputStream = cranePath.asInputStream()) {
+            parser.parse(inputStream, handler, metadata);
+            return Pair.of(handler.toString(), metadata);
+        }
     }
 
     private ExtractedMetadata extractMetadata(Metadata metadata, CranePath cranePath, List<Chunk> chunks) throws MimeTypeException {
@@ -247,7 +250,9 @@ public class TikaTextExtractor implements ITextExtractor {
             return null;
         }
         try {
-            return metadataConvertorService.convertMetadata(metadataObjectMapper.readValue(cranePath.asInputStream(), Map.class));
+            try (InputStream inputStream = cranePath.asInputStream()) {
+                return metadataConvertorService.convertMetadata(metadataObjectMapper.readValue(inputStream, Map.class));
+            }
         } catch (IOException e) {
             logger.warn("Unable to parse metadata", e);
             return null;
