@@ -479,7 +479,7 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     display: none;
 }
 
-#root > .rjsf-field {
+#root > .rjsf-field, fieldset > .rjsf-field {
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
@@ -487,7 +487,8 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     min-height: 50px;
 }
 
-#root > .rjsf-field > label {
+#root > .rjsf-field > label,
+fieldset > .rjsf-field > label {
     grid-column: 1;
     word-break: break-word;
     overflow-wrap: anywhere;
@@ -579,6 +580,7 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
 
 .rjsf-array-item {
     min-height: 50px;
+    align-items: center !important;
 }
 
 .rjsf-array-item .btn-group {
@@ -609,6 +611,8 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
 }
 
 .rjsf-field-array fieldset {
+    margin-top: 10px;
+    margin-bottom: 10px;
     border: 1px solid var(--color-light-gray-border);
     border-radius: var(--border-radius);
 }
@@ -628,7 +632,7 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     flex: 1;
 }
 
-.rjsf-array-item div:first-child input {
+.rjsf-array-item > .col-xs-9 > .form-group > input {
     width: 100%;
 }
 
@@ -682,7 +686,7 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     z-index: 10;
 }
 
-#root fieldset .field-description {
+#root fieldset > .field-description {
     top: 0;
     margin-top: 10px;
 }
