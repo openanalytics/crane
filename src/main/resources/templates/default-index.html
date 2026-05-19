@@ -131,7 +131,7 @@
                     </td>
                 </tr>
 
-                <tr th:each="file : ${files}">
+                <tr th:each="file : ${files}" th:data-filename="${file.name}">
                     <td><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
                     <td th:text="${file.lastModifiedTime}"></td>
                     <td th:text="${file.formattedSize}"></td>

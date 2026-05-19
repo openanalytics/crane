@@ -55,7 +55,7 @@ Crane.api = {
     },
 
     async deleteObject(fileName, button) {
-        const url = document.URL + fileName;
+        const url = window.location.origin + window.location.pathname + fileName;
         const isPathComponent = button.dataset?.ispathcomponent === "true";
         button.classList.add("deleting")
         const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -139,7 +139,7 @@ Crane.api = {
      */
     async getFile(fileName) {
         try {
-            const response = await fetch(window.location + fileName);
+            const response = await fetch(window.location.origin + window.location.pathname + fileName);
             if (response.status !== 200) {
                 console.log("Received invalid response (not 200 OK) ", response);
                 return null;
@@ -158,7 +158,7 @@ Crane.api = {
      */
     async getMetadataFile(fileName) {
         try {
-            const response = await fetch(window.location + ".crane/metadata/" + fileName + ".yaml");
+            const response = await fetch(window.location.origin + window.location.pathname + ".crane/metadata/" + fileName + ".yaml");
             if (response.status !== 200) {
                 console.log("Received invalid response (not 200 OK) ", response);
                 return null;
@@ -177,7 +177,7 @@ Crane.api = {
      */
     async getExtractedMetadataFile(fileName) {
         try {
-            const response = await fetch(window.location + ".crane/extracted-metadata/" + fileName + ".yaml");
+            const response = await fetch(window.location.origin + window.location.pathname + ".crane/extracted-metadata/" + fileName + ".yaml");
             if (response.status !== 200) {
                 console.log("Received invalid response (not 200 OK) ", response);
                 return null;
@@ -197,7 +197,7 @@ Crane.api = {
      */
     async uploadStringAsFile(fileName, data) {
         try {
-            const url = window.location + fileName + "?replace=true"
+            const url = window.location.origin + window.location.pathname + fileName + "?replace=true"
             const file = new File([data], fileName, {
                 type: "text/plain",
             });

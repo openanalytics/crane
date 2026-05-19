@@ -145,6 +145,15 @@ Crane.ui = {
         document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.closeEditMetadataDialog);
         document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
         document.getElementById("cancel-search").addEventListener("click", Crane.ui.closeSearchDialog);
+
+        const params = new URLSearchParams(window.location.search);
+        const value = params.get('highlight-file');
+
+        if (value) {
+            const escaped = CSS.escape(value);
+            const tr = document.querySelector(`tr[data-filename="${escaped}"]`);
+            tr.classList.add('highlight');
+        }
     },
 
     initTable() {
@@ -440,7 +449,7 @@ Crane.ui = {
     },
 
     async copyLinkToFile(button, fileName) {
-        await navigator.clipboard.writeText(window.location + fileName);
+        await navigator.clipboard.writeText(window.location.origin + window.location.pathname + fileName);
         const popover = button.querySelector('.copy-popover');
         popover.classList.add('visible');
 

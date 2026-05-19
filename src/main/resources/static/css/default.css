@@ -99,9 +99,28 @@ body {
     background-color: #fff;
 }
 
-a {
+.files-table a {
     color: var(--color-dark-blue);
     text-decoration: none;
+}
+
+.files-table tr:hover td {
+    background-color: var(--color-light-gray-hover);
+}
+
+@keyframes fadeBackground {
+    from {
+        background-color: var(--color-light-gray-hover);
+    }
+    to {
+        background-color: #ffffff;
+    }
+}
+
+.files-table .highlight, .files-table .highlight a {
+    color: var(--color-red);
+    animation: fadeBackground 2s ease-out forwards;
+    font-weight: 800;
 }
 
 code {
