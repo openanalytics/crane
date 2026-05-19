@@ -530,6 +530,10 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     display: none;
 }
 
+.rjsf-array-item fieldset label {
+    display: block;
+}
+
 .rjsf-array-item button {
     display: block;
     width: 39px;
@@ -574,7 +578,7 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
 }
 
 .rjsf-array-item {
-    height: 50px;
+    min-height: 50px;
 }
 
 .rjsf-array-item .btn-group {
@@ -634,13 +638,13 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     position: relative;
 }
 
-#root .rjsf-field:has(.field-description) .control-label,
+#root .rjsf-field:has(.field-description) > .control-label,
 #root .rjsf-field:has(.field-description) .checkbox label {
     cursor: pointer;
 }
 
-#root .rjsf-field:has(.field-description) .control-label::after,
-#root .rjsf-field:has(.field-description) legend::after,
+#root .rjsf-field:has(.field-description) > .control-label::after,
+#root .rjsf-field:has(> fieldset > .field-description) > fieldset > legend::after,
 #root .rjsf-field:has(.field-description) .checkbox span::after {
     content: '';
     display: inline-block;
@@ -683,9 +687,9 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     margin-top: 10px;
 }
 
-#root .rjsf-field:has(.control-label:hover) .field-description,
-#root .rjsf-field:has(legend:hover) .field-description,
-#root .checkbox:has(span:hover) .field-description {
+#root .rjsf-field:has(> .control-label:hover) > .field-description,
+#root .rjsf-field:has(legend:hover) > .field-description,
+#root .checkbox:has(span:hover) > .field-description {
     display: block;
 }
 

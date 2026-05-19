@@ -51,7 +51,7 @@ public class MetadataConvertorService {
                 logger.warn("Invalid metadata key type {}", item.getKey());
                 continue;
             }
-            if (item.getValue() == null || item.getValue() instanceof String || item.getValue() instanceof Number) {
+            if (item.getValue() == null || item.getValue() instanceof String || item.getValue() instanceof Number || item.getValue() instanceof Boolean) {
                 result.put(key, item.getValue());
             } else if (item.getValue() instanceof List<?> list) {
                 result.put(key, convertList(list));
@@ -67,6 +67,9 @@ public class MetadataConvertorService {
     private List<Object> convertList(List<?> list) {
         if (list.stream().allMatch(i -> i instanceof String)) {
             return (List<Object>) list;
+        }
+        if (list.stream().allMatch(i -> i instanceof Map)) {
+            return list.stream().map(m -> (Object) convertMetadata((Map<?, ?>) m)).toList();
         }
         logger.warn("Invalid metadata type in list");
         return null;

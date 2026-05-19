@@ -39,7 +39,8 @@ public class SearchQueryValidatorService {
         "metadata.year",
         "metadata.month",
         "metadata.day" ,
-        "metadata.authors"
+        "metadata.authors",
+        "metadata.hide" // TODO
     );
 
     public SearchQueryDto validate(SearchQueryDto searchQuery) {
@@ -47,7 +48,7 @@ public class SearchQueryValidatorService {
             validateFacets(searchQuery.facets());
         }
         if (searchQuery.filter() != null) {
-            validateFilter(searchQuery.filter());
+            validateFilters(searchQuery.filter());
         }
         if (searchQuery.attributesToHighlight() != null) {
             validateAttributesToHighlight(searchQuery.attributesToHighlight());
@@ -78,7 +79,7 @@ public class SearchQueryValidatorService {
         }
     }
 
-    private void validateFilter(List<List<String>> filters) {
+    private void validateFilters(List<List<String>> filters) {
         for (List<String> filter : filters) {
             for (String field : filter) {
                 if (field.contains("repositoryName")) {
@@ -88,10 +89,16 @@ public class SearchQueryValidatorService {
                     // allowed
                     continue;
                 }
-                if (StringUtils.countMatches(field, '=') != 1) {
-                    throw new InvalidSearchQueryException("Invalid filter");
-                }
-                String[] split = field.split("=");
+                validateFilter(field);
+            }
+        }
+    }
+
+    private void validateFilter(String filter) {
+        for (String filterOperator : List.of("!=", "=")) {
+            // TODO value may contain filterOperation
+            if (StringUtils.countMatches(filter, filterOperator) == 1) {
+                String[] split = filter.split(filterOperator);
                 if (!split[0].startsWith("\"") || !split[0].endsWith("\"")) {
                     throw new InvalidSearchQueryException("Invalid filter");
                 }
@@ -99,8 +106,10 @@ public class SearchQueryValidatorService {
                 if (!ALLOWED_FACETS.contains(fieldName)) {
                     throw new InvalidSearchQueryException("Invalid filter");
                 }
+                return;
             }
         }
+        throw new InvalidSearchQueryException("Invalid filter");
     }
 
     private void validateAttributesToHighlight(List<String> attributesToHighlight) {
