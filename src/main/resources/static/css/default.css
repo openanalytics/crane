@@ -634,12 +634,14 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     position: relative;
 }
 
-#root .rjsf-field:has(.field-description) .control-label {
+#root .rjsf-field:has(.field-description) .control-label,
+#root .rjsf-field:has(.field-description) .checkbox label {
     cursor: pointer;
 }
 
 #root .rjsf-field:has(.field-description) .control-label::after,
-#root .rjsf-field:has(.field-description) legend::after {
+#root .rjsf-field:has(.field-description) legend::after,
+#root .rjsf-field:has(.field-description) .checkbox span::after {
     content: '';
     display: inline-block;
     margin-left: 6px;
@@ -682,7 +684,8 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
 }
 
 #root .rjsf-field:has(.control-label:hover) .field-description,
-#root .rjsf-field:has(legend:hover) .field-description {
+#root .rjsf-field:has(legend:hover) .field-description,
+#root .checkbox:has(span:hover) .field-description {
     display: block;
 }
 
