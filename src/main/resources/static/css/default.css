@@ -326,12 +326,12 @@ button:not([disabled]) {
     cursor: pointer;
 }
 
-.metadata-button, button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
+.metadata-button, .copy-button, button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
     color: var(--color-light-black);
     background-color: var(--color-light-blue);
 }
 
-.metadata-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
+.metadata-button:hover, .copy-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
     color: var(--color-light-black);
     background-color: var(--color-light-blue-hover);
 }
@@ -350,6 +350,32 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     background-color: #b7b7b7;
     color: var(--color-light-black);
     cursor: not-allowed;
+}
+
+.copy-button {
+    position: relative;
+}
+
+.copy-popover {
+    display: none;
+    position: absolute;
+    top: 100%;
+    margin-top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-light-black);
+    color: var(--color-light-gray-background);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    padding: 8px 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+    font-size: 0.8rem;
+}
+
+.copy-popover.visible {
+    display: block;
 }
 
 /* ==== DROPDOWN ==== */
@@ -721,6 +747,10 @@ button.icon {
 
 .icon-broom {
     background-image: url("../webjars/mdi__svg/7.4.47/svg/broom.svg");
+}
+
+.icon-content-copy {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/content-copy.svg");
 }
 
 /* ==== SEARCH ==== */

@@ -137,6 +137,10 @@ Crane.ui = {
                 const filename = button.dataset?.filename;
                 Crane.ui.showEditMetadataDialog(filename);
             }
+            if (button && this.contains(button) && button.classList.contains("copy-button")) {
+                const filename = button.dataset?.filename;
+                Crane.ui.copyLinkToFile(button, filename);
+            }
         });
         document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.closeEditMetadataDialog);
         document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
@@ -433,6 +437,14 @@ Crane.ui = {
         Crane.ui.elements.searchDialog.close();
     },
 
+    async copyLinkToFile(button, fileName) {
+        await navigator.clipboard.writeText(window.location + fileName);
+        const popover = button.querySelector('.copy-popover');
+        popover.classList.add('visible');
+
+        clearTimeout(popover._hideTimeout);
+        popover._hideTimeout = setTimeout(() => popover.classList.remove('visible'), 1500)
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
