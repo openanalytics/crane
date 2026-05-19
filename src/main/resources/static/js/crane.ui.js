@@ -135,7 +135,7 @@ Crane.ui = {
             const button = event.target.closest("button");
             if (button && this.contains(button) && button.classList.contains("metadata-button")) {
                 const filename = button.dataset?.filename;
-                Crane.ui.showEditMetadataDialog(filename);
+                Crane.ui.showEditMetadataDialog(button, filename);
             }
             if (button && this.contains(button) && button.classList.contains("copy-button")) {
                 const filename = button.dataset?.filename;
@@ -355,7 +355,8 @@ Crane.ui = {
         });
     },
 
-    async showEditMetadataDialog(fileName) {
+    async showEditMetadataDialog(button, fileName) {
+        button.classList.add("uploading");
         const response = await Crane.api.getFile(".crane/metadata/schema.json")
         if (response === null) {
             alert("Failed to get metadata schema");
@@ -376,6 +377,7 @@ Crane.ui = {
             },
             document.getElementById("edit-metadata-form")
         );
+        button.classList.remove("uploading");
         Crane.ui.elements.editMetadataDialog.showModal()
     },
 
