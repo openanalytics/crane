@@ -160,6 +160,7 @@ public class TikaTextExtractor implements ITextExtractor {
     private ExtractedMetadata extractMetadata(Metadata metadata, CranePath cranePath, List<Chunk> chunks) throws MimeTypeException {
         ZonedDateTime date = getDate(metadata, cranePath);
         return new ExtractedMetadata(
+            cranePath.getName(),
             getTitle(metadata, cranePath),
             cranePath.getMediaType().toString(),
             mimeTypes.forName(cranePath.getMediaType().toString()).getAcronym(),

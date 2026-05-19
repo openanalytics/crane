@@ -23,6 +23,7 @@ package eu.openanalytics.crane.indexer.model;
 import java.util.List;
 
 public record ExtractedMetadata(
+    String filename,
     String title,
     String mediaType,
     String humanReadableMediaType,
