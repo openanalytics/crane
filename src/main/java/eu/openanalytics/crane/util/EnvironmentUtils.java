@@ -23,9 +23,9 @@ package eu.openanalytics.crane.util;
 import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class EnvironmentUtils {
 
@@ -113,11 +113,9 @@ public class EnvironmentUtils {
                     .map(EnvironmentUtils::convertedNestedLists)
                     .toList();
             } else {
-                return map.entrySet().stream()
-                    .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> EnvironmentUtils.convertedNestedLists(e.getValue()))
-                    );
+                Map<Object, Object> result = new LinkedHashMap<>();
+                map.forEach((key, value1) -> result.put(key, EnvironmentUtils.convertedNestedLists(value1)));
+                return result;
             }
         }
         return value;
