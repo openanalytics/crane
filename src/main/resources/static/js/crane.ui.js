@@ -613,7 +613,7 @@ Crane.ui = {
     },
 
     async copyLinkToFile(button, fileName) {
-        await navigator.clipboard.writeText(window.location.origin + window.location.pathname + fileName);
+        await navigator.clipboard.writeText(window.location.pathname + fileName);
         const popover = button.querySelector('.copy-popover');
         popover.classList.add('visible');
 
@@ -622,7 +622,7 @@ Crane.ui = {
     },
 
     async copyCurrentPath() {
-        await navigator.clipboard.writeText(window.location.origin + window.location.pathname);
+        await navigator.clipboard.writeText(window.location.pathname);
         const popover = document.querySelector('.copy-current-popover');
         popover.classList.add('visible');
 
