@@ -78,6 +78,7 @@ public abstract class BaseUIController {
         map.put("resourcePrefix", "/__assets/" + identifierService.instanceId);
         map.put("instanceId", identifierService.instanceId);
         map.put("repository", "");
+        map.put("path", "");
         if (authenticated) {
             map.put("username", userService.getUser().getName());
         }

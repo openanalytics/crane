@@ -96,6 +96,7 @@ public class IndexPageController extends BaseUIController {
         map.put("directories", filesAndDirectoriesInPath.getSecond());
         map.put("hasWriteAccess", uploadAccessControlService.canAccess(path));
         map.put("repository", repo.getName());
+        map.put("path", path.getWebUri());
         if (path.isDotCraneDirectory() || path.isMetadataDirectory() || path.isExtractedMetadataDirectory()) {
             map.put("hasMetadataWriteAccess", false);
             map.put("hasCreateDirectoryAccess", false);

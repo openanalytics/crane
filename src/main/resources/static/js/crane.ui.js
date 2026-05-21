@@ -507,7 +507,7 @@ Crane.ui = {
 
     async renameFile() {
         const newFilename = Crane.ui.elements.newFileNameInput.value;
-        const error = await Crane.api.renameResource(Crane.ui.fileBeingRenamed, newFilename);
+        const error = await Crane.api.renameResource(Crane.ui.fileBeingRenamed, Crane.api.path + "/" + newFilename);
         if (error) {
             alert(error);
         } else {
@@ -531,7 +531,7 @@ Crane.ui = {
 
     async renameDirectory() {
         const newDirectoryName = Crane.ui.elements.newDirectoryNameInput.value;
-        const error = await Crane.api.renameResource(Crane.ui.directoryBeingRenamed, newDirectoryName);
+        const error = await Crane.api.renameResource(Crane.ui.directoryBeingRenamed, Crane.api.path + newDirectoryName);
         if (error) {
             alert(error);
         } else {

@@ -25,6 +25,7 @@ Crane.api = {
     contextPath: document.querySelector("meta[name='_contextPath']")?.content,
     instanceId: document.querySelector("meta[name='_instanceId']")?.content,
     repository: document.querySelector("meta[name='_repository']")?.content,
+    path: document.querySelector("meta[name='_path']")?.content,
 
     buildURL(location) {
         if (location.startsWith("/")) {
