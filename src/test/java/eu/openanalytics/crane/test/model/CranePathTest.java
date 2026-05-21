@@ -77,7 +77,7 @@ public class CranePathTest {
         Assertions.assertEquals("CranePath is a directory and has no MediaType", exception.getMessage());
 
         Assertions.assertEquals(0, testPath.getContents().count());
-        Assertions.assertEquals("/test_repository/test_path/my/complex/path", testPath.getWebUri());
+        Assertions.assertEquals("/test_repository/test_path/my/complex/path/", testPath.getWebUri());
         Assertions.assertEquals("path", testPath.getName());
         Assertions.assertEquals(List.of(
                 new CranePath(repository, "test_path"),

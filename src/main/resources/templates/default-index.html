@@ -181,7 +181,7 @@
                         </button>
                         <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" type="button" class="rename-directory-button button icon icon-rename" th:title="#{index.rename_directory}">
                         </button>
-                        <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-filename="${directory.name}" type="button" class="move-directory-button button icon icon-file-move-outline" th:title="#{index.move_directory}">
+                        <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" type="button" class="move-directory-button button icon icon-file-move-outline" th:title="#{index.move_directory}">
                         </button>
                         <span class="delete-info" th:id="${'progress-' + directory.name}"></span>
                     </td>

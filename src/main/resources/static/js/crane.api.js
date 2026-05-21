@@ -255,7 +255,7 @@ Crane.api = {
 
     async listDirectories(path) {
         try {
-            const response = await fetch(Crane.api.buildURL(path) + "/");
+            const response = await fetch(Crane.api.buildURL(path));
             const json = await Crane.api._getResponseJson(response);
             return json.data.directories;
         } catch (e) {

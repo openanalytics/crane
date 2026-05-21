@@ -496,7 +496,7 @@ Crane.ui = {
 
     async renameFile() {
         const newFilename = Crane.ui.elements.newFileNameInput.value;
-        const error = await Crane.api.renameResource(Crane.ui.fileBeingRenamed, Crane.api.path + "/" + newFilename);
+        const error = await Crane.api.renameResource(Crane.ui.fileBeingRenamed, Crane.api.path + newFilename);
         if (error) {
             alert(error);
         } else {
@@ -585,11 +585,11 @@ Crane.ui = {
             })
             dir.classList.add('selected');
             const destination = document.querySelector("#move-file-dialog .destination");
-            destination.innerText = path + "/" + Crane.ui.resourceBeingMoved;
+            destination.innerText = path + Crane.ui.resourceBeingMoved;
             destination.classList.add("visible");
             const moveFileButton = document.getElementById("move-file");
             moveFileButton.disabled = false;
-            Crane.ui.moveDestination = path + "/";
+            Crane.ui.moveDestination = path;
         });
 
         li.appendChild(dir);

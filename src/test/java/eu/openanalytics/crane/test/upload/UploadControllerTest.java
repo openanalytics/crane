@@ -325,7 +325,7 @@ public class UploadControllerTest {
         // create path
         response = apiTestHelper.callWithoutAuth(apiTestHelper.createPostRequest(path));
         response.assertBadRequest();
-        Assertions.assertEquals("{\"status\":\"fail\",\"data\":{\"message\":\"Directory /public_repo/some/long/directory/path already exists\"}}", response.body());
+        Assertions.assertEquals("{\"status\":\"fail\",\"data\":{\"message\":\"Directory /public_repo/some/long/directory/path/ already exists\"}}", response.body());
     }
 
     @ParameterizedTest

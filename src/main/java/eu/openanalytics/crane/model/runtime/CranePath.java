@@ -199,7 +199,7 @@ public class CranePath {
      * Gets how this path is accessed through the web API (without any context-path).
      */
     @Getter(lazy = true)
-    private final String webUri = "/" + getRepository().getName() + "/" + getPathRelativeToRepository();
+    private final String webUri = "/" + getRepository().getName() + "/" + getPathRelativeToRepository() + (!getPathRelativeToRepository().isEmpty() && isDirectory() ? "/" : "");
 
     /**
      * Gets the name of this directory or file.
