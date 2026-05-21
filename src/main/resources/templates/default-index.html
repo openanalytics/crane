@@ -159,7 +159,7 @@
             </thead>
             <tbody>
                 <tr th:each="directory : ${directories}" th:data-dirname="${directory.name}">
-                    <td><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
+                    <td><span class="icon icon-folder"></span><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
                     <td></td>
                     <td></td>
                     <td>
@@ -183,7 +183,7 @@
                 </tr>
 
                 <tr th:each="file : ${files}" th:data-filename="${file.name}">
-                    <td><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
+                    <td><span class="icon icon-file"></span><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
                     <td th:text="${file.lastModifiedTime}"></td>
                     <td th:text="${file.formattedSize}"></td>
                     <td>
