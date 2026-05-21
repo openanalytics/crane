@@ -28,7 +28,7 @@
     <th:block th:fragment="content">
         <h1><span th:text="#{index.directory}"></span> <code><span class="slash">/</span><a th:href="@{'/' + ${repository}}" th:text="${repository}"></a><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a
                 th:href="@{${part.webUri}}" th:text="${part.name}"></a><span class="slash">/</span></th:block></code>
-            <button type="button" class="copy-button copy-current-button button icon icon-content-copy" th:title="#{index.copy-link}"><span class="copy-popover copy-current-popover" th:text="#{index.popover.copied}"></span></button>
+            <button type="button" class="copy-button copy-current-button button icon icon-content-copy" th:title="#{index.copy_link}"><span class="copy-popover copy-current-popover" th:text="#{index.popover.copied}"></span></button>
         </h1>
         <dialog id="uppy-dialog">
             <div id="uppy" th:action="@{${resource}}"></div>
@@ -46,9 +46,9 @@
 
         <dialog id="create-directory-dialog">
             <form id="create-directory-form" method="post" th:action="@{${resource}}">
-                <div><h1 th:text="#{index.create-directory}"></h1></div>
+                <div><h1 th:text="#{index.create_directory}"></h1></div>
                 <div class="input-field">
-                    <label th:text="#{index.directory-name}"></label>
+                    <label th:text="#{index.directory_name}"></label>
                     <input id="directory-name" type="text"/>
                 </div>
                 <div class="flex flex-space-between">
@@ -58,8 +58,36 @@
             </form>
         </dialog>
 
+        <dialog id="rename-file-dialog">
+            <form id="rename-file-form">
+                <div><h1 th:text="#{index.rename_file}"></h1></div>
+                <div class="input-field">
+                    <label th:text="#{index.file_name}"></label>
+                    <input id="new-file-name" type="text"/>
+                </div>
+                <div class="flex flex-space-between">
+                    <button id="cancel-rename-file" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
+                    <button id="rename-file" type="button" class="button create" th:text="#{index.rename.button}"></button>
+                </div>
+            </form>
+        </dialog>
+
+        <dialog id="rename-directory-dialog">
+            <form id="rename-directory-form">
+                <div><h1 th:text="#{index.rename_directory}"></h1></div>
+                <div class="input-field">
+                    <label th:text="#{index.file_name}"></label>
+                    <input id="new-directory-name" type="text"/>
+                </div>
+                <div class="flex flex-space-between">
+                    <button id="cancel-rename-directory" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
+                    <button id="rename-directory" type="button" class="button create" th:text="#{index.rename.button}"></button>
+                </div>
+            </form>
+        </dialog>
+
         <dialog id="edit-metadata-dialog">
-            <div><h1 th:text="#{index.update-metadata}"></h1></div>
+            <div><h1 th:text="#{index.update_metadata}"></h1></div>
             <div id="extracted-metadata-container">
                 <h2>Extracted metadata</h2>
                 <div id="extracted-metadata">
@@ -117,7 +145,7 @@
                     <td></td>
                     <td></td>
                     <td>
-                        <button th:data-filename="${directory.name}" type="button" class="copy-button button icon icon-content-copy" th:title="#{index.copy-link}">
+                        <button th:data-filename="${directory.name}" type="button" class="copy-button button icon icon-content-copy" th:title="#{index.copy_link}">
                             <span class="copy-popover" th:text="#{index.popover.copied}"></span>
                         </button>
                         <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" th:data-ispathcomponent="${directory.existsInConfig}" type="button"
@@ -128,6 +156,8 @@
                                 class="delete-button button icon icon-broom"
                                 th:title="#{index.empty_directory}">
                         </button>
+                        <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" type="button" class="rename-directory-button button icon icon-rename" th:title="#{index.rename_directory}">
+                        </button>
                         <span class="delete-info" th:id="${'progress-' + directory.name}"></span>
                     </td>
                 </tr>
@@ -137,12 +167,14 @@
                     <td th:text="${file.lastModifiedTime}"></td>
                     <td th:text="${file.formattedSize}"></td>
                     <td>
-                        <button th:data-filename="${file.name}" type="button" class="copy-button button icon icon-content-copy" th:title="#{index.copy-link}">
+                        <button th:data-filename="${file.name}" type="button" class="copy-button button icon icon-content-copy" th:title="#{index.copy_link}">
                             <span class="copy-popover" th:text="#{index.popover.copied}"></span>
                         </button>
                         <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button button icon icon-delete" th:title="#{index.delete_file}">
                         </button>
-                        <button th:if="${hasMetadataWriteAccess}" th:data-filename="${file.name}" type="button" class="metadata-button button icon icon-table-edit" th:title="#{index.update-metadata}">
+                        <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="rename-file-button button icon icon-rename" th:title="#{index.rename_file}">
+                        </button>
+                        <button th:if="${hasMetadataWriteAccess}" th:data-filename="${file.name}" type="button" class="metadata-button button icon icon-table-edit" th:title="#{index.update_metadata}">
                         </button>
                         <span class="delete-info" th:id="${'progress-' + file.name}"></span>
                     </td>

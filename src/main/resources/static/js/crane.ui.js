@@ -26,7 +26,13 @@ Crane.ui = {
         createDirectoryForm: document.getElementById("create-directory-form"),
         createDirectoryButton: document.getElementById("create-directory"),
         editMetadataDialog: document.getElementById("edit-metadata-dialog"),
+        renameFileDialog: document.getElementById("rename-file-dialog"),
+        renameDirectoryDialog: document.getElementById("rename-directory-dialog"),
+        renameFileForm: document.getElementById("rename-file-form"),
+        renameDirectoryForm: document.getElementById("rename-directory-form"),
         searchDialog: document.getElementById("search-dialog"),
+        newFileNameInput: document.getElementById("new-file-name"),
+        newDirectoryNameInput: document.getElementById("new-directory-name"),
         table: $("table"),
         datatable: null,
         uppy: null,
@@ -141,10 +147,23 @@ Crane.ui = {
                 const filename = button.dataset?.filename;
                 Crane.ui.copyLinkToFile(button, filename);
             }
+            if (button && this.contains(button) && button.classList.contains("rename-file-button")) {
+                const filename = button.dataset?.filename;
+                Crane.ui.showRenameFileDialog(button, filename);
+            }
+            if (button && this.contains(button) && button.classList.contains("rename-directory-button")) {
+                const dirname = button.dataset?.dirname;
+                console.log(dirname);
+                Crane.ui.showRenameDirectoryDialog(button, dirname);
+            }
         });
         document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.closeEditMetadataDialog);
         document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
         document.getElementById("cancel-search").addEventListener("click", Crane.ui.closeSearchDialog);
+        document.getElementById("cancel-rename-file").addEventListener("click", Crane.ui.closeRenameFileDialog);
+        document.getElementById("rename-file").addEventListener("click", Crane.ui.renameFile);
+        document.getElementById("cancel-rename-directory").addEventListener("click", Crane.ui.closeRenameDirectoryDialog);
+        document.getElementById("rename-directory").addEventListener("click", Crane.ui.renameDirectory);
 
         document.querySelectorAll(".copy-current-button").forEach(btn =>
             btn.addEventListener("click", Crane.ui.copyCurrentPath)
@@ -219,6 +238,18 @@ Crane.ui = {
             if (event.code === "Enter") {
                 event.preventDefault();
                 Crane.ui.createDirectory(event);
+            }
+        });
+        Crane.ui.elements.renameFileForm.addEventListener('keydown', function (event) {
+            if (event.code === "Enter") {
+                event.preventDefault();
+                Crane.ui.renameFile();
+            }
+        });
+        Crane.ui.elements.renameDirectoryForm.addEventListener('keydown', function (event) {
+            if (event.code === "Enter") {
+                event.preventDefault();
+                Crane.ui.renameDirectory();
             }
         });
 
@@ -429,7 +460,7 @@ Crane.ui = {
 
     async submitMetadataDialog(filename, result) {
         const success = await Crane.api.uploadStringAsFile(
-            ".crane/metadata/" + filename  + ".yaml",
+            ".crane/metadata/" + filename + ".yaml",
             JSON.stringify(result.formData)
         );
         if (!success) {
@@ -450,6 +481,54 @@ Crane.ui = {
 
     closeSearchDialog() {
         Crane.ui.elements.searchDialog.close();
+    },
+
+    fileBeingRenamed: null,
+
+    async showRenameFileDialog(button, fileName) {
+        Crane.ui.fileBeingRenamed = fileName;
+        Crane.ui.elements.newFileNameInput.value = fileName;
+        Crane.ui.elements.renameFileDialog.showModal()
+    },
+
+    async renameFile() {
+        const newFilename = Crane.ui.elements.newFileNameInput.value;
+        const error = await Crane.api.renameResource(Crane.ui.fileBeingRenamed, newFilename);
+        if (error) {
+            alert(error);
+        } else {
+            Crane.ui.closeRenameFileDialog();
+            location.reload();
+        }
+    },
+
+    closeRenameFileDialog() {
+        Crane.ui.elements.newFileNameInput.value = "";
+        Crane.ui.elements.renameFileDialog.close();
+    },
+
+    directoryBeingRenamed: null,
+
+    async showRenameDirectoryDialog(button, directoryName) {
+        Crane.ui.directoryBeingRenamed = directoryName;
+        Crane.ui.elements.newDirectoryNameInput.value = directoryName;
+        Crane.ui.elements.renameDirectoryDialog.showModal()
+    },
+
+    async renameDirectory() {
+        const newDirectoryName = Crane.ui.elements.newDirectoryNameInput.value;
+        const error = await Crane.api.renameResource(Crane.ui.directoryBeingRenamed, newDirectoryName);
+        if (error) {
+            alert(error);
+        } else {
+            Crane.ui.closeRenameFileDialog();
+            location.reload();
+        }
+    },
+
+    closeRenameDirectoryDialog() {
+        Crane.ui.elements.newDirectoryNameInput.value = "";
+        Crane.ui.elements.renameDirectoryDialog.close();
     },
 
     async copyLinkToFile(button, fileName) {

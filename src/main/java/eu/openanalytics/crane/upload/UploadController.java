@@ -27,6 +27,7 @@ import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.service.DeletionService;
+import eu.openanalytics.crane.upload.dto.RenameResourceDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
@@ -42,8 +43,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -61,12 +64,18 @@ public class UploadController {
     private final UploadAuditing auditingService;
     private final DeletionService deletionService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final UploadAccessControlService uploadAccessControlService;
 
-    public UploadController(CraneConfig config, UploadAuditing auditingService, DeletionService deletionService, ApplicationEventPublisher applicationEventPublisher) {
+    public UploadController(CraneConfig config,
+                            UploadAuditing auditingService,
+                            DeletionService deletionService,
+                            ApplicationEventPublisher applicationEventPublisher,
+                            UploadAccessControlService uploadAccessControlService) {
         this.config = config;
         this.auditingService = auditingService;
         this.deletionService = deletionService;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.uploadAccessControlService = uploadAccessControlService;
     }
 
     @PreAuthorize("@uploadAccessControlService.canAccess(#r, #p)")
@@ -158,6 +167,57 @@ public class UploadController {
         } catch (IllegalAccessException e) {
             auditingService.createErrorHandlerAuditEvent(request, HttpStatus.CONFLICT);
             return ApiResponse.failConflict(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("@uploadAccessControlService.canAccess(#r, #p)")
+    @ResponseBody
+    @PatchMapping(value = "/__file/{repository}/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Object>> renameResource(HttpServletRequest request,
+                                                              @P("r") @PathVariable(name = "repository") String stringRepository,
+                                                              @P("p") @PathVariable(name = "path") String stringPath,
+                                                              @RequestBody RenameResourceDto body) {
+        Repository repository = config.getRepository(stringRepository);
+        CranePath cranePath = repository.getPath(stringPath);
+
+        if (!cranePath.isExists()) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(cranePath.getWebUri())));
+        }
+        if (body.newName() == null || body.newName().isBlank()) {
+            return ApiResponse.fail(Map.of("message", "No new name provided"));
+        }
+        if (body.newName().contains("/")) {
+            return ApiResponse.fail(Map.of("message", "Cannot move path"));
+        }
+
+        try {
+            if (cranePath.isDirectory() && cranePath.isExistsInConfig()) {
+                auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+                return ApiResponse.fail(Map.of("message", "Directory cannot be renamed"));
+            }
+            CranePath destination = cranePath.getParent().getPath(body.newName());
+            if (!uploadAccessControlService.canAccess(destination)) {
+                auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+                return ApiResponse.fail(Map.of("message", "No permission on destination"));
+            }
+            if (cranePath.equals(destination)) {
+                return ApiResponse.success();
+            }
+            if (destination.isExists()) {
+                auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+                return ApiResponse.fail(Map.of("message", "Destination already exists"));
+            }
+
+            Files.move(cranePath.getStoragePath(), destination.getStoragePath());
+            return ApiResponse.success();
+        } catch (NoSuchFileException e) {
+            // file or directory deleted in background
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "File %s doesn't exist".formatted(cranePath.getWebUri())));
+        } catch (IOException e) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "File rename failed"));
         }
     }
 

@@ -158,7 +158,7 @@ dialog {
     border: solid var(--color-light-gray-border) 1px;
 }
 
-dialog#create-directory-dialog {
+dialog#create-directory-dialog, dialog#rename-file-dialog, dialog#rename-directory-dialog {
     width: 500px;
     padding-top: 1.25rem;
 }
@@ -189,7 +189,7 @@ input[type="text"], input[type="search"], input[type="file"], input[type="date"]
     padding: 5px;
 }
 
-input#directory-name, .ais-SearchBox-input {
+input#directory-name, .ais-SearchBox-input, input#new-file-name, input#new-directory-name {
     width: 100%;
 }
 
@@ -345,12 +345,12 @@ button:not([disabled]) {
     cursor: pointer;
 }
 
-.metadata-button, .copy-button, button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
+.metadata-button, .copy-button, .rename-file-button, .rename-directory-button, button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
     color: var(--color-light-black);
     background-color: var(--color-light-blue);
 }
 
-.metadata-button:hover, .copy-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
+.metadata-button:hover, .copy-button:hover, .rename-file-button:hover, .rename-directory-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
     color: var(--color-light-black);
     background-color: var(--color-light-blue-hover);
 }
@@ -770,6 +770,10 @@ button.icon {
 
 .icon-content-copy {
     background-image: url("../webjars/mdi__svg/7.4.47/svg/content-copy.svg");
+}
+
+.icon-rename {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/rename.svg");
 }
 
 /* ==== SEARCH ==== */

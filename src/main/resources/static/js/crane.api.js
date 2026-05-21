@@ -132,6 +132,14 @@ Crane.api = {
         return json;
     },
 
+    async _getErrorMessage(response) {
+        let json = await response.json();
+        if (json.hasOwnProperty("data") && json.data.hasOwnProperty("message")) {
+            return json.data.message;
+        }
+        return "Unknown error"; // TODO translate
+    },
+
     /**
      * Get contents of fileName (relative to current directory)
      * @param fileName
@@ -214,6 +222,34 @@ Crane.api = {
             console.error(e);
             return null;
         }
-    }
+    },
+
+    /**
+     * Renames a file or directory (relative to current directory)
+     * @param oldName
+     * @param newName
+     * @returns {Promise<string|null>}
+     */
+    async renameResource(oldName, newName) {
+        try {
+            const resp = await fetch(window.location.origin + window.location.pathname + oldName, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [Crane.api.csrfHeader]: Crane.api.csrfToken
+                },
+                body: JSON.stringify({"newName": newName}),
+            });
+
+            const json = await Crane.api._getResponseJson(resp);
+            if (json !== null) {
+                return null;
+            }
+            return await Crane.api._getErrorMessage(resp);
+        } catch (e) {
+            console.error(e);
+            return "Unknown error"; // TODO translate
+        }
+    },
 
 }
