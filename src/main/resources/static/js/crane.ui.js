@@ -178,6 +178,12 @@ Crane.ui = {
         document.getElementById("rename-directory").addEventListener("click", Crane.ui.renameDirectory);
         document.getElementById("move-file").addEventListener("click", Crane.ui.moveFile);
         document.getElementById("cancel-move-file").addEventListener("click", Crane.ui.closeMoveFileDialog);
+        document.getElementById("directory-name").addEventListener("input", Crane.ui.disableCreateDirectory);
+        document.getElementById("cancel-create-directory").addEventListener("click", Crane.ui.closeCreateDirectoryDialog);
+        document.getElementById("create-directory").addEventListener("click", Crane.ui.createDirectory);
+        document.getElementById("upload-button").addEventListener("click", () => Crane.ui.elements.uppyDialog.showModal());
+        document.getElementById("create-directory-button").addEventListener("click", () => Crane.ui.elements.createDirectoryDialog.showModal());
+        document.getElementById("search-button").addEventListener("click", () => Crane.ui.showSearchDialog());
 
         document.querySelectorAll(".copy-current-button").forEach(btn =>
             btn.addEventListener("click", Crane.ui.copyCurrentPath)
@@ -204,6 +210,7 @@ Crane.ui = {
             language: {
                 url: dataTableLanguageUrl
             },
+            searching: !Crane.search.enabled,
             columnDefs: [
                 {
                     targets: 1,
@@ -230,42 +237,7 @@ Crane.ui = {
                 Crane.ui.elements.table.css("visibility", "visible");
             }
         };
-        const hasWriteAccess = Crane.ui.elements.table.data("has-write-access");
-        const hasCreateDirectoryAccess = Crane.ui.elements.table.data("has-create-directory-access");
-
-        if (hasWriteAccess || hasCreateDirectoryAccess || Crane.search.enabled) {
-            const buttons = [];
-            if (hasWriteAccess) {
-                buttons.push(
-                    {
-                        action: () => Crane.ui.elements.uppyDialog.showModal(),
-                        text: Crane.internationalization.t("index.upload.button")
-                    },
-                );
-            }
-            if (hasCreateDirectoryAccess) {
-                buttons.push(
-                    {
-                        action: () => Crane.ui.elements.createDirectoryDialog.showModal(),
-                        text: Crane.internationalization.t("index.create_directory.button")
-                    },
-                );
-            }
-            if (Crane.search.enabled) {
-                buttons.push(
-                    {
-                        action: () => Crane.ui.showSearchDialog(),
-                        text: Crane.internationalization.t("index.search.button")
-                    },
-                );
-            }
-            dataTableOptions["layout"] = {topStart: {buttons: buttons}}
-        }
         Crane.ui.elements.table.DataTable(dataTableOptions);
-
-        document.getElementById("directory-name").addEventListener("input", Crane.ui.disableCreateDirectory);
-        document.getElementById("cancel-create-directory").addEventListener("click", Crane.ui.closeCreateDirectoryDialog);
-        document.getElementById("create-directory").addEventListener("click", Crane.ui.createDirectory);
         Crane.ui.elements.createDirectoryForm.addEventListener('keydown', function (event) {
             if (event.code === "Enter") {
                 event.preventDefault();
@@ -303,7 +275,6 @@ Crane.ui = {
     },
 
     initUppy() {
-        Crane.ui.elements.datatable.button(0)[0].node.id = "upload-button";
         Crane.ui.elements.uppy = new Uppy.Uppy();
         Crane.ui.elements.uppy.use(Uppy.Dashboard, {
             inline: true,

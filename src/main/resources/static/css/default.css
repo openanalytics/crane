@@ -321,7 +321,7 @@ label {
 
 /* ==== BUTTONS ==== */
 
-.btn, .button, button.dt-button[tabindex='0'], button.uppy-DashboardContent-back, .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload, button.uppy-DashboardContent-addMore {
+.btn, .button, .top-buttons button, button.uppy-DashboardContent-back, .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload, button.uppy-DashboardContent-addMore {
     text-decoration: none;
     padding: .5rem 1.5rem;
     border-radius: var(--border-radius);
@@ -335,8 +335,22 @@ button {
     font-size: 0;
 }
 
-button.dt-button[tabindex='0'] {
-    padding: .3rem 1.5rem !important;
+.top-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.top-buttons .icon {
+    height: 30px;
+    width: 30px;
+    display: inline-block;
+}
+
+.top-buttons button {
+    height: 30px;
+    padding: 0 1.6rem 0 1.5rem;
+    display: flex;
+    align-items: center;
 }
 
 .header-button {
@@ -358,12 +372,12 @@ button:not([disabled]) {
     cursor: pointer;
 }
 
-.metadata-button, .copy-button, .rename-file-button, .move-file-button, .move-directory-button, .rename-directory-button, button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
+.metadata-button, .copy-button, .rename-file-button, .move-file-button, .move-directory-button, .rename-directory-button, button.create, button.uppy-DashboardContent-addMore, .top-buttons button {
     color: var(--color-light-black);
     background-color: var(--color-light-blue);
 }
 
-.metadata-button:hover, .copy-button:hover, .rename-file-button:hover, .move-file-button:hover, .move-directory-button:hover, .rename-directory-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
+.metadata-button:hover, .copy-button:hover, .rename-file-button:hover, .move-file-button:hover, .move-directory-button:hover, .rename-directory-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, .top-buttons button:hover {
     color: var(--color-light-black);
     background-color: var(--color-light-blue-hover);
 }
@@ -799,6 +813,18 @@ button.icon {
 
 .icon-file {
     background-image: url("../webjars/mdi__svg/7.4.47/svg/file.svg");
+}
+
+.icon-upload {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/upload.svg");
+}
+
+.icon-folder-plus {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/folder-plus.svg");
+}
+
+.icon-magnify {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/magnify.svg");
 }
 
 /* ==== SEARCH ==== */
