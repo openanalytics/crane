@@ -41,7 +41,7 @@ public record CraneFileDto(@JsonIgnore CranePath cranePath) {
     }
 
     @SuppressWarnings("unused")
-    public Instant getLastModifiedTiime() {
+    public Instant getLastModifiedTime() {
         return cranePath.getLastModifiedTime();
     }
 

@@ -204,6 +204,24 @@ Crane.ui = {
             language: {
                 url: dataTableLanguageUrl
             },
+            columnDefs: [
+                {
+                    targets: 1,
+                    render: function (data, type, row) {
+                        if (type === 'sort' || type === 'filter') {
+                            return data;
+                        }
+
+                        if (data) {
+                            return new Date(data).toLocaleString(document.documentElement.lang, {
+                                dateStyle: 'long',
+                                timeStyle: 'short'
+                            });
+                        }
+                        return "";
+                    }
+                }
+            ],
             initComplete: function () {
                 Crane.ui.elements.datatable = this.api();
                 if (Crane.ui.elements.table.data("has-write-access")) {
