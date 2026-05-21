@@ -146,6 +146,10 @@ Crane.ui = {
         document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
         document.getElementById("cancel-search").addEventListener("click", Crane.ui.closeSearchDialog);
 
+        document.querySelectorAll(".copy-current-button").forEach(btn =>
+            btn.addEventListener("click", Crane.ui.copyCurrentPath)
+        );
+
         const params = new URLSearchParams(window.location.search);
         const value = params.get('highlight-file');
 
@@ -451,6 +455,15 @@ Crane.ui = {
     async copyLinkToFile(button, fileName) {
         await navigator.clipboard.writeText(window.location.origin + window.location.pathname + fileName);
         const popover = button.querySelector('.copy-popover');
+        popover.classList.add('visible');
+
+        clearTimeout(popover._hideTimeout);
+        popover._hideTimeout = setTimeout(() => popover.classList.remove('visible'), 1500)
+    },
+
+    async copyCurrentPath() {
+        await navigator.clipboard.writeText(window.location.origin + window.location.pathname);
+        const popover = document.querySelector('.copy-current-popover');
         popover.classList.add('visible');
 
         clearTimeout(popover._hideTimeout);

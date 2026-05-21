@@ -27,8 +27,9 @@
     </th:block>
     <th:block th:fragment="content">
         <h1><span th:text="#{index.directory}"></span> <code><span class="slash">/</span><a th:href="@{'/' + ${repository}}" th:text="${repository}"></a><span class="slash">/</span><th:block th:each="part : ${breadcrumbs}"><a
-                th:href="@{${part.webUri}}" th:text="${part.name}"></a><span class="slash">/</span></th:block>
-        </code></h1>
+                th:href="@{${part.webUri}}" th:text="${part.name}"></a><span class="slash">/</span></th:block></code>
+            <button type="button" class="copy-button copy-current-button button icon icon-content-copy" th:title="#{index.copy-link}"><span class="copy-popover copy-current-popover" th:text="#{index.popover.copied}"></span></button>
+        </h1>
         <dialog id="uppy-dialog">
             <div id="uppy" th:action="@{${resource}}"></div>
             <div class="flex flex-space-between">

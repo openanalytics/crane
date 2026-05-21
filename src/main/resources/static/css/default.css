@@ -949,3 +949,8 @@ button.icon {
     max-width: 1000px;
     width: 90vw;
 }
+
+.copy-current-button {
+    vertical-align: middle;
+    margin-left: 20px;
+}
