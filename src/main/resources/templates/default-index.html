@@ -72,6 +72,24 @@
             </form>
         </dialog>
 
+        <dialog id="move-file-dialog">
+            <form id="move-file-form">
+                <div><h1 th:text="#{index.move_file}" class="move-file-header move-header"></h1><h1 th:text="#{index.move_directory}" class="move-directory-header move-header"></h1></div>
+                <div class="input-field">
+                    <span th:text="#{index.select_destination}"></span>
+                    <div class="file-tree">
+                        <ul class="root">
+                        </ul>
+                    </div>
+                    <span class="destination-label" th:text="#{index.move_destination}"> </span><code class="destination"></code>
+                </div>
+                <div class="flex flex-space-between">
+                    <button id="cancel-move-file" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
+                    <button id="move-file" type="button" class="button create"  disabled th:text="#{index.move.button}"></button>
+                </div>
+            </form>
+        </dialog>
+
         <dialog id="rename-directory-dialog">
             <form id="rename-directory-form">
                 <div><h1 th:text="#{index.rename_directory}"></h1></div>
@@ -140,7 +158,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="directory : ${directories}">
+                <tr th:each="directory : ${directories}" th:data-dirname="${directory.name}">
                     <td><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
                     <td></td>
                     <td></td>
@@ -158,6 +176,8 @@
                         </button>
                         <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-dirname="${directory.name}" type="button" class="rename-directory-button button icon icon-rename" th:title="#{index.rename_directory}">
                         </button>
+                        <button th:if="${@uploadAccessControlService.canAccess(directory) && !directory.existsInConfig}" th:data-filename="${directory.name}" type="button" class="move-directory-button button icon icon-file-move-outline" th:title="#{index.move_directory}">
+                        </button>
                         <span class="delete-info" th:id="${'progress-' + directory.name}"></span>
                     </td>
                 </tr>
@@ -173,6 +193,8 @@
                         <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="delete-button button icon icon-delete" th:title="#{index.delete_file}">
                         </button>
                         <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="rename-file-button button icon icon-rename" th:title="#{index.rename_file}">
+                        </button>
+                        <button th:if="${hasWriteAccess}" th:data-filename="${file.name}" type="button" class="move-file-button button icon icon-file-move-outline" th:title="#{index.move_file}">
                         </button>
                         <button th:if="${hasMetadataWriteAccess}" th:data-filename="${file.name}" type="button" class="metadata-button button icon icon-table-edit" th:title="#{index.update_metadata}">
                         </button>

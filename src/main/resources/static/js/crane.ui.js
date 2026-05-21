@@ -33,6 +33,7 @@ Crane.ui = {
         searchDialog: document.getElementById("search-dialog"),
         newFileNameInput: document.getElementById("new-file-name"),
         newDirectoryNameInput: document.getElementById("new-directory-name"),
+        moveFileDialog: document.getElementById("move-file-dialog"),
         table: $("table"),
         datatable: null,
         uppy: null,
@@ -153,8 +154,19 @@ Crane.ui = {
             }
             if (button && this.contains(button) && button.classList.contains("rename-directory-button")) {
                 const dirname = button.dataset?.dirname;
-                console.log(dirname);
                 Crane.ui.showRenameDirectoryDialog(button, dirname);
+            }
+            if (button && this.contains(button) && button.classList.contains("move-file-button")) {
+                const filename = button.dataset?.filename;
+                document.querySelector(".move-file-header").style.display = "block";
+                document.querySelector(".move-directory-header").style.display = "none";
+                Crane.ui.showMoveFileDialog(button, filename);
+            }
+            if (button && this.contains(button) && button.classList.contains("move-directory-button")) {
+                const filename = button.dataset?.dirname;
+                document.querySelector(".move-file-header").style.display = "none";
+                document.querySelector(".move-directory-header").style.display = "block";
+                Crane.ui.showMoveFileDialog(button, filename);
             }
         });
         document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.closeEditMetadataDialog);
@@ -164,6 +176,8 @@ Crane.ui = {
         document.getElementById("rename-file").addEventListener("click", Crane.ui.renameFile);
         document.getElementById("cancel-rename-directory").addEventListener("click", Crane.ui.closeRenameDirectoryDialog);
         document.getElementById("rename-directory").addEventListener("click", Crane.ui.renameDirectory);
+        document.getElementById("move-file").addEventListener("click", Crane.ui.moveFile);
+        document.getElementById("cancel-move-file").addEventListener("click", Crane.ui.closeMoveFileDialog);
 
         document.querySelectorAll(".copy-current-button").forEach(btn =>
             btn.addEventListener("click", Crane.ui.copyCurrentPath)
@@ -174,7 +188,7 @@ Crane.ui = {
 
         if (value) {
             const escaped = CSS.escape(value);
-            const tr = document.querySelector(`tr[data-filename="${escaped}"]`);
+            const tr = document.querySelector(`tr[data-filename="${escaped}"]`) || document.querySelector(`tr[data-dirname="${escaped}"]`);
             tr.classList.add('highlight');
         }
     },
@@ -529,6 +543,84 @@ Crane.ui = {
     closeRenameDirectoryDialog() {
         Crane.ui.elements.newDirectoryNameInput.value = "";
         Crane.ui.elements.renameDirectoryDialog.close();
+    },
+
+    resourceBeingMoved: "",
+    moveDestination: "",
+
+    async showMoveFileDialog(button, fileName) {
+        Crane.ui.resourceBeingMoved = fileName;
+        // reset state
+        Crane.ui.moveDestination = "";
+        const root = document.querySelector("#move-file-dialog .file-tree .root");
+        const destination = document.querySelector("#move-file-dialog .destination");
+        destination.innerText = "";
+        destination.classList.remove("visible");
+        root.innerHTML = "";
+        // add repository as root
+        root.appendChild(Crane.ui.buildNode(Crane.api.repository, "/" + Crane.api.repository));
+        // show dialog
+        Crane.ui.elements.moveFileDialog.showModal()
+    },
+
+    buildNode(name, path) {
+        const li = document.createElement('li');
+
+        const dir = document.createElement('div');
+        dir.className = 'dir';
+        dir.innerHTML = `<span class="tree-icon"></span><span class="name"></span>`;
+        dir.querySelector(".name").innerText = name;
+
+        const children = document.createElement('ul');
+        children.className = 'children';
+
+        let loaded = false;
+        dir.querySelector(".tree-icon").addEventListener('click', async () => {
+            // expand node
+            const isOpen = dir.classList.toggle('open');
+            children.classList.toggle('visible', isOpen);
+
+            if (isOpen && !loaded) {
+                loaded = true;
+                const entries = await Crane.api.listDirectories(path);
+                entries.forEach(({name, path}) => {
+                    children.appendChild(Crane.ui.buildNode(name, path));
+                });
+            }
+        });
+
+        dir.querySelector(".name").addEventListener('click', async () => {
+            // select node
+            document.querySelectorAll(".file-tree .selected").forEach(e => {
+                e.classList.remove("selected");
+            })
+            dir.classList.add('selected');
+            const destination = document.querySelector("#move-file-dialog .destination");
+            destination.innerText = path + "/" + Crane.ui.resourceBeingMoved;
+            destination.classList.add("visible");
+            const moveFileButton = document.getElementById("move-file");
+            moveFileButton.disabled = false;
+            Crane.ui.moveDestination = path + "/";
+        });
+
+        li.appendChild(dir);
+        li.appendChild(children);
+        return li;
+    },
+
+    async moveFile() {
+        const destination = Crane.ui.moveDestination + Crane.ui.resourceBeingMoved ;
+        const error = await Crane.api.renameResource(Crane.ui.resourceBeingMoved, destination);
+        if (error) {
+            alert(error);
+        } else {
+            Crane.ui.closeMoveFileDialog();
+            window.location.replace(Crane.api.buildURL(Crane.ui.moveDestination) + "?highlight-file=" + Crane.ui.resourceBeingMoved);
+        }
+    },
+
+    closeMoveFileDialog() {
+        Crane.ui.elements.moveFileDialog.close();
     },
 
     async copyLinkToFile(button, fileName) {

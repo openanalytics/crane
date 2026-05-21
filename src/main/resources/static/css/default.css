@@ -163,6 +163,11 @@ dialog#create-directory-dialog, dialog#rename-file-dialog, dialog#rename-directo
     padding-top: 1.25rem;
 }
 
+dialog#move-file-dialog {
+    width: 1000px;
+    padding-top: 1.25rem;
+}
+
 dialog#edit-metadata-dialog {
     max-width: 1000px;
     width: 90vw;
@@ -345,12 +350,12 @@ button:not([disabled]) {
     cursor: pointer;
 }
 
-.metadata-button, .copy-button, .rename-file-button, .rename-directory-button, button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
+.metadata-button, .copy-button, .rename-file-button, .move-file-button, .move-directory-button, .rename-directory-button, button.create, button.uppy-DashboardContent-addMore, button.dt-button[tabindex='0'] {
     color: var(--color-light-black);
     background-color: var(--color-light-blue);
 }
 
-.metadata-button:hover, .copy-button:hover, .rename-file-button:hover, .rename-directory-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
+.metadata-button:hover, .copy-button:hover, .rename-file-button:hover, .move-file-button:hover, .move-directory-button:hover, .rename-directory-button:hover, button.create:not([disabled]):hover, button.uppy-DashboardContent-addMore:not([disabled]):hover, button.dt-button[tabindex='0']:hover {
     color: var(--color-light-black);
     background-color: var(--color-light-blue-hover);
 }
@@ -776,6 +781,10 @@ button.icon {
     background-image: url("../webjars/mdi__svg/7.4.47/svg/rename.svg");
 }
 
+.icon-file-move-outline {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/file-move-outline.svg");
+}
+
 /* ==== SEARCH ==== */
 /* TODO move to separate file */
 
@@ -957,4 +966,81 @@ button.icon {
 .copy-current-button {
     vertical-align: middle;
     margin-left: 20px;
+}
+
+/* ==== File tree (moving files) ==== */
+
+.file-tree ul {
+    list-style: none;
+    padding-left: 16px;
+}
+
+.file-tree ul.root {
+    padding-left: 0; border-left: none;
+}
+
+.file-tree li {
+    margin: 2px 0;
+}
+
+.file-tree .dir {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    user-select: none;
+    transition: background 0.1s;
+}
+
+.file-tree .name {
+    cursor: pointer;
+}
+
+.file-tree .dir:has(.name:hover), .file-tree .dir.selected {
+    background-color: var(--color-light-gray-hover);
+}
+
+.file-tree .children {
+    display: none; margin-top: 2px;
+}
+
+.file-tree .children.visible {
+    display: block;
+}
+
+.file-tree .tree-icon {
+    height: 30px;
+    width: 30px;
+    background-size: 30px;
+    cursor: pointer;
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/menu-right.svg");
+}
+
+.file-tree .open .tree-icon {
+    height: 30px;
+    width: 30px;
+    background-size: 30px;
+    cursor: pointer;
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/menu-down.svg");
+}
+
+.destination-label {
+    font-weight: 800;
+    vertical-align: middle;
+    height: 22px;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.destination {
+    display: none;
+}
+
+.destination.visible {
+    display: inline-block;
+}
+
+.move-header {
+    display: none;
 }

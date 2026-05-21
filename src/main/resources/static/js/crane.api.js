@@ -252,4 +252,15 @@ Crane.api = {
         }
     },
 
+    async listDirectories(path) {
+        try {
+            const response = await fetch(Crane.api.buildURL(path) + "/");
+            const json = await Crane.api._getResponseJson(response);
+            return json.data.directories;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    },
+
 }

@@ -187,8 +187,9 @@ public class UploadController {
         if (body.newName() == null || body.newName().isBlank()) {
             return ApiResponse.fail(Map.of("message", "No new name provided"));
         }
-        if (body.newName().contains("/")) {
-            return ApiResponse.fail(Map.of("message", "Cannot move path"));
+        if (!body.newName().startsWith("/")) {
+            auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+            return ApiResponse.fail(Map.of("message", "Invalid destination"));
         }
 
         try {
@@ -196,7 +197,12 @@ public class UploadController {
                 auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
                 return ApiResponse.fail(Map.of("message", "Directory cannot be renamed"));
             }
-            CranePath destination = cranePath.getParent().getPath(body.newName());
+            CranePath destination = new CranePath(cranePath.getRepository(), body.newName(), true);
+            if (!cranePath.getRepository().equals(destination.getRepository())) {
+                // sanity check, should never happen
+                auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
+                return ApiResponse.fail(Map.of("message", "Can only move to same repository"));
+            }
             if (!uploadAccessControlService.canAccess(destination)) {
                 auditingService.createErrorHandlerAuditEvent(request, HttpStatus.BAD_REQUEST);
                 return ApiResponse.fail(Map.of("message", "No permission on destination"));
