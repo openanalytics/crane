@@ -34,6 +34,7 @@ Crane.ui = {
         newFileNameInput: document.getElementById("new-file-name"),
         newDirectoryNameInput: document.getElementById("new-directory-name"),
         moveFileDialog: document.getElementById("move-file-dialog"),
+        uploadInstructionsDialog: document.getElementById("upload-instructions-dialog"),
         table: $("table"),
         datatable: null,
         uppy: null,
@@ -184,10 +185,28 @@ Crane.ui = {
         document.getElementById("upload-button").addEventListener("click", () => Crane.ui.elements.uppyDialog.showModal());
         document.getElementById("create-directory-button").addEventListener("click", () => Crane.ui.elements.createDirectoryDialog.showModal());
         document.getElementById("search-button").addEventListener("click", () => Crane.ui.showSearchDialog());
+        document.getElementById("upload-instructions-button").addEventListener("click", () => Crane.ui.elements.uploadInstructionsDialog.showModal());
+        document.getElementById("cancel-upload-instructions").addEventListener("click", () => Crane.ui.elements.uploadInstructionsDialog.close());
 
         document.querySelectorAll(".copy-current-button").forEach(btn =>
             btn.addEventListener("click", Crane.ui.copyCurrentPath)
         );
+        document.querySelectorAll("#upload-instructions-dialog code").forEach(c => {
+            let button = document.getElementById('code-copy-button').content.cloneNode(true);
+            button = c.parentNode.insertBefore(button, c);
+            button.addEventListener('click', async () => {
+                // Clone the node and remove the button before reading text
+                const clone = c.cloneNode(true);
+                clone.querySelectorAll('button').forEach(b => b.remove());
+                await navigator.clipboard.writeText(clone.textContent.trim());
+
+                const popover = c.querySelector('.copy-popover');
+                popover.classList.add('visible');
+
+                clearTimeout(popover._hideTimeout);
+                popover._hideTimeout = setTimeout(() => popover.classList.remove('visible'), 1500)
+            });
+        });
 
         const params = new URLSearchParams(window.location.search);
         const value = params.get('highlight-file');

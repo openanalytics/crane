@@ -84,7 +84,7 @@ h1 {
 }
 
 .container {
-    width: 1170px;
+    max-width: 1170px;
     padding-right: 15px;
     padding-left: 15px;
     margin-right: auto;
@@ -137,6 +137,7 @@ code {
     color: #c7254e;
     background-color: #f9f2f4;
     border-radius: 4px;
+    white-space: pre;
 }
 
 code a {
@@ -171,9 +172,31 @@ dialog#create-directory-dialog, dialog#rename-file-dialog, dialog#rename-directo
     padding-top: 1.25rem;
 }
 
-dialog#move-file-dialog {
-    width: 1000px;
+dialog#move-file-dialog, dialog#upload-instructions-dialog {
     padding-top: 1.25rem;
+    max-width: 1000px;
+    width: calc(100vw - 40px);
+}
+
+dialog#upload-instructions-dialog code {
+    position: relative;
+    padding: 20px 70px 20px 20px;
+    overflow-y: scroll;
+}
+
+dialog#upload-instructions-dialog .code-copy-button-wrapper {
+    position: sticky;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    z-index: 99;
+}
+
+dialog#upload-instructions-dialog .copy-code-button {
+    position: relative;
+    top: 20px;
+    right: 15px;
 }
 
 dialog#edit-metadata-dialog {
@@ -181,7 +204,7 @@ dialog#edit-metadata-dialog {
     width: 90vw;
 }
 
-dialog#edit-metadata-dialog h2 {
+dialog#edit-metadata-dialog h2, dialog#upload-instructions-dialog h2  {
     font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.06em;
@@ -225,6 +248,20 @@ dialog div h1 {
     margin: 0;
     border-bottom: solid var(--color-light-gray-border) 1px;
     padding-bottom: .5rem;
+}
+
+#upload-instructions-dialog code {
+    display: block;
+    margin-top: 5px;
+}
+
+#upload-instructions-dialog {
+    line-height: 1.5;
+}
+
+#upload-instructions-dialog li {
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 label {
@@ -825,6 +862,10 @@ button.icon {
 
 .icon-magnify {
     background-image: url("../webjars/mdi__svg/7.4.47/svg/magnify.svg");
+}
+
+.icon-console {
+    background-image: url("../webjars/mdi__svg/7.4.47/svg/console.svg");
 }
 
 /* ==== SEARCH ==== */

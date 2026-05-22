@@ -86,6 +86,7 @@ public class CraneConfig {
     private String callerIdentityArn;
     private String openidPosixUIDClaim;
     private String openidPosixGIDSClaim;
+    private String uploadInstructions;
 
     public Path getRoot() {
         return root;
@@ -382,4 +383,13 @@ public class CraneConfig {
     public void setUserWorkspaceStorageLocation(String userWorkspaceStorageLocation) {
         this.userWorkspaceStorageLocation = userWorkspaceStorageLocation;
     }
+
+    public String getUploadInstructions() {
+        return uploadInstructions;
+    }
+
+    public void setUploadInstructions(String uploadInstructions) {
+        this.uploadInstructions = uploadInstructions;
+    }
+
 }

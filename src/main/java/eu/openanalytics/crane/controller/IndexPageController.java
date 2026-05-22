@@ -31,7 +31,10 @@ import eu.openanalytics.crane.service.IdentifierService;
 import eu.openanalytics.crane.service.IndexPageService;
 import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.service.spel.SpecExpressionContext;
+import eu.openanalytics.crane.service.spel.SpecExpressionResolver;
 import eu.openanalytics.crane.upload.UploadAccessControlService;
+import eu.openanalytics.crane.util.CleanHtml;
 import eu.openanalytics.crane.util.ContextPathHelper;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -57,6 +60,7 @@ public class IndexPageController extends BaseUIController {
 
     private final IndexPageService indexPageService;
     private final UploadAccessControlService uploadAccessControlService;
+    private final SpecExpressionResolver specExpressionResolver;
 
     public IndexPageController(IndexPageService indexPageService,
                                UserService userService,
@@ -66,10 +70,11 @@ public class IndexPageController extends BaseUIController {
                                ContextPathHelper contextPathHelper,
                                UploadAccessControlService uploadAccessControlService,
                                IdentifierService identifierService,
-                               SearchConfig searchConfig) {
+                               SearchConfig searchConfig, SpecExpressionResolver specExpressionResolver) {
         super(userService, craneConfig, languageService, messageSource, contextPathHelper, identifierService, searchConfig);
         this.indexPageService = indexPageService;
         this.uploadAccessControlService = uploadAccessControlService;
+        this.specExpressionResolver = specExpressionResolver;
     }
 
     @GetMapping(value = "/__index", produces = MediaType.TEXT_HTML_VALUE)
@@ -105,6 +110,7 @@ public class IndexPageController extends BaseUIController {
             map.put("hasCreateDirectoryAccess", uploadAccessControlService.canAccess(path));
         }
         map.put("breadcrumbs", path.getComponents());
+        map.put("uploadInstructions", getUploadInstructions(path));
 
         return indexPageService.getTemplateName(repo);
     }
@@ -133,4 +139,13 @@ public class IndexPageController extends BaseUIController {
 
         return ApiResponse.success(data);
     }
+
+    private String getUploadInstructions(CranePath path) {
+        if (config.getUploadInstructions() != null && !config.getUploadInstructions().isBlank()) {
+            SpecExpressionContext context = SpecExpressionContext.create(path);
+            return CleanHtml.cleanRelaxed(specExpressionResolver.evaluateToString(config.getUploadInstructions(), context));
+        }
+        return null;
+    }
+
 }

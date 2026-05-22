@@ -47,6 +47,7 @@ public class SpecExpressionContext {
     private HttpServletResponse response;
 
     private Path path;
+    private CranePath cranePath;
 
     private Repository repository;
 
@@ -77,6 +78,7 @@ public class SpecExpressionContext {
             }
             if (o instanceof CranePath) {
                 ctx.path = Path.of("/" + ((CranePath) o).getPathRelativeToRepository());
+                ctx.cranePath = (CranePath) o;
             }
         }
         return ctx;
@@ -100,6 +102,10 @@ public class SpecExpressionContext {
 
     public Path getPath() {
         return path;
+    }
+
+    public CranePath getCranePath() {
+        return cranePath;
     }
 
     public boolean parse(String pattern, String input) {
