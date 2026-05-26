@@ -332,7 +332,12 @@ Crane.ui = {
 
         Crane.ui.elements.uppy.on("complete", (result) => {
             if (result.failed.length === 0) {
-                document.location.reload();
+                if (result.successful.length === 1) {
+                    const name = result.successful[0].name;
+                    window.location.replace(window.location.origin + window.location.pathname + "?highlight-file=" + name)
+                } else {
+                    window.location.replace(window.location.origin + window.location.pathname);
+                }
             }
         });
         Crane.ui.elements.uppy.on("file-added", Crane.ui.uppyUploadButtonDisable);
@@ -412,7 +417,7 @@ Crane.ui = {
         document.querySelectorAll('#language-selector li').forEach(li => {
             li.addEventListener('click', async () => {
                 if (await Crane.api.changeLanguage(li.dataset.language)) {
-                    window.location.reload();
+                    window.location.replace(window.location.origin + window.location.pathname);
                 } else {
                     alert("Failed to change language!");
                 }
@@ -520,7 +525,7 @@ Crane.ui = {
             alert(error);
         } else {
             Crane.ui.closeRenameFileDialog();
-            location.reload();
+            window.location.replace(window.location.origin + window.location.pathname + "?highlight-file=" + newFilename)
         }
     },
 
@@ -544,7 +549,7 @@ Crane.ui = {
             alert(error);
         } else {
             Crane.ui.closeRenameFileDialog();
-            location.reload();
+            window.location.replace(window.location.origin + window.location.pathname + "?highlight-file=" + newDirectoryName)
         }
     },
 
@@ -566,7 +571,7 @@ Crane.ui = {
         destination.classList.remove("visible");
         root.innerHTML = "";
         // add repository as root
-        root.appendChild(Crane.ui.buildNode(Crane.api.repository, "/" + Crane.api.repository));
+        root.appendChild(Crane.ui.buildNode(Crane.api.repository, "/" + Crane.api.repository + "/"));
         // show dialog
         Crane.ui.elements.moveFileDialog.showModal()
     },
@@ -617,7 +622,7 @@ Crane.ui = {
     },
 
     async moveFile() {
-        const destination = Crane.ui.moveDestination + Crane.ui.resourceBeingMoved ;
+        const destination = Crane.ui.moveDestination + Crane.ui.resourceBeingMoved;
         const error = await Crane.api.renameResource(Crane.ui.resourceBeingMoved, destination);
         if (error) {
             alert(error);
