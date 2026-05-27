@@ -163,7 +163,7 @@
             <button th:if="${hasWriteAccess}" id="upload-button" ><span class="icon icon-upload"></span><span th:text="#{index.upload.button}"></span></button>
             <button th:if="${hasCreateDirectoryAccess}" id="create-directory-button" ><span class="icon icon-folder-plus"></span><span th:text="#{index.create_directory.button}"></span></button>
             <button th:if="${searchEnabled}" id="search-button" ><span class="icon icon-magnify"></span><span th:text="#{index.search.button}"></span></button>
-            <button th:if="${hasWriteAccess}" id="upload-instructions-button" ><span class="icon icon-console"></span><span>Upload from R</span></button>
+            <button th:if="${hasWriteAccess && uploadInstructions != null}" id="upload-instructions-button" ><span class="icon icon-console"></span><span>Upload from R</span></button>
         </div>
         <table th:attr="data-has-write-access=${hasWriteAccess}" class="files-table">
             <thead>

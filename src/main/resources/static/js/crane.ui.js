@@ -184,7 +184,10 @@ Crane.ui = {
         document.getElementById("create-directory").addEventListener("click", Crane.ui.createDirectory);
         document.getElementById("upload-button").addEventListener("click", () => Crane.ui.elements.uppyDialog.showModal());
         document.getElementById("create-directory-button").addEventListener("click", () => Crane.ui.elements.createDirectoryDialog.showModal());
-        document.getElementById("search-button").addEventListener("click", () => Crane.ui.showSearchDialog());
+        const searchButton = document.getElementById("search-button");
+        if (searchButton) {
+            searchButton.addEventListener("click", () => Crane.ui.showSearchDialog());
+        }
         document.getElementById("upload-instructions-button").addEventListener("click", () => Crane.ui.elements.uploadInstructionsDialog.showModal());
         document.getElementById("cancel-upload-instructions").addEventListener("click", () => Crane.ui.elements.uploadInstructionsDialog.close());
 
@@ -192,15 +195,15 @@ Crane.ui = {
             btn.addEventListener("click", Crane.ui.copyCurrentPath)
         );
         document.querySelectorAll("#upload-instructions-dialog code").forEach(c => {
-            let button = document.getElementById('code-copy-button').content.cloneNode(true);
-            button = c.parentNode.insertBefore(button, c);
-            button.addEventListener('click', async () => {
+            const button = document.getElementById('code-copy-button').content.cloneNode(true);
+            c.parentNode.insertBefore(button, c);
+            c.parentNode.querySelector("button").addEventListener('click', async () => {
                 // Clone the node and remove the button before reading text
                 const clone = c.cloneNode(true);
                 clone.querySelectorAll('button').forEach(b => b.remove());
                 await navigator.clipboard.writeText(clone.textContent.trim());
 
-                const popover = c.querySelector('.copy-popover');
+                const popover = c.parentNode.querySelector('.copy-popover');
                 popover.classList.add('visible');
 
                 clearTimeout(popover._hideTimeout);
