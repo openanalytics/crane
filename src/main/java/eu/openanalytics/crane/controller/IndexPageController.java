@@ -41,6 +41,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
+import org.springframework.core.env.Environment;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -61,6 +62,7 @@ public class IndexPageController extends BaseUIController {
     private final IndexPageService indexPageService;
     private final UploadAccessControlService uploadAccessControlService;
     private final SpecExpressionResolver specExpressionResolver;
+    private String robotsTxt;
 
     public IndexPageController(IndexPageService indexPageService,
                                UserService userService,
@@ -70,11 +72,12 @@ public class IndexPageController extends BaseUIController {
                                ContextPathHelper contextPathHelper,
                                UploadAccessControlService uploadAccessControlService,
                                IdentifierService identifierService,
-                               SearchConfig searchConfig, SpecExpressionResolver specExpressionResolver) {
+                               SearchConfig searchConfig, SpecExpressionResolver specExpressionResolver, Environment environment) {
         super(userService, craneConfig, languageService, messageSource, contextPathHelper, identifierService, searchConfig);
         this.indexPageService = indexPageService;
         this.uploadAccessControlService = uploadAccessControlService;
         this.specExpressionResolver = specExpressionResolver;
+        robotsTxt = environment.getProperty("app.robots-txt");
     }
 
     @GetMapping(value = "/__index", produces = MediaType.TEXT_HTML_VALUE)
@@ -146,6 +149,15 @@ public class IndexPageController extends BaseUIController {
             return CleanHtml.cleanRelaxed(specExpressionResolver.evaluateToString(config.getUploadInstructions(), context));
         }
         return null;
+    }
+
+    @ResponseBody
+    @GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> robotsTxt() {
+        if (robotsTxt == null || robotsTxt.isBlank()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(robotsTxt);
     }
 
 }
