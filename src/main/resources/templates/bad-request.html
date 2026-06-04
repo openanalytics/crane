@@ -24,7 +24,8 @@
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${language}">
     <head>
         <title th:text="'Crane - ' + #{'bad-request.bad-request'}"></title>
-        <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
+        <link media="screen" rel="stylesheet" th:href="@{${resourcePrefix} + '/css/default.css'}"/>
+        <meta name="robots" content="noindex">
     </head>
     <body>
         <!--/* Do not use the layout or include navbar since there is no CSRF token. */-->

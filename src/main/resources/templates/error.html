@@ -24,14 +24,15 @@
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${language}">
     <head>
         <title th:text="'Crane - ' + #{'error.error'}"></title>
-        <link media="screen" rel="stylesheet" th:href="@{'/__assets/css/default.css'}"/>
+        <link media="screen" rel="stylesheet" th:href="@{${resourcePrefix} + '/css/default.css'}"/>
+        <meta name="robots" content="noindex">
     </head>
     <body>
         <!--/* Do not use the layout or include navbar since there is no CSRF token. */-->
         <div class="container">
             <h1 th:text="#{'error.error-occurred'}"></h1>
             <p th:text="#{'error.unrecoverable-error'}"></p>
-            <a th:href="${mainPage}" th:text="#{'error-main-page'}"></a>
+            <a th:href="${mainPage}" th:text="#{'error.goto-main-page'}"></a>
         </div>
     </body>
 </html>

@@ -24,6 +24,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
     <th:block th:fragment="head">
         <title th:text="'Crane - ' + #{'not-found.not-found'}"></title>
+        <meta name="robots" content="noindex">
     </th:block>
     <th:block th:fragment="content">
         <h1 th:text="#{'not-found.not-found'}"></h1>
