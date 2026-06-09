@@ -37,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.Schedules;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -77,7 +79,16 @@ public class IndexerService {
     @PostConstruct
     public void init() {
         if (indexerConfig.getIndexOnStartup()) {
-            indexAllRepositories();
+            CompletableFuture.runAsync(() -> {
+                try {
+                    // start indexing only after 2 minutes
+                    Thread.sleep(120_000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                indexAllRepositories();
+            }, repoExecutorService);
         }
     }
 
@@ -132,22 +143,27 @@ public class IndexerService {
         indexStore.deleteByWebUri(toDelete);
     }
 
-    public CompletableFuture<Void> indexAllRepositories() {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                // start indexing only after 2 minutes
-                Thread.sleep(120_000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-            for (Repository repository : craneConfig.getRepositories()) {
-                Instant start = Instant.now();
-                indexRepository(repository).join();
-                Instant finish = Instant.now();
-                logger.info("Indexed repository {} (after startup) in {} ", repository.getName(), Duration.between(start, finish));
-            }
-        }, repoExecutorService);
+    @Schedules({
+        @Scheduled(fixedDelayString = "#{@indexerConfig.getScheduleFixedDelay()}", initialDelayString ="#{@indexerConfig.getScheduleFixedDelay()}"),
+        @Scheduled(cron = "#{@indexerConfig.getScheduleCron()}")
+    })
+    public void scheduledIndex() {
+        try {
+            logger.info("Indexing all repositories according to schedule");
+            indexAllRepositories();
+            logger.info("Indexed all repositories according to schedule");
+        } catch (Exception exception) {
+            logger.warn("Error during scheduled index", exception);
+        }
+    }
+
+    private synchronized void indexAllRepositories() {
+        for (Repository repository : craneConfig.getRepositories()) {
+            Instant start = Instant.now();
+            indexRepository(repository).join();
+            Instant finish = Instant.now();
+            logger.info("Indexed repository {} (after startup) in {} ", repository.getName(), Duration.between(start, finish));
+        }
     }
 
     public CompletableFuture<Void> indexRepository(Repository repository) {

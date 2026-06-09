@@ -37,6 +37,7 @@ import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFa
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.session.web.http.DefaultCookieSerializer;
 import org.springframework.web.servlet.LocaleResolver;
@@ -48,6 +49,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
+@EnableScheduling
 @EnableAsync
 @EnableMethodSecurity
 @SpringBootApplication(exclude = {RedisAutoConfiguration.class, AuditAutoConfiguration.class})

@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,5 +39,13 @@ public class IndexerConfig {
     @Getter
     @Setter
     private Boolean indexOnStartup = false;
+
+    @Getter
+    @Setter
+    private String scheduleFixedDelay = String.valueOf(Long.MAX_VALUE);
+
+    @Getter
+    @Setter
+    private String scheduleCron = Scheduled.CRON_DISABLED;
 
 }
