@@ -131,6 +131,10 @@ body {
     font-weight: 800;
 }
 
+.files-table-filename-th .dt-column-title {
+    padding-left: 40px;
+}
+
 code {
     padding: 2px 4px;
     font-size: 90%;

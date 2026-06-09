@@ -168,7 +168,8 @@
         <table th:attr="data-has-write-access=${hasWriteAccess}" class="files-table">
             <thead>
                 <tr>
-                    <th th:text="#{index.filename}"></th>
+                    <th></th>
+                    <th class="files-table-filename-th" th:text="#{index.filename}"></th>
                     <th th:text="#{index.last_modified_time}"></th>
                     <th th:text="#{index.size}"></th>
                     <th th:text="#{index.actions}"></th>
@@ -176,6 +177,7 @@
             </thead>
             <tbody>
                 <tr th:each="directory : ${directories}" th:data-dirname="${directory.name}">
+                    <td>-1</td>
                     <td><span class="icon icon-folder"></span><a th:href="@{${directory.name} + '/'}" th:text="${directory.name + '/'}"></a></td>
                     <td></td>
                     <td></td>
@@ -200,6 +202,7 @@
                 </tr>
 
                 <tr th:each="file : ${files}" th:data-filename="${file.name}">
+                    <td>1</td>
                     <td><span class="icon icon-file"></span><a th:href="@{${file.name}}" th:text="${file.name}"></a></td>
                     <td th:text="${file.lastModifiedTime}"></td>
                     <td th:text="${file.formattedSize}"></td>

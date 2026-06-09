@@ -227,7 +227,8 @@ Crane.ui = {
         }
         const dataTableLanguageUrl = document.querySelector("meta[name='_dataTableLanguageUrl']")?.content;
         let dataTableOptions = {
-            aaSorting: [], // apply no sort by default
+            // first sort by "files or dir" column (so that dirs are on the top), then by name
+            aaSorting: [[0, 'asc'], [1, 'asc']],
             paging: false,
             language: {
                 url: dataTableLanguageUrl
@@ -235,7 +236,13 @@ Crane.ui = {
             searching: !Crane.search.enabled,
             columnDefs: [
                 {
-                    targets: 1,
+                    // special column allowing to sort such that dirs are on top
+                    targets: 0,
+                    visible: false,
+                    searchable: false
+                },
+                {
+                    targets: 2,
                     render: function (data, type, row) {
                         if (type === 'sort' || type === 'filter') {
                             return data;
