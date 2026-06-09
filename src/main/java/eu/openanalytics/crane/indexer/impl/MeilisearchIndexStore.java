@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 @Service
@@ -54,12 +55,14 @@ public class MeilisearchIndexStore implements IIndexStore {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final MeiliAddDocumentQueue meiliAddDocumentQueue;
     private final MeiliDeleteDocumentQueue meiliDeleteDocumentQueue;
+    private final MetadataConvertorService metadataConvertorService;
 
-    public MeilisearchIndexStore(SearchConfig searchConfig, Client client) {
+    public MeilisearchIndexStore(SearchConfig searchConfig, Client client, MetadataConvertorService metadataConvertorService) {
         index = client.index(searchConfig.getIndexUid());
         index.updateFilterableAttributesSettings(new String[]{"extractedMetadata", "repositoryName", "webUri", "metadata"});
         meiliAddDocumentQueue = new MeiliAddDocumentQueue(index);
         meiliDeleteDocumentQueue = new MeiliDeleteDocumentQueue(index);
+        this.metadataConvertorService = metadataConvertorService;
     }
 
     @Override
@@ -138,6 +141,24 @@ public class MeilisearchIndexStore implements IIndexStore {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean isModified(CranePath cranePath) {
+        SearchRequest query = SearchRequest.builder()
+            .offset(0)
+            .limit(1)
+            .attributesToRetrieve(new String[]{"id", "syncMark"})
+            .filter(new String[]{String.format("webUri=\"%s\"", cranePath.getWebUri())})
+            .build();
+
+        Searchable results = index.search(query);
+        if (results.getHits().isEmpty()) {
+            return true;
+        }
+        Map<String, Object> document = results.getHits().get(0);
+        String syncMark = document.getOrDefault("syncMark", "").toString();
+        return syncMark.isBlank() || !syncMark.equals(metadataConvertorService.generateSyncMark(cranePath));
     }
 
     public static boolean waitForTask(Index index, TaskInfo task) {

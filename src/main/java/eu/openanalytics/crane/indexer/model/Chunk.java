@@ -20,5 +20,5 @@
  */
 package eu.openanalytics.crane.indexer.model;
 
-public record Chunk (String text, String type) {
+public record Chunk(String text, String type) {
 }

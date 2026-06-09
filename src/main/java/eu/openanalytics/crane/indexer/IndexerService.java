@@ -86,16 +86,21 @@ public class IndexerService {
             if (cranePath.isMetadataFile()) {
                 cranePath = cranePath.getMetadataTargetPath();
             }
+            // TODO force if metadata is updated (hash?)
             logger.info("Indexing file {}", cranePath.getWebUri());
-            CranePath metadataCranePath = cranePath.getMetadataFilePath();
-            List<ExtractedDocument> documents = textExtractor.extract(cranePath, metadataCranePath);
-            if (documents == null || documents.isEmpty()) {
-                logger.info("Skipping file {} for indexing", cranePath.getWebUri());
-                return;
+            if (indexStore.isModified(cranePath)) {
+                CranePath metadataCranePath = cranePath.getMetadataFilePath();
+                List<ExtractedDocument> documents = textExtractor.extract(cranePath, metadataCranePath);
+                if (documents == null || documents.isEmpty()) {
+                    logger.info("Skipping file {} for indexing", cranePath.getWebUri());
+                    return;
+                }
+                indexStore.deleteByWebUri(List.of(cranePath.getWebUri()));
+                indexStore.addOrUpdateDocuments(documents);
+                logger.info("File {} indexed", cranePath.getWebUri());
+            } else {
+                logger.info("File {} not modified", cranePath.getWebUri());
             }
-            indexStore.deleteByWebUri(List.of(cranePath.getWebUri()));
-            indexStore.addOrUpdateDocuments(documents);
-            logger.info("File {} indexed", cranePath.getWebUri());
         } catch (Exception e) {
             logger.warn("Exception", e);
         }

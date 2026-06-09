@@ -28,6 +28,7 @@ public record ExtractedDocument(
     String webUri,
     String chunk,
     String chunkType,
+    String syncMark,
     ExtractedMetadata extractedMetadata,
     Map<String, Object> metadata
 ) {

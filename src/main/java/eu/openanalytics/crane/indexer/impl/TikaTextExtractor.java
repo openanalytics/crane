@@ -139,6 +139,7 @@ public class TikaTextExtractor implements ITextExtractor {
                 cranePath.getWebUri(),
                 chunk.text(),
                 chunk.type(),
+                metadataConvertorService.generateSyncMark(cranePath),
                 extractedMetadata,
                 mergedMetadata
             ));

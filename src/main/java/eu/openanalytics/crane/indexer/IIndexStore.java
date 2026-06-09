@@ -34,4 +34,6 @@ public interface IIndexStore {
 
     public void deleteByWebUri(List<String> toDelete);
 
+    boolean isModified(CranePath cranePath);
+
 }

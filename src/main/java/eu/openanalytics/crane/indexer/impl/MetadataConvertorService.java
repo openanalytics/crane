@@ -22,6 +22,7 @@ package eu.openanalytics.crane.indexer.impl;
 
 import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.indexer.model.ExtractedMetadata;
+import eu.openanalytics.crane.model.runtime.CranePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -126,6 +127,20 @@ public class MetadataConvertorService {
         }
 
         return result;
+    }
+
+    public String generateSyncMark(CranePath cranePath) {
+        StringBuilder syncMark = new StringBuilder();
+        syncMark.append(cranePath.getLastModifiedTimeInMillis());
+        syncMark.append("#");
+        syncMark.append(cranePath.getSize());
+        syncMark.append("#");
+        if (cranePath.getMetadataFilePath().isExists()) {
+            syncMark.append(cranePath.getMetadataFilePath().getLastModifiedTimeInMillis());
+            syncMark.append("#");
+            syncMark.append(cranePath.getMetadataFilePath().getSize());
+        }
+        return syncMark.toString();
     }
 
 }
