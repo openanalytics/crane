@@ -43,7 +43,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static okhttp3.internal.Util.EMPTY_REQUEST;
 
 public class ApiTestHelper {
 
@@ -157,7 +156,7 @@ public class ApiTestHelper {
     }
 
     public Request.Builder createPostRequest(String path) {
-        return new Request.Builder().url(baseUrl + path).post(EMPTY_REQUEST).addHeader("Accept", "*/*");
+        return new Request.Builder().url(baseUrl + path).post(RequestBody.create("", null)).addHeader("Accept", "*/*");
     }
 
     /**

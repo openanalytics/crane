@@ -20,13 +20,12 @@
  */
 package eu.openanalytics.crane.indexer.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.model.TaskInfo;
 import eu.openanalytics.crane.indexer.model.ExtractedDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -75,7 +74,7 @@ public class MeiliAddDocumentQueue {
         }
     }
 
-    private void sendBatch() throws InterruptedException, JsonProcessingException {
+    private void sendBatch() throws InterruptedException {
         List<ExtractedDocument> batch = new ArrayList<>();
         int batchSizeBytes = 0;
         // collect a batch of at most MAX_BATCH_SIZE_BYTES

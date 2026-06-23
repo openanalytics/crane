@@ -20,29 +20,32 @@
  */
 package eu.openanalytics.crane.security.auditing;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import eu.openanalytics.crane.config.CraneConfig;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
 import org.springframework.scheduling.annotation.Async;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FileAuditEventRepository implements AuditEventRepository, AutoCloseable {
     private final Path auditLogFileName;
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
+    private final JsonMapper objectMapper = JsonMapper.builder()
+        .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .disable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        .build();
     private final FileWriter writer;
 
     public FileAuditEventRepository(CraneConfig craneConfig) throws IOException {
@@ -73,37 +76,37 @@ public class FileAuditEventRepository implements AuditEventRepository, AutoClose
         }
         try {
             BufferedReader reader = new BufferedReader(new FileReader(auditLogFileName.toFile()));
-            return reader.lines().map((eventString) -> {
-                try {
-                    return objectMapper.readValue(eventString, AuditEventData.class).auditEvent();
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            }).filter(auditEvent -> {
-                boolean condition = true;
-                if (principal != null) {
-                    condition = auditEvent.getPrincipal().equals(principal);
-                }
-                if (after != null) {
-                    condition = condition && auditEvent.getTimestamp().isAfter(after);
-                }
-                if (type != null) {
-                    condition = condition && auditEvent.getType().equals(type);
-                }
-                return condition;
-            }).toList();
+            return reader.lines()
+                .map((eventString) -> objectMapper.readValue(eventString, AuditEventData.class).auditEvent())
+                .filter(auditEvent -> {
+                    boolean condition = true;
+                    if (principal != null) {
+                        condition = auditEvent.getPrincipal().equals(principal);
+                    }
+                    if (after != null) {
+                        condition = condition && auditEvent.getTimestamp().isAfter(after);
+                    }
+                    if (type != null) {
+                        condition = condition && auditEvent.getType().equals(type);
+                    }
+                    return condition;
+                })
+                .toList();
         } catch (FileNotFoundException e) {
             return new ArrayList<>();
         }
     }
 
     public static class AuditEventData extends AuditEvent {
-        public AuditEventData() {
-            super("", "", new HashMap<>());
+
+        public AuditEventData(Instant timestamp, @Nullable String principal, String type, Map<String, @Nullable Object> data) {
+            super(timestamp, principal, type, data);
         }
 
         public AuditEvent auditEvent() {
             return new AuditEvent(super.getTimestamp(), super.getPrincipal(), super.getType(), super.getData());
         }
+
     }
+
 }

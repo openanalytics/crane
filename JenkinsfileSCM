@@ -18,6 +18,9 @@ pipeline {
                 container('builder') {
 
                     configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
+                        dir("spring-boot-undertow") {
+                            sh 'mvn -B -s $MAVEN_SETTINGS_RSB -U clean install'
+                        }
 
                         sh 'mvn -B -s $MAVEN_SETTINGS_RSB -U clean install deploy'
 

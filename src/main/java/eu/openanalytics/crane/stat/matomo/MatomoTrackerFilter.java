@@ -31,7 +31,7 @@ import org.matomo.java.tracking.servlet.JakartaHttpServletWrapper;
 import org.matomo.java.tracking.servlet.ServletMatomoRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -45,12 +45,12 @@ public class MatomoTrackerFilter extends OncePerRequestFilter {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final RequestMatcher REQUEST_MATCHER = new NegatedRequestMatcher(new OrRequestMatcher(
-        new AntPathRequestMatcher("/__assets/**"),
-        new AntPathRequestMatcher("/favicon.ico"),
-        new AntPathRequestMatcher("/__file/**"),
-        new AntPathRequestMatcher("/__index"),
-        new AntPathRequestMatcher("/__user/**"),
-        new AntPathRequestMatcher("/__language/**")
+        PathPatternRequestMatcher.withDefaults().matcher("/__assets/**"),
+        PathPatternRequestMatcher.withDefaults().matcher("/favicon.ico"),
+        PathPatternRequestMatcher.withDefaults().matcher("/__file/**"),
+        PathPatternRequestMatcher.withDefaults().matcher("/__index"),
+        PathPatternRequestMatcher.withDefaults().matcher("/__user/**"),
+        PathPatternRequestMatcher.withDefaults().matcher("/__language/**")
     ));
 
     public MatomoTrackerFilter(MatomoTracker tracker) {

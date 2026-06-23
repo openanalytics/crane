@@ -20,6 +20,7 @@
  */
 package eu.openanalytics.crane;
 
+import com.redhat.integration.undertow.servlet.UndertowServletWebServerFactory;
 import eu.openanalytics.crane.service.LanguageService;
 import io.undertow.UndertowOptions;
 import io.undertow.server.handlers.SameSiteCookieHandler;
@@ -32,8 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -52,7 +52,7 @@ import java.util.Properties;
 @EnableScheduling
 @EnableAsync
 @EnableMethodSecurity
-@SpringBootApplication(exclude = {RedisAutoConfiguration.class, AuditAutoConfiguration.class})
+@SpringBootApplication(exclude = {DataRedisAutoConfiguration.class, AuditAutoConfiguration.class})
 public class CraneApplication {
 
     public static final String CONFIG_FILENAME = "application.yml";

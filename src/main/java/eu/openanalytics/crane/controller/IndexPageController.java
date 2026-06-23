@@ -62,7 +62,7 @@ public class IndexPageController extends BaseUIController {
     private final IndexPageService indexPageService;
     private final UploadAccessControlService uploadAccessControlService;
     private final SpecExpressionResolver specExpressionResolver;
-    private String robotsTxt;
+    private final String robotsTxt;
 
     public IndexPageController(IndexPageService indexPageService,
                                UserService userService,

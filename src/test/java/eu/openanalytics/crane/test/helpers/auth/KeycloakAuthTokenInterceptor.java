@@ -21,12 +21,12 @@
 package eu.openanalytics.crane.test.helpers.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.net.http.HttpRequest;

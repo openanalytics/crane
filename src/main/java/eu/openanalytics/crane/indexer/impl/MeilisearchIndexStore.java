@@ -20,8 +20,6 @@
  */
 package eu.openanalytics.crane.indexer.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Streams;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Index;
@@ -38,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -129,17 +128,13 @@ public class MeilisearchIndexStore implements IIndexStore {
 
     @Override
     public void deleteByWebUri(List<String> webUris) {
-        try {
-            // find ids to delete synchronously, this is fast
-            List<String> ids = findIdsToDelete(webUris);
-            // delete documents asynchronously, this is slower
-            // from this point new documents might be added using the given webUris
-            // only the original documents will be removed, even if new documents are added
-            if (!ids.isEmpty()) {
-                meiliDeleteDocumentQueue.add(ids);
-            }
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        // find ids to delete synchronously, this is fast
+        List<String> ids = findIdsToDelete(webUris);
+        // delete documents asynchronously, this is slower
+        // from this point new documents might be added using the given webUris
+        // only the original documents will be removed, even if new documents are added
+        if (!ids.isEmpty()) {
+            meiliDeleteDocumentQueue.add(ids);
         }
     }
 
@@ -171,7 +166,7 @@ public class MeilisearchIndexStore implements IIndexStore {
         }, 60000_000);
     }
 
-    private List<String> findIdsToDelete(List<String> toDelete) throws JsonProcessingException {
+    private List<String> findIdsToDelete(List<String> toDelete) {
         int offset = 0;
         List<String> ids = new ArrayList<>();
 

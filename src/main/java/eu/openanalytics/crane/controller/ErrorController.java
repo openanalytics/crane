@@ -52,7 +52,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-public class ErrorController extends BaseUIController implements org.springframework.boot.web.servlet.error.ErrorController {
+public class ErrorController extends BaseUIController implements org.springframework.boot.webmvc.error.ErrorController {
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorController.class);
 

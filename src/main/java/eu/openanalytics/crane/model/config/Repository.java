@@ -20,14 +20,13 @@
  */
 package eu.openanalytics.crane.model.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.util.EnvironmentUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -189,11 +188,7 @@ public class Repository extends PathComponent {
         if (metadataSchema != null) {
             Object convertedMetadataSchema = EnvironmentUtils.convertedNestedLists(metadataSchema);
             ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                return objectMapper.writeValueAsBytes(convertedMetadataSchema);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            return objectMapper.writeValueAsBytes(convertedMetadataSchema);
         }
         return null;
     }

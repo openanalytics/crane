@@ -20,8 +20,6 @@
  */
 package eu.openanalytics.crane.indexer.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.meilisearch.sdk.Client;
 import eu.openanalytics.crane.indexer.ITextExtractor;
 import eu.openanalytics.crane.indexer.model.Chunk;
@@ -49,6 +47,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.IOException;
 import java.io.InputStream;

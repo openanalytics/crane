@@ -29,8 +29,6 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.Getter;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
@@ -103,11 +101,6 @@ public class KeycloakInstance implements BeforeAllCallback {
 
             @Override
             public void close() {}
-
-            @Override
-            public Statement apply(Statement base, Description description) {
-                return null;
-            }
         };
 
         List<com.github.dockerjava.api.model.Network> networks = DockerClientFactory
