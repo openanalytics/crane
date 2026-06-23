@@ -15,7 +15,7 @@ RUN apt-get update -y && \
   unzip -p  /opt/crane/crane.jar META-INF/MANIFEST.MF | sed -En 's/Implementation-Version: (.*)\r/\1/gp' > /opt/crane/VERSION
 
 # FINAL IMAGE
-FROM public.ecr.aws/docker/library/eclipse-temurin:17-jammy
+FROM public.ecr.aws/docker/library/eclipse-temurin:21-jammy
 
 LABEL maintainer="Tobia De Koninck <tdekoninck@openanalytics.eu>"
 
