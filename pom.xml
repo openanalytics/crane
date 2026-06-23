@@ -24,9 +24,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>17</java.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <finalName>${project.artifactId}-${project.version}</finalName>
         <!-- Dependency versions -->
         <spring-boot.version>4.1.0</spring-boot.version>
@@ -50,6 +50,7 @@
         <maven.build-helper-maven.plugin.version>3.6.1</maven.build-helper-maven.plugin.version>
         <maven.dependency-check-plugin.version>12.2.2</maven.dependency-check-plugin.version>
         <maven.esbuild-maven-plugin.version>1.0.0</maven.esbuild-maven-plugin.version>
+        <maven.versions-maven.plugin.version>2.21.0</maven.versions-maven.plugin.version>
     </properties>
 
     <distributionManagement>
