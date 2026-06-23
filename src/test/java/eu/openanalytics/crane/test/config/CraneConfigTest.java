@@ -23,11 +23,11 @@ package eu.openanalytics.crane.test.config;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
 import eu.openanalytics.crane.test.helpers.KeycloakInstance;
 import eu.openanalytics.crane.test.helpers.TestHelperException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.testcontainers.shaded.org.apache.commons.lang3.exception.ExceptionUtils;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 public class CraneConfigTest {

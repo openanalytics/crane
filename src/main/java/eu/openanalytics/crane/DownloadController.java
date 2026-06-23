@@ -46,7 +46,7 @@ import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.parameters.P;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -137,7 +137,7 @@ public class DownloadController {
     }
 
     private void addCachingHeaders(HttpServletRequest request, HttpServletResponse response, Repository repository) {
-        for (Map.Entry<AntPathRequestMatcher, String> cacheRule : computeCacheRules(repository).entrySet()) {
+        for (Map.Entry<PathPatternRequestMatcher, String> cacheRule : computeCacheRules(repository).entrySet()) {
             if (cacheRule.getKey().matches(request)) {
                 response.setHeader("Cache-Control", cacheRule.getValue());
                 break;
@@ -151,12 +151,12 @@ public class DownloadController {
         return MediaType.valueOf(mimeType);
     }
 
-    private Map<AntPathRequestMatcher, String> computeCacheRules(Repository repository) {
-        Map<AntPathRequestMatcher, String> cacheRules = new HashMap<>();
+    private Map<PathPatternRequestMatcher, String> computeCacheRules(Repository repository) {
+        Map<PathPatternRequestMatcher, String> cacheRules = new HashMap<>();
         if (repository.getCache() != null) {
             for (CacheRule cache : repository.getCache()) {
                 cacheRules.put(
-                    new AntPathRequestMatcher(cache.getPattern()),
+                    PathPatternRequestMatcher.withDefaults().matcher(cache.getPattern()),
                     CacheControl.maxAge(cache.getMaxAge()).getHeaderValue()
                 );
             }

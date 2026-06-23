@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.13</version>
+        <version>4.1.0</version>
         <relativePath/>
     </parent>
 
@@ -29,25 +29,27 @@
         <maven.compiler.target>17</maven.compiler.target>
         <finalName>${project.artifactId}-${project.version}</finalName>
         <!-- Dependency versions -->
-        <commons-fileupload2-jakarta-servlet6.version>2.0.0-M4</commons-fileupload2-jakarta-servlet6.version>
-        <commons-lang.version>3.18.0</commons-lang.version>
+        <spring-boot.version>4.1.0</spring-boot.version>
+        <commons-fileupload2-jakarta-servlet6.version>2.0.0-M5</commons-fileupload2-jakarta-servlet6.version>
+        <commons-lang.version>3.20.0</commons-lang.version>
         <datatables-buttons.version>3.1.2</datatables-buttons.version>
         <datatables-responsive.version>2.2.7</datatables-responsive.version>
         <datatables.version>2.0.3</datatables.version>
         <javax-json-api.version>1.1.4</javax-json-api.version>
         <jquery.version>3.7.1</jquery.version>
-        <okhttp.version>4.12.0</okhttp.version>
+        <okhttp.version>5.4.0</okhttp.version>
         <s3fs-nio.version>1.0.4</s3fs-nio.version>
-        <tika-core.version>3.2.3</tika-core.version>
+        <tika-core.version>3.3.1</tika-core.version>
         <!-- Test dependency versions -->
-        <testcontainers-keycloak.version>3.9.1</testcontainers-keycloak.version>
-        <testcontainers-redis.version>2.2.2</testcontainers-redis.version>
-        <testcontainers.version>1.21.4</testcontainers.version>
-        <docker-java-transport-okhttp.version>3.7.0</docker-java-transport-okhttp.version>
+        <testcontainers-keycloak.version>4.2.1</testcontainers-keycloak.version>
+        <testcontainers-redis.version>2.2.4</testcontainers-redis.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
+        <docker-java-transport-okhttp.version>3.7.1</docker-java-transport-okhttp.version>
         <!-- Plugin versions -->
-        <maven.license-plugin.version>4.6</maven.license-plugin.version>
-        <maven.build-helper-maven.plugin.version>3.6.0</maven.build-helper-maven.plugin.version>
-        <maven.dependency-check-plugin.version>12.1.7</maven.dependency-check-plugin.version>
+        <maven.license-plugin.version>5.0.0</maven.license-plugin.version>
+        <maven.build-helper-maven.plugin.version>3.6.1</maven.build-helper-maven.plugin.version>
+        <maven.dependency-check-plugin.version>12.2.2</maven.dependency-check-plugin.version>
+        <maven.esbuild-maven-plugin.version>1.0.0</maven.esbuild-maven-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -67,7 +69,7 @@
         <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
@@ -80,20 +82,21 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
+            <groupId>com.redhat.integration</groupId>
             <artifactId>spring-boot-starter-undertow</artifactId>
+            <version>4.19.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-client</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-resource-server</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -104,8 +107,12 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.session</groupId>
-            <artifactId>spring-session-data-redis</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-session-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
@@ -220,7 +227,7 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
@@ -237,21 +244,6 @@
         </dependency>
 
         <!-- Transitive dependencies updated for security -->
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-            <version>2.3.21.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet</artifactId>
-            <version>2.3.21.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
-            <version>2.3.21.Final</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -320,26 +312,29 @@
                 </executions>
 
                 <configuration>
-                    <header>LICENSE_HEADER</header>
-                    <aggregate>true</aggregate>
-                    <strictCheck>true</strictCheck>
-                    <excludes>
-                        <exclude>src/test/resources/**/*</exclude>
-                        <exclude>.devbox/**/*</exclude>
-                        <exclude>**/*.properties</exclude>
-                        <exclude>**/*.yml</exclude>
-                        <exclude>**/*.yaml</exclude>
-                        <exclude>**/*.json</exclude>
-                        <exclude>**/*.raml</exclude>
-                        <exclude>**/*.sh</exclude>
-                        <exclude>**/*.txt</exclude>
-                        <exclude>**/*.xml</exclude>
-                        <exclude>data/**</exclude>
-                        <exclude>LICENSE</exclude>
-                        <exclude>LICENSE_HEADER</exclude>
-                        <exclude>README.md</exclude>
-                        <exclude>.gitignore</exclude>
-                    </excludes>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>LICENSE_HEADER</header>
+                            <excludes>
+                                <exclude>src/test/resources/**/*</exclude>
+                                <exclude>.devbox/**/*</exclude>
+                                <exclude>**/*.properties</exclude>
+                                <exclude>**/*.yml</exclude>
+                                <exclude>**/*.yaml</exclude>
+                                <exclude>**/*.json</exclude>
+                                <exclude>**/*.raml</exclude>
+                                <exclude>**/*.sh</exclude>
+                                <exclude>**/*.txt</exclude>
+                                <exclude>**/*.xml</exclude>
+                                <exclude>data/**</exclude>
+                                <exclude>LICENSE</exclude>
+                                <exclude>LICENSE_HEADER</exclude>
+                                <exclude>README.md</exclude>
+                                <exclude>.gitignore</exclude>
+                                <exclude>spring-boot-undertow/**</exclude>
+                            </excludes>
+                        </licenseSet>
+                    </licenseSets>
                     <aggregate>true</aggregate>
                     <strictCheck>true</strictCheck>
                     <properties>
