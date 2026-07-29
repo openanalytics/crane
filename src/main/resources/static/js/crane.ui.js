@@ -130,6 +130,8 @@ Crane.ui = {
     },
 
     init() {
+        Crane.ui.initDropdowns();
+        Crane.ui.initHamburger();
         Crane.ui.initLanguageSelector();
         Crane.ui.initTable();
         Crane.ui.initDialogs();
@@ -420,10 +422,29 @@ Crane.ui = {
         }
     },
 
-    initLanguageSelector() {
-        document.querySelector('#language-selector .dropdown-toggle').addEventListener('click', () => {
-            document.querySelector('#language-selector').classList.toggle('open');
+    initDropdowns() {
+        document.addEventListener('click', function(e) {
+            const toggle = e.target.closest('.dropdown-toggle');
+            if (toggle) {
+                const dropdown = toggle.closest('.crane-dropdown');
+                document.querySelectorAll('.crane-dropdown.open').forEach(d => {
+                    if (d !== dropdown) d.classList.remove('open');
+                });
+                dropdown.classList.toggle('open');
+                e.stopPropagation();
+            } else {
+                document.querySelectorAll('.crane-dropdown.open').forEach(d => d.classList.remove('open'));
+            }
         });
+    },
+
+    initHamburger() {
+        document.getElementById('hamburger-btn').addEventListener('click', function() {
+            document.getElementById('header-actions').classList.toggle('mobile-open');
+        });
+    },
+
+    initLanguageSelector() {
         document.querySelectorAll('#language-selector li').forEach(li => {
             li.addEventListener('click', async () => {
                 if (await Crane.api.changeLanguage(li.dataset.language)) {

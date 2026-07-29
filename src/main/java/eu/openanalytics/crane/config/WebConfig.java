@@ -52,7 +52,8 @@ public class WebConfig implements WebMvcConfigurer {
         paths = Map.of(
             "/__assets/" + identifierService.instanceId + "/webjars/**", "classpath:/META-INF/resources/webjars/",
             "/__assets/" + identifierService.instanceId + "/css/**", "classpath:/static/css/",
-            "/__assets/" + identifierService.instanceId + "/js/**", "classpath:/static/js/"
+            "/__assets/" + identifierService.instanceId + "/js/**", "classpath:/static/js/",
+            "/__assets/" + identifierService.instanceId + "/img/**", "classpath:/static/img/"
         );
     }
 

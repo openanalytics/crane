@@ -18,6 +18,20 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
+
+/* --- Local fonts --- */
+@font-face {
+    font-family: 'Geist';
+    src: url('../fonts/Geist[wght].ttf') format('truetype');
+    font-weight: 400 700;
+}
+
+@font-face {
+    font-family: 'Geist Mono';
+    src: url('../fonts/GeistMono[wght].ttf') format('truetype');
+    font-weight: 400 700;
+}
+
 *, *::before, *::after {
     box-sizing: border-box;
 }
@@ -40,13 +54,6 @@
 a.logo {
     display: flex;
     width: 250px;
-}
-
-header {
-    padding-bottom: 5px;
-    display: flex;
-    height: 50px;
-    border-bottom: 2px solid #e8e8e8;
 }
 
 .crane {
@@ -97,6 +104,7 @@ body {
     line-height: 1.42857143;
     color: var(--color-light-black);
     background-color: #fff;
+    margin: 0;
 }
 
 .files-table a {
@@ -540,7 +548,7 @@ button:disabled, button.uppy-DashboardContent-addMore, button.uppy-DashboardCont
     flex: auto;
 }
 
-.dropdown-toggle {
+.header-field-group .dropdown-toggle {
     display: inline-block;
     width: 150px;
 }
@@ -1132,4 +1140,364 @@ button.icon {
 
 .move-header {
     display: none;
+}
+
+/* =============================================
+   Navbar
+   ============================================= */
+
+#navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.app-header {
+    background-color: #113746;
+    border-bottom: 1px solid #334155;
+    color: #fff;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    height: 64px;
+}
+
+.app-header .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 1.5em;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .app-header .header-container {
+        padding: 0 3em;
+    }
+}
+
+.app-header .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+}
+
+.app-header .brand-logo {
+    display: block;
+    height: 64px;
+    width: 64px;
+}
+
+.app-header .brand-name {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.app-header .brand-name:hover,
+.app-header .brand-name:focus {
+    color: #fff;
+    text-decoration: none;
+}
+
+.app-header .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0.25em;
+}
+
+@media (min-width: 768px) {
+    .app-header .hamburger-btn {
+        display: none;
+    }
+}
+
+.app-header .header-actions {
+    display: none;
+    align-items: center;
+    gap: 0.75em;
+}
+
+@media (min-width: 768px) {
+    .app-header .header-actions {
+        display: flex;
+    }
+}
+
+@media (max-width: 767px) {
+    .app-header .header-actions.mobile-open {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background-color: #113746;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1em 1.5em;
+        gap: 0.5em;
+        z-index: 1029;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .app-header .header-actions.mobile-open .crane-dropdown {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .app-header .header-actions.mobile-open .crane-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .app-header .header-actions.mobile-open .crane-dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .app-header .header-actions.mobile-open .crane-dropdown-menu > li {
+        color: #fff;
+    }
+
+    .app-header .header-actions.mobile-open .crane-dropdown-menu > li > a {
+        color: #fff;
+    }
+
+    .app-header .header-actions.mobile-open .crane-dropdown-menu > li:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .app-header .header-actions.mobile-open .crane-dropdown-menu > li .crane-icon {
+        color: rgba(255, 255, 255, 0.7);
+    }
+}
+
+
+.app-header .navbar-username {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Buttons */
+.crane-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6.25px 15px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+    min-height: 34px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+.crane-btn-ghost {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.crane-btn-ghost:hover,
+.crane-btn-ghost:focus {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.crane-btn-primary {
+    background-color: #337ab7;
+    color: #fff;
+}
+
+.crane-btn-primary:hover,
+.crane-btn-primary:focus {
+    background-color: #286090;
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+
+.crane-icon {
+    transition: transform 0.25s ease;
+}
+
+
+/* Microinteractions — icon animations on hover */
+.crane-dropdown-menu .app-restart-btn:hover .crane-icon {
+    transform: rotate(-360deg);
+    transition: transform 0.5s ease;
+}
+
+.crane-dropdown-menu .app-stop-current-btn,
+.crane-dropdown-menu .app-stop-current-btn:hover {
+    color: #E52323;
+}
+
+.crane-dropdown-menu .app-stop-current-btn .crane-icon,
+.crane-dropdown-menu .app-stop-current-btn:hover .crane-icon {
+    color: #E52323;
+}
+
+.crane-dropdown-menu .app-stop-current-btn:hover .crane-icon {
+    transform: scale(1.2);
+}
+
+.crane-dropdown-menu .app-pause-current-btn:hover .crane-icon {
+    transform: scale(1.15);
+}
+
+.crane-dropdown-menu .app-details-current-btn:hover .crane-icon {
+    transform: translateY(-2px);
+}
+
+.crane-dropdown-menu #switchInstancesModal-btn:hover .crane-icon {
+    transform: scaleX(-1);
+}
+
+/* Microinteractions — user menu icon animations on hover */
+#user-menu .crane-dropdown-menu li:has(a[href*="admin"]):hover .crane-icon {
+    transform: rotate(-15deg) scale(1.15);
+}
+
+#user-menu .crane-dropdown-menu .report-issue-btn:hover .crane-icon {
+    transform: scale(1.2);
+}
+
+#user-menu .crane-dropdown-menu li:last-child:hover .crane-icon {
+    transform: translateX(3px);
+}
+
+/* Dropdown menus — fully custom */
+.crane-dropdown {
+    position: relative;
+    display: inline-flex;
+}
+
+.crane-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    display: none;
+    padding: 5px 0;
+    margin: 4px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    min-width: 160px;
+}
+
+.crane-dropdown.open .crane-dropdown-menu {
+    display: block;
+    animation: dropdown-fade-in 0.15s ease;
+}
+
+@keyframes dropdown-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.crane-dropdown-menu > li {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 8px 16px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    color: #333;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.crane-dropdown-menu > li:hover {
+    color: #262626;
+    background-color: #f5f5f5;
+}
+
+.crane-dropdown-menu > li > a {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    color: inherit;
+    text-decoration: none;
+    width: 100%;
+}
+
+.crane-dropdown-menu > li > a:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.crane-dropdown-menu > li.language-active {
+    color: #337ab7;
+    font-weight: bold;
+}
+
+.crane-dropdown-menu > li .crane-icon {
+    font-size: 18px;
+    color: #666;
+}
+
+.crane-dropdown-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    width: 100%;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    font-size: 14px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.crane-dropdown-divider {
+    height: 1px;
+    margin: 4px 0;
+    background-color: #e5e5e5;
+    padding: 0 !important;
+    cursor: default !important;
+}
+
+.crane-dropdown-divider:hover {
+    background-color: #e5e5e5 !important;
+}
+
+.crane-caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    vertical-align: middle;
+    border-top: 4px solid;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
 }

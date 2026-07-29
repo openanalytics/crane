@@ -75,7 +75,7 @@ public class CraneConfig {
     private String openidGroupsClaim;
     private String openidUsernameClaim = "preferred_username";
     private String templatePath;
-    private String logoUrl = "https://www.openanalytics.eu/shinyproxy/logo.png";
+    private String logoUrl = null;
     private URI s3Endpoint;
     private Map<String, Repository> repositories = new HashMap<>();
     private Path root;

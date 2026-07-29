@@ -27,6 +27,7 @@
 
         </th:block>
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta name="_csrf" th:content="${_csrf.token}"/>
         <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
         <meta name="_dataTableLanguageUrl" th:content="${dataTableLanguageUrl}"/>
@@ -40,10 +41,10 @@
         <link media="screen" rel="stylesheet" th:href="@{${resourcePrefix} + '/webjars/datatables.net-dt/2.3.4/css/dataTables.dataTables.min.css'}"/>
     </head>
     <body>
-        <div class="container">
-            <th:block th:insert="~{fragments/navbar.html :: navbar}">
+        <th:block th:insert="~{fragments/navbar.html :: navbar}">
 
-            </th:block>
+        </th:block>
+        <div class="container">
             <th:block th:replace="~{${view} :: content}">
 
             </th:block>
