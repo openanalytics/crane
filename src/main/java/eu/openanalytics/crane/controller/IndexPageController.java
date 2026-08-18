@@ -41,7 +41,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.MessageSource;
-import org.springframework.core.env.Environment;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -72,12 +71,13 @@ public class IndexPageController extends BaseUIController {
                                ContextPathHelper contextPathHelper,
                                UploadAccessControlService uploadAccessControlService,
                                IdentifierService identifierService,
-                               SearchConfig searchConfig, SpecExpressionResolver specExpressionResolver, Environment environment) {
+                               SearchConfig searchConfig,
+                               SpecExpressionResolver specExpressionResolver) {
         super(userService, craneConfig, languageService, messageSource, contextPathHelper, identifierService, searchConfig);
         this.indexPageService = indexPageService;
         this.uploadAccessControlService = uploadAccessControlService;
         this.specExpressionResolver = specExpressionResolver;
-        robotsTxt = environment.getProperty("app.robots-txt");
+        robotsTxt = craneConfig.getRobotsTxt();
     }
 
     @GetMapping(value = "/__index", produces = MediaType.TEXT_HTML_VALUE)

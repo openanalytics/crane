@@ -79,6 +79,7 @@ public class WebSecurity {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
                                 "/",
+                                "/robots.txt",
                                 "/.well-known/configured-openid-configuration",
                                 "/favicon.ico",
                                 "/__file/**",

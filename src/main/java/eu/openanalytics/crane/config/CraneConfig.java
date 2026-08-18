@@ -82,6 +82,7 @@ public class CraneConfig {
     private Map<String, Repository> repositories = new HashMap<>();
     private Path root;
     private boolean onlyPublic;
+    private String robotsTxt;
 
     private List<CacheRule> defaultCache;
     private StsClient stsClient;
@@ -408,5 +409,13 @@ public class CraneConfig {
 
     public void setCssFiles(List<String> cssFiles) {
         this.cssFiles = cssFiles;
+    }
+
+    public String getRobotsTxt() {
+        return robotsTxt;
+    }
+
+    public void setRobotsTxt(String robotsTxt) {
+        this.robotsTxt = robotsTxt;
     }
 }
