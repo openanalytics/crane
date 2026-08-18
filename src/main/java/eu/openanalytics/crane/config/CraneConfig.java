@@ -75,6 +75,8 @@ public class CraneConfig {
     private String openidGroupsClaim;
     private String openidUsernameClaim = "preferred_username";
     private String templatePath;
+    private List<String> cssFiles;
+    private List<String> jsFiles;
     private String logoUrl = null;
     private URI s3Endpoint;
     private Map<String, Repository> repositories = new HashMap<>();
@@ -392,4 +394,19 @@ public class CraneConfig {
         this.uploadInstructions = uploadInstructions;
     }
 
+    public List<String> getJsFiles() {
+        return jsFiles;
+    }
+
+    public void setJsFiles(List<String> jsFiles) {
+        this.jsFiles = jsFiles;
+    }
+
+    public List<String> getCssFiles() {
+        return cssFiles;
+    }
+
+    public void setCssFiles(List<String> cssFiles) {
+        this.cssFiles = cssFiles;
+    }
 }

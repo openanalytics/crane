@@ -435,6 +435,7 @@
                             <excludes>
                                 <exclude>src/test/resources/**/*</exclude>
                                 <exclude>.devbox/**/*</exclude>
+                                <exclude>templates/**/*</exclude>
                                 <exclude>**/*.properties</exclude>
                                 <exclude>**/*.yml</exclude>
                                 <exclude>**/*.yaml</exclude>

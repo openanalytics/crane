@@ -39,6 +39,9 @@
         <link media="screen" rel="stylesheet" th:href="@{${resourcePrefix} + '/css/default.css'}"/>
         <link media="screen" rel="stylesheet" th:href="@{${resourcePrefix} + '/webjars/uppy/5.1.1/dist/uppy.min.css'}"/>
         <link media="screen" rel="stylesheet" th:href="@{${resourcePrefix} + '/webjars/datatables.net-dt/2.3.4/css/dataTables.dataTables.min.css'}"/>
+        <th:block th:each="cssFile : ${cssFiles}">
+            <link media="screen" rel="stylesheet" th:href="${#strings.startsWith(cssFile, 'http')} ? ${cssFile} : @{${resourcePrefix} + ${cssFile}}"/>
+        </th:block>
     </head>
     <body>
         <th:block th:insert="~{fragments/navbar.html :: navbar}">
@@ -63,5 +66,8 @@
         <script th:src="@{${resourcePrefix} + '/js/crane.search.js'}"></script>
         <script th:src="@{${resourcePrefix} + '/js/crane.ui.js'}"></script>
         <script th:src="@{${resourcePrefix} + '/js/crane.internationalization.js'}"></script>
+        <th:block th:each="jsFile : ${jsFiles}">
+            <script th:src="${#strings.startsWith(jsFile, 'http')} ? ${jsFile} : @{${resourcePrefix} + ${jsFile}}"></script>
+        </th:block>
     </body>
 </html>

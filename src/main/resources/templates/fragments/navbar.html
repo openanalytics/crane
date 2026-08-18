@@ -30,7 +30,7 @@
         <div id="navbar" th:fragment="navbar">
             <header class="app-header">
                 <div class="header-container">
-                    <div class="brand">
+                    <div id="navbar-start" class="brand">
                         <img class="brand-logo" th:src="${logo}" th:if="${logo != null}"/>
                         <img class="brand-logo" th:src="@{${resourcePrefix} + '/img/logo.svg' }" th:if="${logo == null}"/>
                         <a class="brand-name" th:href="@{/}" th:text="Crane"></a>

@@ -35,6 +35,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -47,6 +48,8 @@ public abstract class BaseUIController {
     protected final ContextPathHelper contextPathHelper;
     protected final IdentifierService identifierService;
     protected final SearchConfig searchConfig;
+    protected List<String> cssFiles;
+    protected List<String> jsFiles;
 
     public BaseUIController(UserService userService,
                             CraneConfig craneConfig,
@@ -62,6 +65,8 @@ public abstract class BaseUIController {
         this.contextPathHelper = contextPathHelper;
         this.identifierService = identifierService;
         this.searchConfig = searchConfig;
+        cssFiles = cleanCustomFrontendFiles(craneConfig.getCssFiles());
+        jsFiles = cleanCustomFrontendFiles(craneConfig.getJsFiles());
     }
 
     protected void prepareMap(ModelMap map) {
@@ -86,6 +91,8 @@ public abstract class BaseUIController {
         map.put("searchEnabled", searchConfig.isEnabled());
         map.put("request", httpServletRequest);
         map.put("response", httpServletResponse);
+        map.put("cssFiles", cssFiles);
+        map.put("jsFiles", jsFiles);
     }
 
     private void setLanguageConfig(ModelMap map, HttpServletRequest request, HttpServletResponse response) {
@@ -111,5 +118,13 @@ public abstract class BaseUIController {
         }
         return ServletUriComponentsBuilder.fromCurrentContextPath().path("/__assets/" + identifierService.instanceId + "/webjars/datatables.net-plugins/2.3.6/i18n/" + file).toUriString();
     }
+
+    private List<String> cleanCustomFrontendFiles(List<String> files) {
+        if (files == null || files.isEmpty()) {
+            return List.of();
+        }
+        return files.stream().map(s -> s.startsWith("http://") || s.startsWith("https://") || s.startsWith("/") ? s : "/" + s).toList();
+    }
+
 
 }

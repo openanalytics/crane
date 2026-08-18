@@ -38,6 +38,7 @@ import org.springframework.web.servlet.resource.ResourceResolverChain;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,16 +46,17 @@ import java.util.Map;
 public class WebConfig implements WebMvcConfigurer {
 
     private final boolean cacheEnabled;
-    private final Map<String, String> paths;
+    private final Map<String, String> paths = new HashMap<>();
 
-    public WebConfig(Environment environment, IdentifierService identifierService) {
+    public WebConfig(Environment environment, IdentifierService identifierService, CraneConfig craneConfig) {
         cacheEnabled = environment.getProperty("spring.thymeleaf.cache", Boolean.class, true);
-        paths = Map.of(
-            "/__assets/" + identifierService.instanceId + "/webjars/**", "classpath:/META-INF/resources/webjars/",
-            "/__assets/" + identifierService.instanceId + "/css/**", "classpath:/static/css/",
-            "/__assets/" + identifierService.instanceId + "/js/**", "classpath:/static/js/",
-            "/__assets/" + identifierService.instanceId + "/img/**", "classpath:/static/img/"
-        );
+        paths.put("/__assets/" + identifierService.instanceId + "/webjars/**", "classpath:/META-INF/resources/webjars/");
+        paths.put("/__assets/" + identifierService.instanceId + "/css/**", "classpath:/static/css/");
+        paths.put("/__assets/" + identifierService.instanceId + "/js/**", "classpath:/static/js/");
+        paths.put("/__assets/" + identifierService.instanceId + "/img/**", "classpath:/static/img/");
+        if (craneConfig.getTemplatePath() != null) {
+            paths.put("/__assets/" + identifierService.instanceId + "/assets/**", "file:" + craneConfig.getTemplatePath() + "assets/");
+        }
     }
 
     @Override
