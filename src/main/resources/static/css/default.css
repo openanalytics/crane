@@ -1163,7 +1163,6 @@ button.icon {
 
 .app-header .header-container {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     width: 100%;
     padding: 0 1.5em;
@@ -1212,6 +1211,7 @@ button.icon {
     font-size: 28px;
     cursor: pointer;
     padding: 0.25em;
+    margin-left: auto;
 }
 
 @media (min-width: 768px) {
@@ -1224,6 +1224,7 @@ button.icon {
     display: none;
     align-items: center;
     gap: 0.75em;
+    margin-left: auto;
 }
 
 @media (min-width: 768px) {
@@ -1291,6 +1292,10 @@ button.icon {
     color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
     font-size: 14px;
+}
+
+#navbar-start {
+    min-width: 36px;
 }
 
 /* Buttons */

@@ -47,6 +47,9 @@
         <th:block th:insert="~{fragments/navbar.html :: navbar}">
 
         </th:block>
+        <th:block th:each="jsFile : ${jsFiles}">
+            <script th:src="${#strings.startsWith(jsFile, 'http')} ? ${jsFile} : @{${resourcePrefix} + ${jsFile}}"></script>
+        </th:block>
         <div class="container">
             <th:block th:replace="~{${view} :: content}">
 
@@ -66,8 +69,5 @@
         <script th:src="@{${resourcePrefix} + '/js/crane.search.js'}"></script>
         <script th:src="@{${resourcePrefix} + '/js/crane.ui.js'}"></script>
         <script th:src="@{${resourcePrefix} + '/js/crane.internationalization.js'}"></script>
-        <th:block th:each="jsFile : ${jsFiles}">
-            <script th:src="${#strings.startsWith(jsFile, 'http')} ? ${jsFile} : @{${resourcePrefix} + ${jsFile}}"></script>
-        </th:block>
     </body>
 </html>
