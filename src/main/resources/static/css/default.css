@@ -22,13 +22,13 @@
 /* --- Local fonts --- */
 @font-face {
     font-family: 'Geist';
-    src: url('../fonts/Geist[wght].ttf') format('truetype');
+    src: url('../fonts/Geist.ttf') format('truetype');
     font-weight: 400 700;
 }
 
 @font-face {
     font-family: 'Geist Mono';
-    src: url('../fonts/GeistMono[wght].ttf') format('truetype');
+    src: url('../fonts/GeistMono.ttf') format('truetype');
     font-weight: 400 700;
 }
 

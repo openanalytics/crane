@@ -54,6 +54,7 @@ public class WebConfig implements WebMvcConfigurer {
         paths.put("/__assets/" + identifierService.instanceId + "/css/**", "classpath:/static/css/");
         paths.put("/__assets/" + identifierService.instanceId + "/js/**", "classpath:/static/js/");
         paths.put("/__assets/" + identifierService.instanceId + "/img/**", "classpath:/static/img/");
+        paths.put("/__assets/" + identifierService.instanceId + "/fonts/**", "classpath:/static/fonts/");
         if (craneConfig.getTemplatePath() != null) {
             paths.put("/__assets/" + identifierService.instanceId + "/assets/**", "file:" + craneConfig.getTemplatePath() + "assets/");
         }
