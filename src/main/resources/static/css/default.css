@@ -91,20 +91,21 @@ h1 {
 }
 
 .container {
-    max-width: 1170px;
     padding-right: 15px;
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
+    min-height: calc(100vh - 64px);
 }
 
+/* --- Global font --- */
 body {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Geist Mono', monospace;
     font-size: 14px;
-    line-height: 1.42857143;
     color: var(--color-light-black);
-    background-color: #fff;
     margin: 0;
+    background: linear-gradient(180deg, rgba(49, 166, 210, 0.06) 0%, rgba(49, 166, 210, 0.14) 100%);
+    padding-top: 0;
 }
 
 .files-table a {
