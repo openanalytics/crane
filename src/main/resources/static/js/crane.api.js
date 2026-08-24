@@ -106,9 +106,9 @@ Crane.api = {
             } catch (e) {
                 error = resp.statusText;
             }
-            alert(error);
+            Crane.ui.showError(error);
         }).catch((error) => {
-            alert(error);
+            Crane.ui.showError(error);
         });
     },
 

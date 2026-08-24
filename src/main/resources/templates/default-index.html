@@ -30,134 +30,275 @@
                 th:href="@{${part.webUri}}" th:text="${part.name}"></a><span class="slash">/</span></th:block></code>
             <button type="button" class="copy-button copy-current-button button icon icon-content-copy" th:title="#{index.copy_link}"><span class="copy-popover copy-current-popover" th:text="#{index.popover.copied}"></span></button>
         </h1>
-        <dialog id="uppy-dialog">
-            <div id="uppy" th:action="@{${resource}}"></div>
-            <div class="flex flex-space-between">
-                <button id="cancel-uppy-upload" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
-                <div class="flex-right">
-                    <label class="checkbox-label">
+        <div class="crane-popup-overlay" id="crane-modal-overlay" style="display:none;">
+            <div class="crane-popup" id="uploadModal" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title" th:text="#{index.upload.button}"></h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-modal-close" type="button">&times;</button>
+                <div class="crane-popup__body">
+                    <div id="uppy" th:action="@{${resource}}"></div>
+                    <label class="crane-popup__label checkbox-label">
                         <input id="uppy-replace" type="checkbox" class="checkbox">
                         <span>Replace existing</span>
                     </label>
-                    <button id="uppy-upload" type="button" class="button create" th:text="#{index.upload.button}"></button>
+                </div>
+                <div class="crane-popup__footer">
+                    <button id="cancel-uppy-upload" class="crane-popup__btn-cancel crane-modal-close" type="button" th:text="#{index.cancel.button}"></button>
+                    <button id="uppy-upload" class="crane-popup__btn-submit crane-popup__btn-icon-scale" type="button">
+                        <span class="crane-popup__btn-svg icon-upload"></span>
+                        <span th:text="#{index.upload.button}"></span>
+                    </button>
                 </div>
             </div>
-        </dialog>
 
-        <dialog id="create-directory-dialog">
-            <form id="create-directory-form" method="post" th:action="@{${resource}}">
-                <div><h1 th:text="#{index.create_directory}"></h1></div>
-                <div class="input-field">
-                    <label th:text="#{index.directory_name}"></label>
-                    <input id="directory-name" type="text"/>
+            <div class="crane-popup crane-popup--narrow" id="createDirectoryModal" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title" th:text="#{index.create_directory}"></h2>
+                    <hr class="crane-popup__divider">
                 </div>
-                <div class="flex flex-space-between">
-                    <button id="cancel-create-directory" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
-                    <button id="create-directory" type="button" class="button create" th:text="#{index.create.button}"></button>
+                <button class="crane-popup__close crane-modal-close" type="button">&times;</button>
+                <div class="crane-popup__body">
+                    <form id="create-directory-form" method="post" th:action="@{${resource}}">
+                        <label class="crane-popup__label" for="directory-name" th:text="#{index.directory_name}"></label>
+                        <input class="crane-popup__input" id="directory-name" type="text"/>
+                    </form>
                 </div>
-            </form>
-        </dialog>
-
-        <dialog id="rename-file-dialog">
-            <form id="rename-file-form">
-                <div><h1 th:text="#{index.rename_file}"></h1></div>
-                <div class="input-field">
-                    <label th:text="#{index.file_name}"></label>
-                    <input id="new-file-name" type="text"/>
-                </div>
-                <div class="flex flex-space-between">
-                    <button id="cancel-rename-file" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
-                    <button id="rename-file" type="button" class="button create" th:text="#{index.rename.button}"></button>
-                </div>
-            </form>
-        </dialog>
-
-        <dialog id="move-file-dialog">
-            <form id="move-file-form">
-                <div><h1 th:text="#{index.move_file}" class="move-file-header move-header"></h1><h1 th:text="#{index.move_directory}" class="move-directory-header move-header"></h1></div>
-                <div class="input-field">
-                    <span th:text="#{index.select_destination}"></span>
-                    <div class="file-tree">
-                        <ul class="root">
-                        </ul>
-                    </div>
-                    <span class="destination-label" th:text="#{index.move_destination}"> </span><code class="destination"></code>
-                </div>
-                <div class="flex flex-space-between">
-                    <button id="cancel-move-file" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
-                    <button id="move-file" type="button" class="button create"  disabled th:text="#{index.move.button}"></button>
-                </div>
-            </form>
-        </dialog>
-
-        <dialog id="rename-directory-dialog">
-            <form id="rename-directory-form">
-                <div><h1 th:text="#{index.rename_directory}"></h1></div>
-                <div class="input-field">
-                    <label th:text="#{index.file_name}"></label>
-                    <input id="new-directory-name" type="text"/>
-                </div>
-                <div class="flex flex-space-between">
-                    <button id="cancel-rename-directory" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
-                    <button id="rename-directory" type="button" class="button create" th:text="#{index.rename.button}"></button>
-                </div>
-            </form>
-        </dialog>
-
-        <dialog id="upload-instructions-dialog">
-            <div><h1>Upload instructions</h1></div>
-            <div th:utext="${uploadInstructions}">
-
-            </div>
-            <div class="flex flex-space-between">
-                <button id="cancel-upload-instructions" type="button" class="button create">Close</button>
-            </div>
-            <template id="code-copy-button"><div class="code-copy-button-wrapper"><button type="button" class="copy-code-button button icon icon-content-copy" th:title="#{index.copy_link}"><span class="copy-popover" th:text="#{index.popover.copied}"></span></button></div></template>
-        </dialog>
-
-        <dialog id="edit-metadata-dialog">
-            <div><h1 th:text="#{index.update_metadata}"></h1></div>
-            <div id="extracted-metadata-container">
-                <h2>Extracted metadata</h2>
-                <div id="extracted-metadata">
-                    <div class="extracted-metadata-field">
-                        <div class="extracted-metadata-key">Filename</div>
-                        <div class="extracted-metadata-value" data-field="filename"></div>
-                    </div>
-                    <div class="extracted-metadata-field">
-                        <div class="extracted-metadata-key">Title</div>
-                        <div class="extracted-metadata-value" data-field="title"></div>
-                    </div>
-                    <div class="extracted-metadata-field">
-                        <div class="extracted-metadata-key">Media type</div>
-                        <div class="extracted-metadata-value" data-field="mediaType"></div>
-                    </div>
-                    <div class="extracted-metadata-field">
-                        <div class="extracted-metadata-key">Human readable media type</div>
-                        <div class="extracted-metadata-value" data-field="humanReadableMediaType"></div>
-                    </div>
-                    <div class="extracted-metadata-field">
-                        <div class="extracted-metadata-key">Language</div>
-                        <div class="extracted-metadata-value" data-field="language"></div>
-                    </div>
-                    <div class="extracted-metadata-field">
-                        <div class="extracted-metadata-key">Creation date</div>
-                        <div class="extracted-metadata-value" data-field="creationDate"></div>
-                    </div>
-                    <div class="extracted-metadata-field">
-                        <div class="extracted-metadata-key">Authors</div>
-                        <div class="extracted-metadata-value" data-field="authors"></div>
-                    </div>
+                <div class="crane-popup__footer">
+                    <button id="cancel-create-directory" class="crane-popup__btn-cancel crane-modal-close" type="button" th:text="#{index.cancel.button}"></button>
+                    <button id="create-directory" class="crane-popup__btn-submit crane-popup__btn-icon-scale" type="button">
+                        <span class="crane-popup__btn-svg icon-folder-plus"></span>
+                        <span th:text="#{index.create.button}"></span>
+                    </button>
                 </div>
             </div>
-            <h2>Editable metadata</h2>
-            <div id="edit-metadata-form">
+
+            <div class="crane-popup crane-popup--narrow" id="renameFileModal" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title" th:text="#{index.rename_file}"></h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-modal-close" type="button">&times;</button>
+                <div class="crane-popup__body">
+                    <form id="rename-file-form">
+                        <label class="crane-popup__label" for="new-file-name" th:text="#{index.file_name}"></label>
+                        <input class="crane-popup__input" id="new-file-name" type="text"/>
+                    </form>
+                </div>
+                <div class="crane-popup__footer">
+                    <button id="cancel-rename-file" class="crane-popup__btn-cancel crane-modal-close" type="button" th:text="#{index.cancel.button}"></button>
+                    <button id="rename-file" class="crane-popup__btn-submit crane-popup__btn-icon-nudge" type="button">
+                        <span class="crane-popup__btn-svg icon-rename"></span>
+                        <span th:text="#{index.rename.button}"></span>
+                    </button>
+                </div>
             </div>
-            <div class="flex flex-space-between">
-                <button id="cancel-edit-metadata" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
-                <button id="save-edit-metadata" type="button" class="button create" th:text="#{index.update.button}"></button>
+
+            <div class="crane-popup crane-popup--wide" id="moveFileModal" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title move-file-header move-header" th:text="#{index.move_file}"></h2>
+                    <h2 class="crane-popup__title move-directory-header move-header" th:text="#{index.move_directory}"></h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-modal-close" type="button">&times;</button>
+                <div class="crane-popup__body">
+                    <form id="move-file-form">
+                        <span th:text="#{index.select_destination}"></span>
+                        <div class="file-tree">
+                            <ul class="root">
+                            </ul>
+                        </div>
+                        <span class="destination-label" th:text="#{index.move_destination}"> </span><code class="destination"></code>
+                    </form>
+                </div>
+                <div class="crane-popup__footer">
+                    <button id="cancel-move-file" class="crane-popup__btn-cancel crane-modal-close" type="button" th:text="#{index.cancel.button}"></button>
+                    <button id="move-file" class="crane-popup__btn-submit crane-popup__btn-icon-nudge" type="button" disabled>
+                        <span class="crane-popup__btn-svg icon-file-move-outline"></span>
+                        <span th:text="#{index.move.button}"></span>
+                    </button>
+                </div>
             </div>
-        </dialog>
+
+            <div class="crane-popup crane-popup--narrow" id="renameDirectoryModal" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title" th:text="#{index.rename_directory}"></h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-modal-close" type="button">&times;</button>
+                <div class="crane-popup__body">
+                    <form id="rename-directory-form">
+                        <label class="crane-popup__label" for="new-directory-name" th:text="#{index.file_name}"></label>
+                        <input class="crane-popup__input" id="new-directory-name" type="text"/>
+                    </form>
+                </div>
+                <div class="crane-popup__footer">
+                    <button id="cancel-rename-directory" class="crane-popup__btn-cancel crane-modal-close" type="button" th:text="#{index.cancel.button}"></button>
+                    <button id="rename-directory" class="crane-popup__btn-submit crane-popup__btn-icon-nudge" type="button">
+                        <span class="crane-popup__btn-svg icon-rename"></span>
+                        <span th:text="#{index.rename.button}"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="crane-popup crane-popup--wide" id="uploadInstructionsModal" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title">Upload instructions</h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-modal-close" type="button">&times;</button>
+                <div class="crane-popup__body" id="upload-instructions-body">
+                    <div th:utext="${uploadInstructions}">
+                    </div>
+                    <template id="code-copy-button"><div class="code-copy-button-wrapper"><button type="button" class="copy-code-button button icon icon-content-copy" th:title="#{index.copy_link}"><span class="copy-popover" th:text="#{index.popover.copied}"></span></button></div></template>
+                </div>
+                <div class="crane-popup__footer">
+                    <span></span>
+                    <button id="cancel-upload-instructions" class="crane-popup__btn-submit crane-modal-close" type="button">Close</button>
+                </div>
+            </div>
+
+            <div class="crane-popup crane-popup--wide" id="editMetadataModal" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title" th:text="#{index.update_metadata}"></h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-modal-close" type="button">&times;</button>
+                <div class="crane-popup__body">
+                    <div id="extracted-metadata-container">
+                        <h2>Extracted metadata</h2>
+                        <div id="extracted-metadata">
+                            <div class="extracted-metadata-field">
+                                <div class="extracted-metadata-key">Filename</div>
+                                <div class="extracted-metadata-value" data-field="filename"></div>
+                            </div>
+                            <div class="extracted-metadata-field">
+                                <div class="extracted-metadata-key">Title</div>
+                                <div class="extracted-metadata-value" data-field="title"></div>
+                            </div>
+                            <div class="extracted-metadata-field">
+                                <div class="extracted-metadata-key">Media type</div>
+                                <div class="extracted-metadata-value" data-field="mediaType"></div>
+                            </div>
+                            <div class="extracted-metadata-field">
+                                <div class="extracted-metadata-key">Human readable media type</div>
+                                <div class="extracted-metadata-value" data-field="humanReadableMediaType"></div>
+                            </div>
+                            <div class="extracted-metadata-field">
+                                <div class="extracted-metadata-key">Language</div>
+                                <div class="extracted-metadata-value" data-field="language"></div>
+                            </div>
+                            <div class="extracted-metadata-field">
+                                <div class="extracted-metadata-key">Creation date</div>
+                                <div class="extracted-metadata-value" data-field="creationDate"></div>
+                            </div>
+                            <div class="extracted-metadata-field">
+                                <div class="extracted-metadata-key">Authors</div>
+                                <div class="extracted-metadata-value" data-field="authors"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>Editable metadata</h2>
+                    <div id="edit-metadata-form">
+                    </div>
+                </div>
+                <div class="crane-popup__footer">
+                    <button id="cancel-edit-metadata" class="crane-popup__btn-cancel crane-modal-close" type="button" th:text="#{index.cancel.button}"></button>
+                    <button id="save-edit-metadata" class="crane-popup__btn-submit crane-popup__btn-icon-scale" type="button">
+                        <span class="crane-popup__btn-svg icon-table-edit"></span>
+                        <span th:text="#{index.update.button}"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="crane-popup crane-popup--wide" id="searchModal" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title">Search</h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-modal-close" type="button">&times;</button>
+                <div class="crane-popup__body crane-popup__body--search">
+                    <div id="search-wrapper">
+                        <div class="search-bar">
+                        </div>
+                        <div class="search-body">
+                            <div class="facets">
+                                <div class="facet-group">
+                                    <p class="facet-title">Content-Type</p>
+                                    <div class="facet-content-type">
+                                    </div>
+                                </div>
+                                <div class="facet-group">
+                                    <p class="facet-title">Language</p>
+                                    <div class="facet-language">
+                                    </div>
+                                </div>
+                                <div class="facet-group">
+                                    <p class="facet-title">Year</p>
+                                    <div class="facet-year">
+                                    </div>
+                                </div>
+                                <div class="facet-group">
+                                    <p class="facet-title">Month</p>
+                                    <div class="facet-month">
+                                    </div>
+                                </div>
+                                <div class="facet-group">
+                                    <p class="facet-title">Authors</p>
+                                    <div class="facet-authors">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="search-results">
+                                <div class="result-list">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="crane-popup__footer">
+                    <button id="cancel-search" class="crane-popup__btn-cancel crane-modal-close" type="button" th:text="#{index.cancel.button}"></button>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation popup overlay (delete, errors) -->
+        <div class="crane-popup-overlay" id="crane-popup-overlay" style="display:none;">
+            <div class="crane-popup crane-popup--destructive" id="deleteConfirmPopup" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title" id="deleteConfirmTitle"></h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-popup-dismiss" type="button">&times;</button>
+                <div class="crane-popup__body">
+                    <p id="deleteConfirmMessage"></p>
+                </div>
+                <div class="crane-popup__footer">
+                    <button class="crane-popup__btn-cancel crane-popup-dismiss" type="button" th:text="#{index.cancel.button}"></button>
+                    <button class="crane-popup__btn-submit crane-popup__btn-submit--destructive crane-popup-confirm crane-popup__btn-icon-scale" type="button">
+                        <span class="crane-popup__btn-svg icon-delete"></span>
+                        <span th:text="#{index.confirm.button}"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="crane-popup" id="errorPopup" style="display:none;">
+                <div class="crane-popup__header">
+                    <h2 class="crane-popup__title" th:text="#{error.error}"></h2>
+                    <hr class="crane-popup__divider">
+                </div>
+                <button class="crane-popup__close crane-popup-dismiss" type="button">&times;</button>
+                <div class="crane-popup__body">
+                    <p id="errorPopupMessage"></p>
+                </div>
+                <div class="crane-popup__footer">
+                    <span></span>
+                    <button class="crane-popup__btn-submit crane-popup-dismiss" type="button">OK</button>
+                </div>
+            </div>
+        </div>
 
         <div class="top-buttons">
             <button th:if="${hasWriteAccess}" id="upload-button" ><span class="icon icon-upload"></span><span th:text="#{index.upload.button}"></span></button>
@@ -224,53 +365,6 @@
             </tbody>
         </table>
 
-        <dialog id="search-dialog">
-            <div id="search-dialog-flex">
-                <div><h1>Search</h1></div>
-                <div id="search-wrapper">
-                    <div class="search-bar">
-                    </div>
-
-                    <div class="search-body">
-                        <div class="facets">
-                            <div class="facet-group">
-                                <p class="facet-title">Content-Type</p>
-                                <div class="facet-content-type">
-                                </div>
-                            </div>
-                            <div class="facet-group">
-                                <p class="facet-title">Language</p>
-                                <div class="facet-language">
-                                </div>
-                            </div>
-                            <div class="facet-group">
-                                <p class="facet-title">Year</p>
-                                <div class="facet-year">
-                                </div>
-                            </div>
-                            <div class="facet-group">
-                                <p class="facet-title">Month</p>
-                                <div class="facet-month">
-                                </div>
-                            </div>
-                            <div class="facet-group">
-                                <p class="facet-title">Authors</p>
-                                <div class="facet-authors">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="search-results">
-                            <div class="result-list">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex flex-space-between">
-                    <button id="cancel-search" type="button" class="button cancel" th:text="#{index.cancel.button}"></button>
-                </div>
-            </div>
-        </dialog>
     </th:block>
 
 </html>

@@ -161,7 +161,9 @@ public class MainController extends BaseUIController {
         "index.uploading",
         "index.delete_file.confirmation",
         "index.delete_directory.confirmation",
-        "index.empty_directory.confirmation"
+        "index.empty_directory.confirmation",
+        "index.delete.title",
+        "index.empty.title"
     );
 
     @ResponseBody

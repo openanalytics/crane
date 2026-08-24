@@ -21,33 +21,98 @@
 Crane = window.Crane || {};
 Crane.ui = {
     elements: {
-        createDirectoryDialog: document.getElementById("create-directory-dialog"),
-        uppyDialog: document.getElementById("uppy-dialog"),
+        modalOverlay: document.getElementById("crane-modal-overlay"),
+        popupOverlay: document.getElementById("crane-popup-overlay"),
         createDirectoryForm: document.getElementById("create-directory-form"),
         createDirectoryButton: document.getElementById("create-directory"),
-        editMetadataDialog: document.getElementById("edit-metadata-dialog"),
-        renameFileDialog: document.getElementById("rename-file-dialog"),
-        renameDirectoryDialog: document.getElementById("rename-directory-dialog"),
         renameFileForm: document.getElementById("rename-file-form"),
         renameDirectoryForm: document.getElementById("rename-directory-form"),
-        searchDialog: document.getElementById("search-dialog"),
         newFileNameInput: document.getElementById("new-file-name"),
         newDirectoryNameInput: document.getElementById("new-directory-name"),
-        moveFileDialog: document.getElementById("move-file-dialog"),
-        uploadInstructionsDialog: document.getElementById("upload-instructions-dialog"),
         table: $("table"),
         datatable: null,
         uppy: null,
     },
 
-    closeCreateDirectoryDialog() {
+    _popupResolve: null,
+
+    showModal(modalId, focusSelector) {
+        const overlay = Crane.ui.elements.modalOverlay;
+        overlay.querySelectorAll('.crane-popup').forEach(p => p.style.display = 'none');
+        const panel = document.getElementById(modalId);
+        panel.style.display = 'flex';
+        overlay.style.display = 'flex';
+        setTimeout(function () {
+            let target;
+            if (focusSelector) {
+                target = panel.querySelector(focusSelector);
+            } else {
+                const buttons = panel.querySelectorAll(
+                    '.crane-popup__footer .crane-popup__btn-cancel:not(:disabled), ' +
+                    '.crane-popup__footer .crane-popup__btn-submit:not(:disabled)'
+                );
+                target = buttons.length ? buttons[buttons.length - 1] : null;
+            }
+            if (target) {
+                target.focus({ focusVisible: true });
+            }
+        }, 50);
+    },
+
+    hideModal() {
+        const overlay = Crane.ui.elements.modalOverlay;
+        overlay.style.display = 'none';
+        overlay.querySelectorAll('.crane-popup').forEach(p => p.style.display = 'none');
+    },
+
+    showPopup(popupSelector) {
+        return new Promise((resolve) => {
+            Crane.ui._popupResolve = resolve;
+            const overlay = Crane.ui.elements.popupOverlay;
+            overlay.querySelectorAll('.crane-popup').forEach(p => p.style.display = 'none');
+            const popup = document.querySelector(popupSelector);
+            popup.style.display = 'flex';
+            overlay.style.display = 'flex';
+            setTimeout(function () {
+                let btn;
+                if (popup.classList.contains('crane-popup--destructive')) {
+                    btn = popup.querySelector('.crane-popup__footer .crane-popup-dismiss');
+                } else {
+                    const buttons = popup.querySelectorAll(
+                        '.crane-popup__footer .crane-popup-confirm, .crane-popup__footer .crane-popup-dismiss'
+                    );
+                    btn = buttons.length ? buttons[buttons.length - 1] : null;
+                }
+                if (btn) {
+                    btn.focus({ focusVisible: true });
+                }
+            }, 50);
+        });
+    },
+
+    hidePopup(result) {
+        const overlay = Crane.ui.elements.popupOverlay;
+        overlay.style.display = 'none';
+        overlay.querySelectorAll('.crane-popup').forEach(p => p.style.display = 'none');
+        if (Crane.ui._popupResolve) {
+            Crane.ui._popupResolve(result);
+            Crane.ui._popupResolve = null;
+        }
+    },
+
+    showError(message) {
+        document.getElementById("errorPopupMessage").textContent = message;
+        return Crane.ui.showPopup('#errorPopup');
+    },
+
+    closeCreateDirectoryModal() {
         const cancelButton = document.getElementById("cancel-create-directory");
         cancelButton.disabled = false;
         if (Crane.ui.elements.createDirectoryButton.classList.contains("uploading")) {
-            Crane.ui.elements.createDirectoryButton.innerText = Crane.internationalization.t("index.create.button");
+            Crane.ui.elements.createDirectoryButton.lastElementChild.textContent = Crane.internationalization.t("index.create.button");
             Crane.ui.elements.createDirectoryButton.classList.remove("uploading");
         }
-        Crane.ui.elements.createDirectoryDialog.close();
+        Crane.ui.hideModal();
         Crane.ui.elements.createDirectoryForm.reset();
     },
 
@@ -57,7 +122,7 @@ Crane.ui = {
         const cancelButton = document.getElementById("cancel-create-directory");
         cancelButton.disabled = true;
         Crane.ui.elements.createDirectoryButton.disabled = true;
-        Crane.ui.elements.createDirectoryButton.innerText = Crane.internationalization.t("index.creating.button") + "...";
+        Crane.ui.elements.createDirectoryButton.lastElementChild.textContent = Crane.internationalization.t("index.creating.button") + "...";
         Crane.ui.elements.createDirectoryButton.classList.toggle("uploading");
 
         const url = Crane.ui.elements.createDirectoryForm.action + dirNameField.value;
@@ -79,11 +144,11 @@ Crane.ui = {
             if (error === "Forbidden") {
                 error = Crane.internationalization.t("index.not_allowed_created_directory.error");
             }
-            Crane.ui.closeCreateDirectoryDialog();
-            alert(error);
+            Crane.ui.closeCreateDirectoryModal();
+            Crane.ui.showError(error);
         }).catch((error) => {
-            Crane.ui.closeCreateDirectoryDialog();
-            alert(error);
+            Crane.ui.closeCreateDirectoryModal();
+            Crane.ui.showError(error);
         });
     },
 
@@ -134,13 +199,7 @@ Crane.ui = {
         Crane.ui.initHamburger();
         Crane.ui.initLanguageSelector();
         Crane.ui.initTable();
-        Crane.ui.initDialogs();
-        $(window).keydown(function (event) {
-            if (event.code === 'Enter') {
-                event.preventDefault();
-                return false;
-            }
-        });
+        Crane.ui.initPopupEvents();
         document.querySelector(".files-table").addEventListener("click", function (event) {
             const button = event.target.closest("button");
             if (button && this.contains(button) && button.classList.contains("metadata-button")) {
@@ -172,31 +231,26 @@ Crane.ui = {
                 Crane.ui.showMoveFileDialog(button, filename);
             }
         });
-        document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.closeEditMetadataDialog);
+        document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.hideModal);
         document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
-        document.getElementById("cancel-search").addEventListener("click", Crane.ui.closeSearchDialog);
         document.getElementById("cancel-rename-file").addEventListener("click", Crane.ui.closeRenameFileDialog);
         document.getElementById("rename-file").addEventListener("click", Crane.ui.renameFile);
         document.getElementById("cancel-rename-directory").addEventListener("click", Crane.ui.closeRenameDirectoryDialog);
         document.getElementById("rename-directory").addEventListener("click", Crane.ui.renameDirectory);
         document.getElementById("move-file").addEventListener("click", Crane.ui.moveFile);
-        document.getElementById("cancel-move-file").addEventListener("click", Crane.ui.closeMoveFileDialog);
+        document.getElementById("cancel-move-file").addEventListener("click", Crane.ui.hideModal);
         document.getElementById("directory-name").addEventListener("input", Crane.ui.disableCreateDirectory);
-        document.getElementById("cancel-create-directory").addEventListener("click", Crane.ui.closeCreateDirectoryDialog);
+        document.getElementById("cancel-create-directory").addEventListener("click", Crane.ui.closeCreateDirectoryModal);
         document.getElementById("create-directory").addEventListener("click", Crane.ui.createDirectory);
-        document.getElementById("upload-button").addEventListener("click", () => Crane.ui.elements.uppyDialog.showModal());
-        document.getElementById("create-directory-button").addEventListener("click", () => Crane.ui.elements.createDirectoryDialog.showModal());
-        const searchButton = document.getElementById("search-button");
-        if (searchButton) {
-            searchButton.addEventListener("click", () => Crane.ui.showSearchDialog());
-        }
-        document.getElementById("upload-instructions-button").addEventListener("click", () => Crane.ui.elements.uploadInstructionsDialog.showModal());
-        document.getElementById("cancel-upload-instructions").addEventListener("click", () => Crane.ui.elements.uploadInstructionsDialog.close());
+        document.getElementById("upload-button")?.addEventListener("click", () => Crane.ui.showModal('uploadModal'));
+        document.getElementById("create-directory-button")?.addEventListener("click", () => Crane.ui.showModal('createDirectoryModal', '#directory-name'));
+        document.getElementById("search-button")?.addEventListener("click", Crane.ui.showSearchDialog);
+        document.getElementById("upload-instructions-button")?.addEventListener("click", () => Crane.ui.showModal('uploadInstructionsModal'));
 
         document.querySelectorAll(".copy-current-button").forEach(btn =>
             btn.addEventListener("click", Crane.ui.copyCurrentPath)
         );
-        document.querySelectorAll("#upload-instructions-dialog code").forEach(c => {
+        document.querySelectorAll("#upload-instructions-body code").forEach(c => {
             const button = document.getElementById('code-copy-button').content.cloneNode(true);
             c.parentNode.insertBefore(button, c);
             c.parentNode.querySelector("button").addEventListener('click', async () => {
@@ -221,6 +275,42 @@ Crane.ui = {
             const tr = document.querySelector(`tr[data-filename="${escaped}"]`) || document.querySelector(`tr[data-dirname="${escaped}"]`);
             tr.classList.add('highlight');
         }
+    },
+
+    initPopupEvents() {
+        $(document).on('click', '.crane-modal-close', function() {
+            Crane.ui.hideModal();
+        });
+
+        $(document).on('click', '#crane-modal-overlay', function(e) {
+            if (e.target === this) {
+                Crane.ui.hideModal();
+            }
+        });
+
+        $(document).on('click', '.crane-popup-dismiss', function() {
+            Crane.ui.hidePopup(false);
+        });
+
+        $(document).on('click', '.crane-popup-confirm', function() {
+            Crane.ui.hidePopup(true);
+        });
+
+        $(document).on('click', '#crane-popup-overlay', function(e) {
+            if (e.target === this) {
+                Crane.ui.hidePopup(false);
+            }
+        });
+
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if ($('#crane-popup-overlay').is(':visible')) {
+                    Crane.ui.hidePopup(false);
+                } else if ($('#crane-modal-overlay').is(':visible')) {
+                    Crane.ui.hideModal();
+                }
+            }
+        });
     },
 
     initTable() {
@@ -292,13 +382,18 @@ Crane.ui = {
 
         const deleteButtons = document.querySelectorAll("button.delete-button");
         for (let deleteButton of deleteButtons) {
-            deleteButton.addEventListener("click", () => {
+            deleteButton.addEventListener("click", async () => {
                 const objectName = deleteButton.dataset.filename !== undefined ? deleteButton.dataset.filename : deleteButton.dataset.dirname;
                 const action = deleteButton.dataset.ispathcomponent === 'true' ? 'empty' : 'delete';
                 const fileType = deleteButton.dataset.filename ? 'file' : 'directory';
                 const message = Crane.internationalization.f(`index.${action}_${fileType}.confirmation`, objectName);
 
-                if (window.confirm(message)) {
+                const titleKey = action === 'empty' ? 'index.empty.title' : 'index.delete.title';
+                document.getElementById("deleteConfirmTitle").textContent = Crane.internationalization.t(titleKey);
+                document.getElementById("deleteConfirmMessage").textContent = message;
+
+                const confirmed = await Crane.ui.showPopup('#deleteConfirmPopup');
+                if (confirmed) {
                     Crane.api.deleteObject(objectName, deleteButton);
                 }
             });
@@ -342,6 +437,18 @@ Crane.ui = {
         })
 
 
+        const dashboardEl = document.querySelector('#uppy .uppy-Dashboard-innerWrap');
+        if (dashboardEl) {
+            dashboardEl.style.cursor = 'pointer';
+            dashboardEl.addEventListener('click', (e) => {
+                const browseBtn = dashboardEl.querySelector('.uppy-Dashboard-browse');
+                const isInteractive = e.target.closest('a, button, input, label, .uppy-DashboardContent-addMore');
+                if (browseBtn && !isInteractive) {
+                    browseBtn.click();
+                }
+            });
+        }
+
         Crane.ui.elements.uppy.on("complete", (result) => {
             if (result.failed.length === 0) {
                 if (result.successful.length === 1) {
@@ -357,7 +464,7 @@ Crane.ui = {
         Crane.ui.elements.uppy.on("file-removed", Crane.ui.uppyUploadButtonDisable);
         Crane.ui.elements.uppy.on("upload-error", () => {
             const uploadButton = document.getElementById("uppy-upload");
-            uploadButton.innerText = Crane.internationalization.t("index.retry.button")
+            uploadButton.lastElementChild.textContent = Crane.internationalization.t("index.retry.button");
             uploadButton.classList.remove("uploading");
             uploadButton.classList.add("retry");
 
@@ -365,36 +472,14 @@ Crane.ui = {
             addMore.disabled = true;
         })
 
-        Crane.ui.elements.uppyDialog.addEventListener("close", () => {
-            const uploadButton = document.getElementById("uppy-upload");
-            uploadButton.classList.remove("uploading");
-            uploadButton.classList.remove("retry");
-            uploadButton.innerText = Crane.internationalization.t("index.upload.button");
+        document.getElementById("cancel-uppy-upload").addEventListener("click", Crane.ui.closeUploadModal);
 
-            const files = Crane.ui.elements.uppy.getState().files;
-            for (const key in files) {
-                const file = files[key];
-                if (file.response?.status === 200) {
-                    document.location.reload();
-                    return;
-                }
-            }
-
-            const addMore = document.getElementsByClassName("uppy-DashboardContent-addMore")[0];
-            if (addMore) {
-                addMore.disabled = false;
-            }
-            Crane.ui.elements.uppy.cancelAll();
-        })
-
-        document.getElementById("cancel-uppy-upload").addEventListener("click", () => {
-            Crane.ui.elements.uppyDialog.close();
-        });
+        document.querySelector('#uploadModal .crane-popup__close').addEventListener("click", Crane.ui.closeUploadModal);
 
         document.getElementById("uppy-upload").addEventListener("click", () => {
             const button = document.getElementById("uppy-upload");
             button.classList.add("uploading");
-            button.innerText = Crane.internationalization.t("index.uploading") + "..."
+            button.lastElementChild.textContent = Crane.internationalization.t("index.uploading") + "...";
             if (!button.classList.contains("retry")) {
                 Crane.ui.elements.uppy.upload();
             } else {
@@ -405,21 +490,26 @@ Crane.ui = {
         Crane.ui.uppyUploadButtonDisable();
     },
 
-    initDialogs() {
-        for (const dialog of document.getElementsByTagName('dialog')) {
-            dialog.addEventListener('click', function (event) {
-                if (event.target.open) {
-                    const rect = this.getBoundingClientRect();
-                    const isInDialog = (
-                        rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
-                        rect.left <= event.clientX && event.clientX <= rect.left + rect.width
-                    );
-                    if (!isInDialog) {
-                        this.close();
-                    }
-                }
-            });
+    closeUploadModal() {
+        const uploadButton = document.getElementById("uppy-upload");
+        uploadButton.classList.remove("uploading");
+        uploadButton.classList.remove("retry");
+        uploadButton.lastElementChild.textContent = Crane.internationalization.t("index.upload.button");
+
+        const files = Crane.ui.elements.uppy.getState().files;
+        for (const key in files) {
+            const file = files[key];
+            if (file.response?.status === 200) {
+                document.location.reload();
+                return;
+            }
         }
+
+        const addMore = document.getElementsByClassName("uppy-DashboardContent-addMore")[0];
+        if (addMore) {
+            addMore.disabled = false;
+        }
+        Crane.ui.elements.uppy.cancelAll();
     },
 
     initDropdowns() {
@@ -450,7 +540,7 @@ Crane.ui = {
                 if (await Crane.api.changeLanguage(li.dataset.language)) {
                     window.location.replace(window.location.origin + window.location.pathname);
                 } else {
-                    alert("Failed to change language!");
+                    Crane.ui.showError("Failed to change language!");
                 }
                 document.querySelector('#language-selector').classList.remove("open");
             });
@@ -461,7 +551,7 @@ Crane.ui = {
         button.classList.add("uploading");
         const response = await Crane.api.getFile(".crane/metadata/schema.json")
         if (response === null) {
-            alert("Failed to get metadata schema");
+            Crane.ui.showError("Failed to get metadata schema");
             return
         }
         const schema = await response.json();
@@ -480,7 +570,7 @@ Crane.ui = {
             document.getElementById("edit-metadata-form")
         );
         button.classList.remove("uploading");
-        Crane.ui.elements.editMetadataDialog.showModal()
+        Crane.ui.showModal('editMetadataModal');
     },
 
     showExtractedMetadata(extractedMetadata) {
@@ -512,19 +602,15 @@ Crane.ui = {
         }
     },
 
-    closeEditMetadataDialog() {
-        Crane.ui.elements.editMetadataDialog.close();
-    },
-
     async submitMetadataDialog(filename, result) {
         const success = await Crane.api.uploadStringAsFile(
             ".crane/metadata/" + filename + ".yaml",
             JSON.stringify(result.formData)
         );
         if (!success) {
-            alert("Failed to update metadata");
+            Crane.ui.showError("Failed to update metadata");
         } else {
-            Crane.ui.closeEditMetadataDialog();
+            Crane.ui.hideModal();
         }
     },
 
@@ -533,12 +619,8 @@ Crane.ui = {
     },
 
     async showSearchDialog() {
-        Crane.ui.elements.searchDialog.showModal()
+        Crane.ui.showModal('searchModal', '.ais-SearchBox-input');
         await Crane.search.init();
-    },
-
-    closeSearchDialog() {
-        Crane.ui.elements.searchDialog.close();
     },
 
     fileBeingRenamed: null,
@@ -546,14 +628,14 @@ Crane.ui = {
     async showRenameFileDialog(button, fileName) {
         Crane.ui.fileBeingRenamed = fileName;
         Crane.ui.elements.newFileNameInput.value = fileName;
-        Crane.ui.elements.renameFileDialog.showModal()
+        Crane.ui.showModal('renameFileModal', '#new-file-name');
     },
 
     async renameFile() {
         const newFilename = Crane.ui.elements.newFileNameInput.value;
         const error = await Crane.api.renameResource(Crane.ui.fileBeingRenamed, Crane.api.path + newFilename);
         if (error) {
-            alert(error);
+            Crane.ui.showError(error);
         } else {
             Crane.ui.closeRenameFileDialog();
             window.location.replace(window.location.origin + window.location.pathname + "?highlight-file=" + newFilename)
@@ -562,7 +644,7 @@ Crane.ui = {
 
     closeRenameFileDialog() {
         Crane.ui.elements.newFileNameInput.value = "";
-        Crane.ui.elements.renameFileDialog.close();
+        Crane.ui.hideModal();
     },
 
     directoryBeingRenamed: null,
@@ -570,23 +652,23 @@ Crane.ui = {
     async showRenameDirectoryDialog(button, directoryName) {
         Crane.ui.directoryBeingRenamed = directoryName;
         Crane.ui.elements.newDirectoryNameInput.value = directoryName;
-        Crane.ui.elements.renameDirectoryDialog.showModal()
+        Crane.ui.showModal('renameDirectoryModal', '#new-directory-name');
     },
 
     async renameDirectory() {
         const newDirectoryName = Crane.ui.elements.newDirectoryNameInput.value;
         const error = await Crane.api.renameResource(Crane.ui.directoryBeingRenamed, Crane.api.path + newDirectoryName);
         if (error) {
-            alert(error);
+            Crane.ui.showError(error);
         } else {
-            Crane.ui.closeRenameFileDialog();
+            Crane.ui.closeRenameDirectoryDialog();
             window.location.replace(window.location.origin + window.location.pathname + "?highlight-file=" + newDirectoryName)
         }
     },
 
     closeRenameDirectoryDialog() {
         Crane.ui.elements.newDirectoryNameInput.value = "";
-        Crane.ui.elements.renameDirectoryDialog.close();
+        Crane.ui.hideModal();
     },
 
     resourceBeingMoved: "",
@@ -596,15 +678,15 @@ Crane.ui = {
         Crane.ui.resourceBeingMoved = fileName;
         // reset state
         Crane.ui.moveDestination = "";
-        const root = document.querySelector("#move-file-dialog .file-tree .root");
-        const destination = document.querySelector("#move-file-dialog .destination");
+        const root = document.querySelector("#moveFileModal .file-tree .root");
+        const destination = document.querySelector("#moveFileModal .destination");
         destination.innerText = "";
         destination.classList.remove("visible");
         root.innerHTML = "";
         // add repository as root
         root.appendChild(Crane.ui.buildNode(Crane.api.repository, "/" + Crane.api.repository + "/"));
-        // show dialog
-        Crane.ui.elements.moveFileDialog.showModal()
+        // show modal
+        Crane.ui.showModal('moveFileModal');
     },
 
     buildNode(name, path) {
@@ -639,7 +721,7 @@ Crane.ui = {
                 e.classList.remove("selected");
             })
             dir.classList.add('selected');
-            const destination = document.querySelector("#move-file-dialog .destination");
+            const destination = document.querySelector("#moveFileModal .destination");
             destination.innerText = path + Crane.ui.resourceBeingMoved;
             destination.classList.add("visible");
             const moveFileButton = document.getElementById("move-file");
@@ -656,15 +738,11 @@ Crane.ui = {
         const destination = Crane.ui.moveDestination + Crane.ui.resourceBeingMoved;
         const error = await Crane.api.renameResource(Crane.ui.resourceBeingMoved, destination);
         if (error) {
-            alert(error);
+            Crane.ui.showError(error);
         } else {
-            Crane.ui.closeMoveFileDialog();
+            Crane.ui.hideModal();
             window.location.replace(Crane.api.buildURL(Crane.ui.moveDestination) + "?highlight-file=" + Crane.ui.resourceBeingMoved);
         }
-    },
-
-    closeMoveFileDialog() {
-        Crane.ui.elements.moveFileDialog.close();
     },
 
     async copyLinkToFile(button, fileName) {
