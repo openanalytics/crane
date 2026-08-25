@@ -109,7 +109,7 @@ public class IndexPageController extends BaseUIController {
             map.put("hasMetadataWriteAccess", false);
             map.put("hasCreateDirectoryAccess", false);
         } else {
-            map.put("hasMetadataWriteAccess", path.getRepository().getMetadataSchema() != null && uploadAccessControlService.canAccess(path.getPath(path.getRepository().getMetadataDirectoryName())));
+            map.put("hasMetadataWriteAccess", path.getRepository().getMetadataSchema() != null && uploadAccessControlService.canAccess(path.getPath(".crane").getPath(path.getRepository().getMetadataDirectoryName())));
             map.put("hasCreateDirectoryAccess", uploadAccessControlService.canAccess(path));
         }
         map.put("breadcrumbs", path.getComponents());
