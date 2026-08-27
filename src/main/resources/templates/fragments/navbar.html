@@ -32,6 +32,7 @@
                 <div class="header-container">
                     <div id="navbar-start">
                     </div>
+
                     <div class="brand">
                         <img class="brand-logo" th:src="${logo}" th:if="${logo != null}"/>
                         <img class="brand-logo" th:src="@{${resourcePrefix} + '/img/logo.svg' }" th:if="${logo == null}"/>

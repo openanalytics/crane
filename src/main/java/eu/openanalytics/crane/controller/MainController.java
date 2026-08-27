@@ -25,6 +25,7 @@ import eu.openanalytics.crane.config.SearchConfig;
 import eu.openanalytics.crane.model.config.Repository;
 import eu.openanalytics.crane.model.dto.ApiResponse;
 import eu.openanalytics.crane.model.dto.LanguageDto;
+import eu.openanalytics.crane.model.dto.RepositoryDto;
 import eu.openanalytics.crane.model.runtime.CranePath;
 import eu.openanalytics.crane.security.auditing.AuditingService;
 import eu.openanalytics.crane.service.IdentifierService;
@@ -32,6 +33,7 @@ import eu.openanalytics.crane.service.LanguageService;
 import eu.openanalytics.crane.service.PathReadAccessControlService;
 import eu.openanalytics.crane.service.PosixReadAccessControlService;
 import eu.openanalytics.crane.service.UserService;
+import eu.openanalytics.crane.upload.UploadAccessControlService;
 import eu.openanalytics.crane.util.ContextPathHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -60,6 +62,7 @@ import java.util.stream.Collectors;
 public class MainController extends BaseUIController {
     private final PathReadAccessControlService pathReadAccessControlService;
     private final PosixReadAccessControlService posixReadAccessControlService;
+    private final UploadAccessControlService uploadAccessControlService;
     private final AuditingService auditingService;
     private final UserService userService;
 
@@ -67,6 +70,7 @@ public class MainController extends BaseUIController {
                           UserService userService,
                           PathReadAccessControlService pathReadAccessControlService,
                           PosixReadAccessControlService posixReadAccessControlService,
+                          UploadAccessControlService uploadAccessControlService,
                           AuditingService auditingService,
                           LanguageService languageService,
                           MessageSource messageSource,
@@ -76,6 +80,7 @@ public class MainController extends BaseUIController {
         super(userService, config, languageService, messageSource, contextPathHelper, identifierService, searchConfig);
         this.pathReadAccessControlService = pathReadAccessControlService;
         this.posixReadAccessControlService = posixReadAccessControlService;
+        this.uploadAccessControlService = uploadAccessControlService;
         this.auditingService = auditingService;
         this.userService = userService;
     }
@@ -90,9 +95,13 @@ public class MainController extends BaseUIController {
     public String getRepositoriesAsHtml(HttpServletRequest request, ModelMap map) {
         boolean authenticated = userService.isAuthenticated();
 
-        List<String> repositories = config.getRepositories().stream()
+        List<RepositoryDto> repositories = config.getRepositories().stream()
             .filter(r -> pathReadAccessControlService.canAccess(new CranePath(r, "")) && posixReadAccessControlService.canAccess(new CranePath(r, "")))
-            .map(Repository::getName)
+            .map(r -> new RepositoryDto(
+                r.getName(),
+                true,
+                uploadAccessControlService.canAccess(new CranePath(r, ""))
+            ))
             .collect(Collectors.toList());
 
         auditingService.createListRepositoriesAuditEvent(request);

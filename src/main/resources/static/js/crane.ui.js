@@ -231,21 +231,33 @@ Crane.ui = {
                 Crane.ui.showMoveFileDialog(button, filename);
             }
         });
-        document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.hideModal);
-        document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
-        document.getElementById("cancel-rename-file").addEventListener("click", Crane.ui.closeRenameFileDialog);
-        document.getElementById("rename-file").addEventListener("click", Crane.ui.renameFile);
-        document.getElementById("cancel-rename-directory").addEventListener("click", Crane.ui.closeRenameDirectoryDialog);
-        document.getElementById("rename-directory").addEventListener("click", Crane.ui.renameDirectory);
-        document.getElementById("move-file").addEventListener("click", Crane.ui.moveFile);
-        document.getElementById("cancel-move-file").addEventListener("click", Crane.ui.hideModal);
-        document.getElementById("directory-name").addEventListener("input", Crane.ui.disableCreateDirectory);
-        document.getElementById("cancel-create-directory").addEventListener("click", Crane.ui.closeCreateDirectoryModal);
-        document.getElementById("create-directory").addEventListener("click", Crane.ui.createDirectory);
+        if (document.getElementById("crane-modal-overlay")) {
+            document.getElementById("cancel-edit-metadata").addEventListener("click", Crane.ui.hideModal);
+            document.getElementById("save-edit-metadata").addEventListener("click", Crane.ui.saveEditMetadataDialog);
+            document.getElementById("cancel-rename-file").addEventListener("click", Crane.ui.closeRenameFileDialog);
+            document.getElementById("rename-file").addEventListener("click", Crane.ui.renameFile);
+            document.getElementById("cancel-rename-directory").addEventListener("click", Crane.ui.closeRenameDirectoryDialog);
+            document.getElementById("rename-directory").addEventListener("click", Crane.ui.renameDirectory);
+            document.getElementById("move-file").addEventListener("click", Crane.ui.moveFile);
+            document.getElementById("cancel-move-file").addEventListener("click", Crane.ui.hideModal);
+            document.getElementById("directory-name").addEventListener("input", Crane.ui.disableCreateDirectory);
+            document.getElementById("cancel-create-directory").addEventListener("click", Crane.ui.closeCreateDirectoryModal);
+            document.getElementById("create-directory").addEventListener("click", Crane.ui.createDirectory);
+        }
         document.getElementById("upload-button")?.addEventListener("click", () => Crane.ui.showModal('uploadModal'));
         document.getElementById("create-directory-button")?.addEventListener("click", () => Crane.ui.showModal('createDirectoryModal', '#directory-name'));
         document.getElementById("search-button")?.addEventListener("click", Crane.ui.showSearchDialog);
         document.getElementById("upload-instructions-button")?.addEventListener("click", () => Crane.ui.showModal('uploadInstructionsModal'));
+
+        const searchInput = document.getElementById("toolbar-search-input") || document.getElementById("repositories-search-input");
+        if (searchInput) {
+            searchInput.addEventListener("input", function () {
+                if (Crane.ui.elements.datatable) {
+                    Crane.ui.elements.datatable.search(this.value).draw();
+                    Crane.ui.updateTableFooter();
+                }
+            });
+        }
 
         document.querySelectorAll(".copy-current-button").forEach(btn =>
             btn.addEventListener("click", Crane.ui.copyCurrentPath)
@@ -317,18 +329,27 @@ Crane.ui = {
         if (Crane.ui.elements.table.length === 0) {
             return;
         }
+        const isRepositoriesPage = Crane.ui.elements.table.hasClass('repositories-table');
         const dataTableLanguageUrl = document.querySelector("meta[name='_dataTableLanguageUrl']")?.content;
         let dataTableOptions = {
-            // first sort by "files or dir" column (so that dirs are on the top), then by name
-            aaSorting: [[0, 'asc'], [1, 'asc']],
             paging: false,
+            aaSorting: [[0, 'asc'], [1, 'asc']],
             language: {
                 url: dataTableLanguageUrl
             },
             searching: !Crane.search.enabled,
-            columnDefs: [
+            initComplete: function () {
+                Crane.ui.elements.datatable = this.api();
+                if (!isRepositoriesPage && Crane.ui.elements.table.data("has-write-access")) {
+                    Crane.ui.initUppy();
+                }
+                Crane.ui.elements.table.css("visibility", "visible");
+                Crane.ui.updateTableFooter();
+            }
+        };
+        if (!isRepositoriesPage) {
+            dataTableOptions.columnDefs = [
                 {
-                    // special column allowing to sort such that dirs are on top
                     targets: 0,
                     visible: false,
                     searchable: false
@@ -340,45 +361,56 @@ Crane.ui = {
                             return data;
                         }
 
-                        if (data) {
-                            return new Date(data).toLocaleString(document.documentElement.lang, {
-                                dateStyle: 'long',
-                                timeStyle: 'short'
-                            });
+                        if (data && data.trim()) {
+                            const d = new Date(data);
+                            if (!isNaN(d.getTime())) {
+                                return d.toLocaleString(document.documentElement.lang, {
+                                    dateStyle: 'long',
+                                    timeStyle: 'short'
+                                });
+                            }
                         }
-                        return "";
+                        return "\u2014";
+                    }
+                },
+                {
+                    targets: 3,
+                    render: function (data, type, row) {
+                        if (type === 'sort' || type === 'filter') {
+                            return data;
+                        }
+                        if (data && data.trim()) {
+                            return data;
+                        }
+                        return "\u2014";
                     }
                 }
-            ],
-            initComplete: function () {
-                Crane.ui.elements.datatable = this.api();
-                if (Crane.ui.elements.table.data("has-write-access")) {
-                    Crane.ui.initUppy();
-                }
-                Crane.ui.elements.table.css("visibility", "visible");
-            }
-        };
+            ];
+        }
         Crane.ui.elements.table.DataTable(dataTableOptions);
-        Crane.ui.elements.createDirectoryForm.addEventListener('keydown', function (event) {
-            if (event.code === "Enter") {
-                event.preventDefault();
-                Crane.ui.createDirectory(event);
-            }
-        });
-        Crane.ui.elements.renameFileForm.addEventListener('keydown', function (event) {
-            if (event.code === "Enter") {
-                event.preventDefault();
-                Crane.ui.renameFile();
-            }
-        });
-        Crane.ui.elements.renameDirectoryForm.addEventListener('keydown', function (event) {
-            if (event.code === "Enter") {
-                event.preventDefault();
-                Crane.ui.renameDirectory();
-            }
-        });
 
-        Crane.ui.disableCreateDirectory();
+        if (Crane.ui.elements.createDirectoryForm) {
+            Crane.ui.elements.createDirectoryForm.addEventListener('keydown', function (event) {
+                if (event.code === "Enter") {
+                    event.preventDefault();
+                    Crane.ui.createDirectory(event);
+                }
+            });
+            Crane.ui.elements.renameFileForm.addEventListener('keydown', function (event) {
+                if (event.code === "Enter") {
+                    event.preventDefault();
+                    Crane.ui.renameFile();
+                }
+            });
+            Crane.ui.elements.renameDirectoryForm.addEventListener('keydown', function (event) {
+                if (event.code === "Enter") {
+                    event.preventDefault();
+                    Crane.ui.renameDirectory();
+                }
+            });
+
+            Crane.ui.disableCreateDirectory();
+        }
 
         const deleteButtons = document.querySelectorAll("button.delete-button");
         for (let deleteButton of deleteButtons) {
@@ -761,6 +793,26 @@ Crane.ui = {
 
         clearTimeout(popover._hideTimeout);
         popover._hideTimeout = setTimeout(() => popover.classList.remove('visible'), 1500)
+    },
+
+    updateTableFooter() {
+        const tableContainer = document.querySelector('.table-container');
+        if (!tableContainer) return;
+        let footer = document.querySelector('.table-footer') || document.querySelector('.repositories-footer');
+        if (!footer) {
+            footer = document.createElement('div');
+            footer.className = 'table-footer';
+            tableContainer.parentNode.insertBefore(footer, tableContainer.nextSibling);
+        }
+        if (Crane.ui.elements.datatable) {
+            const total = Crane.ui.elements.datatable.rows().count();
+            const visible = Crane.ui.elements.datatable.rows({search: 'applied'}).count();
+            if (visible === total) {
+                footer.textContent = `Showing 1 to ${total} of ${total} entries`;
+            } else {
+                footer.textContent = `Showing ${visible} of ${total} entries`;
+            }
+        }
     }
 }
 

@@ -26,12 +26,45 @@
         <title>Crane</title>
     </th:block>
     <th:block th:fragment="content">
-        <h1 th:text="#{'repositories.repositories'}"></h1>
-        <p th:if="${repositories.isEmpty()}" th:text="#{'repositories.no-access'}"></p>
-        <ul>
-            <li th:each="repository: ${repositories}">
-                <a th:href="@{${repository} + '/'}" th:text="${repository}"></a>
-            </li>
-        </ul>
+        <th:block th:if="${repositories.isEmpty()}">
+            <h1 th:text="#{'repositories.repositories'}"></h1>
+            <p th:text="#{'repositories.no-access'}"></p>
+        </th:block>
+        <th:block th:if="${!repositories.isEmpty()}">
+            <div class="repositories-header">
+                <h1 th:text="#{'repositories.repositories'}"></h1>
+                <div class="toolbar-search repositories-search">
+                    <span class="icon icon-magnify toolbar-search-icon"></span>
+                    <input type="search" id="repositories-search-input" th:placeholder="#{'repositories.search'}" />
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="files-table repositories-table">
+                    <thead>
+                        <tr>
+                            <th th:text="#{'repositories.repository'}"></th>
+                            <th th:text="#{'repositories.access'}"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="repository : ${repositories}">
+                            <td class="filename-cell">
+                                <span class="icon icon-folder entry-icon"></span>
+                                <a th:href="@{${repository.name} + '/'}" th:text="${repository.name + '/'}" class="entry-name"></a>
+                                <button th:data-filename="${repository.name}" type="button" class="copy-button entry-copy-icon" th:title="#{index.copy_link}">
+                                    <span class="icon icon-content-copy"></span>
+                                    <span class="copy-popover" th:text="#{index.popover.copied}"></span>
+                                </button>
+                            </td>
+                            <td>
+                                <span th:if="${repository.getHasReadAccess()}" class="access-tag access-tag-readonly" th:text="#{'repositories.read'}"></span>
+                                <span th:if="${repository.getHasWriteAccess()}" class="access-tag access-tag-write" th:text="#{'repositories.write'}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-footer repositories-footer"></div>
+        </th:block>
     </th:block>
 </html>
