@@ -382,7 +382,7 @@
                                 <button th:if="${hasMetadataWriteAccess}" th:data-filename="${file.name}" type="button" class="metadata-button action-icon" th:title="#{index.update_metadata}">
                                     <span class="icon icon-table-edit"></span>
                                 </button>
-                                <template th:if="${hasWriteAccess}">
+                                <th:block th:if="${hasWriteAccess}">
                                     <button th:data-filename="${file.name}" type="button" class="move-file-button action-icon" th:title="#{index.move_file}">
                                         <span class="icon icon-file-move-outline"></span>
                                     </button>
@@ -392,7 +392,7 @@
                                     <button th:data-filename="${file.name}" type="button" class="delete-button action-icon action-icon-destructive" th:title="#{index.delete_file}">
                                         <span class="icon icon-delete"></span>
                                     </button>
-                                </template>
+                                </th:block>
                             </div>
                             <span class="delete-info" th:id="${'progress-' + file.name}"></span>
                         </td>

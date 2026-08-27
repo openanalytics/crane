@@ -116,6 +116,7 @@ body {
     margin: 0;
     background: linear-gradient(180deg, rgba(49, 166, 210, 0.06) 0%, rgba(49, 166, 210, 0.14) 100%);
     padding-top: 0;
+    min-height: 100vh;
 }
 
 /* ==== PAGE HEADER ==== */
