@@ -20,11 +20,11 @@
  */
 package eu.openanalytics.crane;
 
-import com.redhat.integration.undertow.servlet.UndertowServletWebServerFactory;
 import eu.openanalytics.crane.service.LanguageService;
 import io.undertow.UndertowOptions;
 import io.undertow.server.handlers.SameSiteCookieHandler;
 import io.undertow.servlet.api.ServletSessionConfig;
+import io.undertow.springboot.servlet.UndertowServletWebServerFactory;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
