@@ -20,8 +20,8 @@
  */
 package eu.openanalytics.crane;
 
-import com.redhat.integration.undertow.servlet.UndertowServletWebServerFactory;
 import io.undertow.UndertowOptions;
+import io.undertow.springboot.servlet.UndertowServletWebServerFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration;
@@ -83,6 +83,7 @@ public class CraneApplication {
 
         // disable spring multipart parsing
         properties.put("spring.servlet.multipart.enabled", false);
+        properties.put("server.undertow.max-http-post-size", "-1");
         // ====================
 
         return properties;
