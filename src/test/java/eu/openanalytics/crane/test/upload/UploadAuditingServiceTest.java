@@ -20,10 +20,6 @@
  */
 package eu.openanalytics.crane.test.upload;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import eu.openanalytics.crane.security.auditing.FileAuditEventRepository;
 import eu.openanalytics.crane.test.helpers.ApiTestHelper;
 import eu.openanalytics.crane.test.helpers.CraneInstance;
@@ -36,6 +32,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,10 +52,10 @@ public class UploadAuditingServiceTest {
     private static final File auditLogsFile = new File("/tmp/auditingLogs.txt");
     private static final Logger logger = LoggerFactory.getLogger(UploadAuditingServiceTest.class);
     private static BufferedReader bufferedReader;
-    private static final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
+    private static final JsonMapper objectMapper = JsonMapper.builder()
+        .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .disable(DateTimeFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        .build();
     private static final List<CraneInstance> instances = new ArrayList<>();
     private static final List<FileAuditEventRepository.AuditEventData> events = new ArrayList<>();
 

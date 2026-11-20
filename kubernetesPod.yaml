@@ -5,21 +5,31 @@ metadata:
   labels:
     ci: crane-build
 spec:
+  hostUsers: false
   volumes:
     - name: docker-socket
       emptyDir: { }
+    - name: tmp
+      emptyDir: { }
   containers:
     - name: builder
-      image: registry.openanalytics.eu/proxy/library/maven:3-openjdk-17
+      image: public.ecr.aws/docker/library/maven:3-eclipse-temurin-21-jammy
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 2375
       command:
         - cat
       tty: true
       env:
         - name: DOCKER_HOST
           value: unix:///var/run/docker/docker.sock
+        - name: MAVEN_OPTS
+          value: "-Dmaven.repo.local=/tmp/m2"
       volumeMounts:
         - mountPath: /var/run/docker
           name: docker-socket
+        - mountPath: /tmp/
+          name: tmp
       resources:
         requests:
           memory: "2Gi"
@@ -28,7 +38,7 @@ spec:
           memory: "4Gi"
           cpu: "1.5"
     - name: docker
-      image: docker:dind
+      image: public.ecr.aws/docker/library/docker:dind
       securityContext:
         privileged: true
       env:
@@ -37,6 +47,8 @@ spec:
       volumeMounts:
         - mountPath: /var/run/docker
           name: docker-socket
+        - mountPath: /tmp/
+          name: tmp
       resources:
         requests:
           memory: "2Gi"

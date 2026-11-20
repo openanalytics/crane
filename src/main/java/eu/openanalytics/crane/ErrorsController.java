@@ -25,7 +25,6 @@ import eu.openanalytics.crane.service.UserService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -43,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-public class ErrorsController extends BaseUIController implements ErrorController {
+public class ErrorsController extends BaseUIController implements org.springframework.boot.webmvc.error.ErrorController {
 
     public ErrorsController(UserService userService, CraneConfig craneConfig) {
         super(userService, craneConfig);

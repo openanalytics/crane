@@ -109,7 +109,6 @@ public class RewriteRulesTest {
 
         String path1 = "/invalid-rewrite1/some-path1/some-path2/file.txt";
         apiTestHelper.callWithoutAuth(apiTestHelper.createHtmlRequest(path1)).assertUnauthorizedRedirectToLogIn();
-        ;
         apiTestHelper.callWithTokenAuthDemoUser(apiTestHelper.createHtmlRequest(path1)).assertNotFound();
         apiTestHelper.callWithOidcAuthDemoUser(apiTestHelper.createHtmlRequest(path1)).assertNotFound();
     }

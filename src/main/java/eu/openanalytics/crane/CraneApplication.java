@@ -21,12 +21,12 @@
 package eu.openanalytics.crane;
 
 import io.undertow.UndertowOptions;
+import io.undertow.springboot.servlet.UndertowServletWebServerFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -41,7 +41,7 @@ import java.util.Properties;
 @EnableAsync
 @EnableWebMvc
 @EnableMethodSecurity
-@SpringBootApplication(exclude = {RedisAutoConfiguration.class, AuditAutoConfiguration.class})
+@SpringBootApplication(exclude = {DataRedisAutoConfiguration.class, AuditAutoConfiguration.class})
 public class CraneApplication {
 
     private static final Path TERMINATION_LOG_FILE = Path.of("/dev/termination-log");
@@ -83,6 +83,7 @@ public class CraneApplication {
 
         // disable spring multipart parsing
         properties.put("spring.servlet.multipart.enabled", false);
+        properties.put("server.undertow.max-http-post-size", "-1");
         // ====================
 
         return properties;
