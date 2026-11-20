@@ -112,6 +112,7 @@ public class CraneApplication {
 
         // disable spring multipart parsing
         properties.put("spring.servlet.multipart.enabled", false);
+        properties.put("server.undertow.max-http-post-size", "-1");
 
         // disable matomo by default
         properties.put("matomo.tracker.enabled", false);
