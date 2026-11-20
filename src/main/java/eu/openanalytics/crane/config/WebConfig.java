@@ -43,7 +43,7 @@ public class WebConfig implements WebMvcConfigurer {
         LoadInMemoryResolver resolver = new LoadInMemoryResolver();
         registry
             .addResourceHandler("/__assets/webjars/**")
-            .addResourceLocations("/webjars/")
+            .addResourceLocations("classpath:/META-INF/resources/webjars/")
             .setOptimizeLocations(true)
             .setUseLastModified(false)
             .setCacheControl(CacheControl.maxAge(Duration.ofDays(1)))
